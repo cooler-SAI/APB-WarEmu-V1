@@ -1,0 +1,20 @@
+<?xml version="1.0" standalone="yes"?>
+<root>
+	<ClientServer>
+		<Port>2106</Port>
+		<Version>1.4.1</Version>
+		<Build>555239</Build>
+	</ClientServer>
+	
+	<FileServer>
+		<Key>Pass</Key>
+		<Ip>127.0.0.1</Ip>
+		<Port>2100</Port>
+	</FileServer>
+	
+	<CharacterServer>
+		<Key>Pass</Key>
+		<Ip>127.0.0.1</Ip>
+		<Port>2101</Port>
+	</CharacterServer>
+</root>

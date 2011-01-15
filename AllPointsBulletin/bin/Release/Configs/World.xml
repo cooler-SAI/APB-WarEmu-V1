@@ -1,0 +1,21 @@
+<?xml version="1.0" standalone="yes"?>
+<root>
+	<ClientServer>
+		<Id>1</Id>
+		<Name>APS</Name>
+		<Port>2107</Port>
+		<Ip>127.0.0.1</Ip>
+	</ClientServer>
+	
+	<FileServer>
+		<Key>Pass</Key>
+		<Ip>127.0.0.1</Ip>
+		<Port>2100</Port>
+	</FileServer>
+	
+	<CharacterServer>
+		<Key>Pass</Key>
+		<Ip>127.0.0.1</Ip>
+		<Port>2101</Port>
+	</CharacterServer>
+</root>
