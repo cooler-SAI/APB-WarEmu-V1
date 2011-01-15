@@ -151,7 +151,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;magdar-shared.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;libmysql.lib;libeay32.lib;dbghelp.lib;zlib.lib;pcre.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\dep\libs\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)magdar-logonserver.pdb</ProgramDatabaseFile>
