@@ -1,0 +1,40 @@
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SniffParser", "VC90\SniffParser.vcproj", "{DA0A2D43-21CF-42C2-8077-2E9E570E0C17}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sniffer", "VC90\Sniffer.vcproj", "{F17C327C-C3D4-4FA3-94A9-F0B01BAB5A1D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SnifferConverter", "VC90\SnifferConverter.vcproj", "{45294FA6-BFDD-43C4-8184-D704CD3F7616}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WarBinExporter", "VC90\WarBinExporter.vcproj", "{659D88AC-D615-44C0-BAB7-63F5B15BE5DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DA0A2D43-21CF-42C2-8077-2E9E570E0C17}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DA0A2D43-21CF-42C2-8077-2E9E570E0C17}.Debug|Win32.Build.0 = Debug|Win32
+		{DA0A2D43-21CF-42C2-8077-2E9E570E0C17}.Release|Win32.ActiveCfg = Release|Win32
+		{DA0A2D43-21CF-42C2-8077-2E9E570E0C17}.Release|Win32.Build.0 = Release|Win32
+		{F17C327C-C3D4-4FA3-94A9-F0B01BAB5A1D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F17C327C-C3D4-4FA3-94A9-F0B01BAB5A1D}.Debug|Win32.Build.0 = Debug|Win32
+		{F17C327C-C3D4-4FA3-94A9-F0B01BAB5A1D}.Release|Win32.ActiveCfg = Release|Win32
+		{F17C327C-C3D4-4FA3-94A9-F0B01BAB5A1D}.Release|Win32.Build.0 = Release|Win32
+		{45294FA6-BFDD-43C4-8184-D704CD3F7616}.Debug|Win32.ActiveCfg = Debug|Win32
+		{45294FA6-BFDD-43C4-8184-D704CD3F7616}.Debug|Win32.Build.0 = Debug|Win32
+		{45294FA6-BFDD-43C4-8184-D704CD3F7616}.Release|Win32.ActiveCfg = Release|Win32
+		{45294FA6-BFDD-43C4-8184-D704CD3F7616}.Release|Win32.Build.0 = Release|Win32
+		{659D88AC-D615-44C0-BAB7-63F5B15BE5DA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{659D88AC-D615-44C0-BAB7-63F5B15BE5DA}.Debug|Win32.Build.0 = Debug|Win32
+		{659D88AC-D615-44C0-BAB7-63F5B15BE5DA}.Release|Win32.ActiveCfg = Release|Win32
+		{659D88AC-D615-44C0-BAB7-63F5B15BE5DA}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(DPCodeReviewSolutionGUID) = preSolution
+		DPCodeReviewSolutionGUID = {00000000-0000-0000-0000-000000000000}
+	EndGlobalSection
+EndGlobal
