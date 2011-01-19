@@ -5,8 +5,6 @@
 
 #pragma once
 
-#pragma comment(lib, "../../../win/VC90/magdar-shared___Win32_Release/shared.lib")
-
 #include <stdarg.h>
 #include <list>
 #include <vector>

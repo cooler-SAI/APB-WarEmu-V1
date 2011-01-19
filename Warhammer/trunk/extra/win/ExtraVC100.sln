@@ -1,12 +1,12 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SniffParser", "VC90\SniffParser.vcproj", "{DA0A2D43-21CF-42C2-8077-2E9E570E0C17}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SniffParser", "VC90\SniffParser.vcxproj", "{DA0A2D43-21CF-42C2-8077-2E9E570E0C17}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sniffer", "VC90\Sniffer.vcproj", "{F17C327C-C3D4-4FA3-94A9-F0B01BAB5A1D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sniffer", "VC90\Sniffer.vcxproj", "{F17C327C-C3D4-4FA3-94A9-F0B01BAB5A1D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SnifferConverter", "VC90\SnifferConverter.vcproj", "{45294FA6-BFDD-43C4-8184-D704CD3F7616}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SnifferConverter", "VC90\SnifferConverter.vcxproj", "{45294FA6-BFDD-43C4-8184-D704CD3F7616}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WarBinExporter", "VC90\WarBinExporter.vcproj", "{659D88AC-D615-44C0-BAB7-63F5B15BE5DA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WarBinExporter", "VC90\WarBinExporter.vcxproj", "{659D88AC-D615-44C0-BAB7-63F5B15BE5DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
