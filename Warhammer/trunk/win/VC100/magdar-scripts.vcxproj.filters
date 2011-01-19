@@ -10,8 +10,14 @@
     <Filter Include="Script\Ai">
       <UniqueIdentifier>{22e6545c-70f5-48a4-8479-3c2c24935b40}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script\Quest">
+    <Filter Include="Script\PublicQuest">
       <UniqueIdentifier>{d84e0d63-1152-4d57-8079-8f739927847a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Items">
+      <UniqueIdentifier>{90450504-cd28-4b88-8e91-9339b6821afc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Quests">
+      <UniqueIdentifier>{96e6dc7f-3c40-4e12-bd29-f5f9ef7e3c30}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -22,7 +28,13 @@
       <Filter>Script\Ai</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\magdar-worldserver\scripts\BaseScript\VillagerQuest.cpp">
-      <Filter>Script\Quest</Filter>
+      <Filter>Script\PublicQuest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\magdar-worldserver\scripts\BaseScript\ItemScript.cpp">
+      <Filter>Script\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\magdar-worldserver\scripts\BaseScript\RavenHost.cpp">
+      <Filter>Script\Quests</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

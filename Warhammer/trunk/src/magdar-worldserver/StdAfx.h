@@ -26,13 +26,12 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-//#include <fstream>
 
-#include "Common.h"
+#include <Common.h>
 #include <rpc.h>
 #include <rpcdce.h>
 
-#include "../magdar-shared/Config/ConfigEnv.h"
+#include <../magdar-shared/Config/ConfigEnv.h>
 
 #include <sfml/Graphics.hpp>
 #include <sfml/System.hpp>
@@ -55,8 +54,8 @@
 
 using namespace boost;
 
-#include "../magdar-shared/Timer.h"
-#include "../magdar-shared/Util.h"
+#include <../magdar-shared/Timer.h>
+#include <../magdar-shared/Util.h>
 #include <zlib/zlib.h>
 
 #include "../magdar-shared/Database/DatabaseEnv.h"
