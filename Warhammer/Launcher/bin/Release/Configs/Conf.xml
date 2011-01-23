@@ -55,7 +55,7 @@
 		<Type>textArea</Type>
 		<Masked>0</Masked>
 		<Name>textAccount</Name>
-		<Text>hotboss</Text>
+		<Text></Text>
 		<Width>100</Width>
 		<Height>20</Height>
 		<X>66</X>
@@ -84,7 +84,7 @@
 		<Type>textArea</Type>
 		<Masked>1</Masked>
 		<Name>textPassword</Name>
-		<Text>waqwaq</Text>
+		<Text></Text>
 		<Width>100</Width>
 		<Height>20</Height>
 		<X>66</X>
