@@ -1,0 +1,190 @@
+<?xml version="1.0" standalone="yes"?>
+<root>
+
+	<Master>
+		<Name>Launcher</Name>
+		<Width>191</Width>
+		<Height>235</Height>
+		<Resize>0</Resize>
+	</Master>
+
+	<labelWarhammerFolder>
+		<Type>label</Type>
+		<Name>labelWarhammerFolder</Name>
+		<Text>Warhammer directory</Text>
+		<Width>107</Width>
+		<Height>13</Height>
+		<X>7</X>
+		<Y>13</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>labelWarhammerFolder</Tag>
+	</labelWarhammerFolder>
+
+	<textWarhammerFolder>
+		<Type>textArea</Type>
+		<Masked>0</Masked>
+		<Name>textWarhammerFolder</Name>
+		<Text>C:\Program Files (x86)\Electronic Arts\Warhammer Online - Age of Reckoning</Text>
+		<Width>156</Width>
+		<Height>20</Height>
+		<X>10</X>
+		<Y>29</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>WarhammerFolder</Tag>
+	</textWarhammerFolder>
+
+	<labelAccount>
+		<Type>label</Type>
+		<Name>labelAccount</Name>
+		<Text>Account</Text>
+		<Width>47</Width>
+		<Height>13</Height>
+		<X>7</X>
+		<Y>61</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>labelAccount</Tag>
+	</labelAccount>
+
+	<textAccount>
+		<Type>textArea</Type>
+		<Masked>0</Masked>
+		<Name>textAccount</Name>
+		<Text>hotboss</Text>
+		<Width>100</Width>
+		<Height>20</Height>
+		<X>66</X>
+		<Y>58</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>Account</Tag>
+	</textAccount>
+	
+	<labelPassword>
+		<Type>label</Type>
+		<Name>labelPassword</Name>
+		<Text>Password</Text>
+		<Width>53</Width>
+		<Height>13</Height>
+		<X>7</X>
+		<Y>87</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>labelPassword</Tag>
+	</labelPassword>
+	
+	<textPassword>
+		<Type>textArea</Type>
+		<Masked>1</Masked>
+		<Name>textPassword</Name>
+		<Text>waqwaq</Text>
+		<Width>100</Width>
+		<Height>20</Height>
+		<X>66</X>
+		<Y>84</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>Password</Tag>
+	</textPassword>
+	
+	<labelServerIP>
+		<Type>label</Type>
+		<Name>labelPassword</Name>
+		<Text>Server IP</Text>
+		<Width>51</Width>
+		<Height>13</Height>
+		<X>7</X>
+		<Y>114</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>labelServerIP</Tag>
+	</labelServerIP>
+
+	<textServerIP>
+		<Type>textArea</Type>
+		<Masked>0</Masked>
+		<Name>ServerIP</Name>
+		<Text>127.0.0.1</Text>
+		<Width>100</Width>
+		<Height>20</Height>
+		<X>66</X>
+		<Y>111</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>Ip</Tag>
+	</textServerIP>
+	
+	<labelServerPort>
+		<Type>label</Type>
+		<Name>labelServerPort</Name>
+		<Text>Server Port</Text>
+		<Width>60</Width>
+		<Height>13</Height>
+		<X>7</X>
+		<Y>141</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>labelServerPort</Tag>
+	</labelServerPort>
+	
+	<textServerPort>
+		<Type>textArea</Type>
+		<Masked>0</Masked>
+		<Name>ServerPort</Name>
+		<Text>8040</Text>
+		<Width>100</Width>
+		<Height>20</Height>
+		<X>66</X>
+		<Y>138</Y>
+		<Tranparency>0</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+		<Tag>Port</Tag>
+	</textServerPort>
+
+	<Start>
+		<Type>button</Type>
+		<Name>Start</Name>
+		<Text>Connect</Text>
+		<Width>75</Width> 
+		<Height>23</Height>
+		<X>45</X> 
+		<Y>164</Y>
+		<Tag>ConnectToServer</Tag>
+		<OnClick>
+			<ArgTag1>Ip</ArgTag1>
+			<ArgTag2>Port</ArgTag2>
+			<ArgTag3>Account</ArgTag3>
+			<ArgTag4>Password</ArgTag4>
+			<ArgTag5>WarhammerFolder</ArgTag5>
+		</OnClick>
+		<Tranparency>1</Tranparency>
+		<BackColor>0</BackColor>
+		<ForeColor>0</ForeColor>
+	</Start>
+	
+	<!-- Here Put your image for the background
+	<Background>
+		<Type>picture</Type>
+		<Name>Background</Name>
+		<Text></Text>
+		<Width>500</Width>
+		<Height>300</Height>
+		<X>0</X>
+		<Y>0</Y>
+		<Image>Logo.png</Image>
+	</Background>
+	-->
+
+</root>

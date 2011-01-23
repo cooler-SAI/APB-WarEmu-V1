@@ -44,17 +44,14 @@ public:
 
 	std::string makePassword(std::string& username, std::string& password)
 	{
-		std::string strX2= Utils::makeSalt(username);
-		uint8 X2[8];
-		Utils::asciiHexStringtoByteArray(strX2,X2);
+		std::string ToEncode = username + ":" + password;
 
 		char cryptIN[256];
 		char outHash[SHA256_DIGEST_LENGTH];
 
 		memset(cryptIN,0,256);
-		memcpy(cryptIN,X2,8);
-		memcpy(&cryptIN[8],password.c_str(),password.length());
-		EVP_Digest(cryptIN,8+password.length(),(uint8*)&outHash,NULL,EVP_sha256(),NULL);
+		memcpy(&cryptIN,ToEncode.c_str(),ToEncode.length());
+		EVP_Digest(cryptIN,ToEncode.length(),(uint8*)&outHash,NULL,EVP_sha256(),NULL);
 
 		return Utils::byteArrayToAsciiString((unsigned char*)&outHash,SHA256_DIGEST_LENGTH);
 	}
