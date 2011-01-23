@@ -19,6 +19,8 @@ ZoneHeight*  HeightFieldMgr::LoadMap(int ZoneID)
 	sf::Image* pTerrain = new sf::Image();
 	sf::Image* pOffset = new sf::Image();
 
+	return NULL; // Temp Fix , File error
+
 	if(!pTerrain->LoadFromFile(ss.str()) || !pOffset->LoadFromFile(dd.str()))
 	{
 		Log.Error("HfMgr","Can not Load Height !");
