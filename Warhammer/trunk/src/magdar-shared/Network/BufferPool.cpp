@@ -38,7 +38,7 @@ Buffer* BufferPool::allocateBuffer(std::size_t size)
 
 void BufferPool::disposeBuffer(Buffer* buf)
 {
-	delete buf;
+	//delete buf;
    /* buf->reset();
     m_bufferStack.push(buf);*/
 }

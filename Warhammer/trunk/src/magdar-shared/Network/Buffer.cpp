@@ -13,7 +13,7 @@ Buffer::Buffer(std::size_t chunkSize) :
 m_writeCursor(0), m_readCursor(0), m_size(0)
 {
 	if(!chunkSize)
-		chunkSize = 0xFFFE;
+		chunkSize = 20000;
 
 	m_rawBuffer.resize(chunkSize);
 }
@@ -214,6 +214,6 @@ void Buffer::Trace(int32 offset)
 
 		if ((m_readCursor+offset >= 0) && (m_readCursor+offset < m_size))
 		{
-			Utils::hexdump(&(m_rawBuffer[m_readCursor+offset]), m_size-(m_readCursor+offset));
+			//Utils::hexdump(&(m_rawBuffer[m_readCursor+offset]), m_size-(m_readCursor+offset));
 		}
 }
