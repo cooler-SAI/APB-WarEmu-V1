@@ -627,10 +627,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\magdar-worldserver\QuestCommands.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\magdar-worldserver\ServerCommands.cpp"
 					>
 				</File>
