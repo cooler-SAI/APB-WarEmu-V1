@@ -27,17 +27,17 @@ namespace Common
         #region Loader
 
         // Sauvegarde de la Configuration des comptes
-        private Dictionary<int, DBAccount> _Accounts = new Dictionary<int, DBAccount>();
-        private Dictionary<string, DBAccount> _AcctName = new Dictionary<string, DBAccount>();
+        static private Dictionary<int, DBAccount> _Accounts = new Dictionary<int, DBAccount>();
+        static private Dictionary<string, DBAccount> _AcctName = new Dictionary<string, DBAccount>();
 
         // Classement par compte (int) et par slot (byte) des personnages
-        private Dictionary<int, Dictionary<byte, CharacterInfo>> _AcctChars = new Dictionary<int, Dictionary<byte, CharacterInfo> >();
+        static private Dictionary<int, Dictionary<byte, CharacterInfo>> _AcctChars = new Dictionary<int, Dictionary<byte, CharacterInfo>>();
 
         // Classement Par Nom des personnages
-        private Dictionary<string, CharacterInfo> _NameChars = new Dictionary<string, CharacterInfo>();
+        static private Dictionary<string, CharacterInfo> _NameChars = new Dictionary<string, CharacterInfo>();
 
         // Classement Par ID des personnages
-        private Dictionary<UInt32, CharacterInfo> _IdChars = new Dictionary<uint, CharacterInfo>();
+        static private Dictionary<UInt32, CharacterInfo> _IdChars = new Dictionary<uint, CharacterInfo>();
 
         // Ajout d'un Character dans toutes les liste
         public void AddCharacter(CharacterInfo Info)
