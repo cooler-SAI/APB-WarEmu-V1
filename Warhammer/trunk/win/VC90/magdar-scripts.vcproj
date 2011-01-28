@@ -111,7 +111,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;..\..\src\magdar-shared&quot;;..\..\dep\src\boost;..\..\dep\src\"
+				AdditionalIncludeDirectories="..\..\dep\src\boost;..\..\dep\src\;..\..\src\magdar-shared\;%(AdditionalIncludeDirectories)"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SCRIPTLIB"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
