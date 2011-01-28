@@ -123,7 +123,6 @@ bool WorldServer::Run(int argc, char ** argv)
 	Config.MainConfig.GetInt("LogLevel","Screen",&screen);
 	sLog.Init(-1,screen);
 	Log.Init(screen);
-	GetMACaddress();
 	InitRandomNumberGenerators();
 	Log.Success( "Rnd", "Initialized Random Number Generators." );
 
@@ -272,22 +271,4 @@ bool WorldServer::Run(int argc, char ** argv)
 
 	Log.Notice("LogonServer","Shutdown complete.\n");
 	return true;
-}
-
-void WorldServer::PrintMACaddress(unsigned char MACData[])
-{
-	Log.Info("SECURITY","MAC Address: %02X-%02X-%02X-%02X-%02X-%02X",MACData[0], MACData[1], MACData[2], MACData[3], MACData[4], MACData[5]);
-	Log.Success("SECURITY","Address Accepted !");
-}
-void WorldServer::GetMACaddress()
-{
-	unsigned char MACData[6];
-
-	UUID uuid;
-	UuidCreateSequential( &uuid );				// Ask OS to create UUID
-
-	for (int i=2; i<8; ++i)						// Bytes 2 through 7 inclusive are MAC address
-		MACData[i - 2] = uuid.Data4[i];
-
-	PrintMACaddress(MACData);					// Print MAC address
 }
