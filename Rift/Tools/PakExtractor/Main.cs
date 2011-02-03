@@ -33,7 +33,8 @@ namespace PakExtractor
 
             l_files.SelectedValueChanged+=new EventHandler(l_files_SelectedValueChanged);
 
-            ExtractorMgr.LoadXmls();
+            ExtractorMgr.LoadHeaders();
+            ExtractorMgr.StartExtractorThread();
 
             this.FormClosing += new FormClosingEventHandler(OnExit);
         }
@@ -64,7 +65,7 @@ namespace PakExtractor
             if (l_files.SelectedItem == null)
                 return;
 
-            ExtractorMgr.DecryptPak((l_files.SelectedItem as FileInfo),true);
+            ExtractorMgr.DecodePak((l_files.SelectedItem as FileInfo),true);
             ExtractorMgr.PrintPak((l_files.SelectedItem as FileInfo));
         }
 
@@ -116,9 +117,9 @@ namespace PakExtractor
 
                     FileInfo Info = l_files.Items[i] as FileInfo;
 
-                    PakFile Pak = ExtractorMgr.DecryptPak(Info, true);
+                    PakFile Pak = ExtractorMgr.DecodePak(Info, true);
 
-                    foreach (ElementPak Element in Pak._Elements)
+                    foreach (PakElement Element in Pak._Elements)
                         ExtractorMgr.AddToExtract(Element);
                 }
             }
