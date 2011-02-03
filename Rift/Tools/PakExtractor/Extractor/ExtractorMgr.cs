@@ -46,22 +46,28 @@ static public class ExtractorMgr
     static public void CellClick(object sender, EventArgs a)
     {
         DataGridViewCell Cell = Extractor.Data.CurrentCell;
+        string FullName = (Extractor.Box.SelectedItem as FileInfo).FullName;
+        PakFile Pak = _Paks[FullName];
+        PakElement Element = Pak._Elements.Find(info => info.Id == int.Parse(Cell.OwningRow.Cells[0].Value.ToString()));
+
         if (Cell.OwningColumn.Name == "Extract")
         {
-            string FullName = (Extractor.Box.SelectedItem as FileInfo).FullName;
-
-            PakFile Pak = _Paks[FullName];
-            PakElement Element = Pak._Elements.Find(info => info.Id == int.Parse(Cell.OwningRow.Cells[0].Value.ToString()));
-
             if (Element != null)
                 AddToExtract(Element);
+        }
+        else if (Cell.OwningColumn.Name == "Software")
+        {
+            if (Element != null)
+                Element.OpenSoftware();
         }
     }
     static public void SaveHeader(PakHeaders Headers)
     {
-        Extractor.Instance.Tool("Saving Header : " + Headers.FileName);
 
-        _Headers.Add(Headers.FileName, Headers);
+        if (_Headers.ContainsKey(Headers.FileName))
+            return;
+
+        Extractor.Instance.Tool("Saving Header : " + Headers.FileName);
 
         Directory.CreateDirectory(Directory.GetCurrentDirectory() + "/Headers/");
 
@@ -110,7 +116,7 @@ static public class ExtractorMgr
 
                     PakElement Element = ToExtract[i];
 
-                    Extractor.Instance.Tool("Extracting : " + Element.Id);
+                    Extractor.Instance.Tool("Extracting : " + Element.Id + " From " + Element.Owner.FileName);
                     string Folder = ExtractingFolder + "/Extracted/" + Element.Owner.FileName + "/";
                     Directory.CreateDirectory(Folder);
 
@@ -120,7 +126,7 @@ static public class ExtractorMgr
                     Stream.Close();
                     Element.dat = null;
 
-                    Thread.Sleep(50);
+                    Thread.Sleep(20);
                 }
             }
 
@@ -137,6 +143,9 @@ static public class ExtractorMgr
             Dial.SelectedPath = Directory.GetCurrentDirectory();
             Dial.ShowDialog();
             ExtractingFolder = Dial.SelectedPath;
+            if (ExtractorMgr.ExtractingFolder.Length <= 0)
+                return;
+
         }
 
         lock (_ToExtract)
@@ -146,23 +155,16 @@ static public class ExtractorMgr
     #endregion
 
 
-    static public PakFile DecodePak(FileInfo Info, bool Print)
+    static public PakFile DecodePak(FileInfo Info)
     {
         if (!_Paks.ContainsKey(Info.FullName))
         {
             PakFile Pak = new PakFile(Info);
             _Paks.Add(Info.FullName, Pak);
-            Pak.DeList();
 
             Thread t = new Thread(new ThreadStart(Pak.DeList));
             t.Start();
-
-            if(!Print)
-                t.Join();
         }
-
-        if(Print)
-            PrintPak(Info);
 
         return _Paks[Info.FullName];
     }

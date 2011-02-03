@@ -30,18 +30,19 @@
         {
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.tip_status = new System.Windows.Forms.ToolStripStatusLabel();
+            this.tool_progress = new System.Windows.Forms.ToolStripProgressBar();
             this.label1 = new System.Windows.Forms.Label();
             this.datagrid = new System.Windows.Forms.DataGridView();
+            this.b_listing = new System.Windows.Forms.Button();
+            this.b_extract = new System.Windows.Forms.Button();
+            this.l_files = new System.Windows.Forms.ComboBox();
+            this.b_allpak = new System.Windows.Forms.Button();
             this.Id = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Extention = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.ZSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.RealSize = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Extract = new System.Windows.Forms.DataGridViewButtonColumn();
-            this.b_listing = new System.Windows.Forms.Button();
-            this.b_extract = new System.Windows.Forms.Button();
-            this.l_files = new System.Windows.Forms.ComboBox();
-            this.b_allpak = new System.Windows.Forms.Button();
-            this.tool_progress = new System.Windows.Forms.ToolStripProgressBar();
+            this.Software = new System.Windows.Forms.DataGridViewLinkColumn();
             this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.datagrid)).BeginInit();
             this.SuspendLayout();
@@ -60,9 +61,14 @@
             // tip_status
             // 
             this.tip_status.Name = "tip_status";
-            this.tip_status.Size = new System.Drawing.Size(602, 17);
+            this.tip_status.Size = new System.Drawing.Size(633, 17);
             this.tip_status.Spring = true;
             this.tip_status.Text = "Starting...";
+            // 
+            // tool_progress
+            // 
+            this.tool_progress.Name = "tool_progress";
+            this.tool_progress.Size = new System.Drawing.Size(100, 16);
             // 
             // label1
             // 
@@ -84,36 +90,12 @@
             this.Extention,
             this.ZSize,
             this.RealSize,
-            this.Extract});
+            this.Extract,
+            this.Software});
             this.datagrid.Location = new System.Drawing.Point(0, 92);
             this.datagrid.Name = "datagrid";
             this.datagrid.Size = new System.Drawing.Size(750, 287);
             this.datagrid.TabIndex = 3;
-            // 
-            // Id
-            // 
-            this.Id.HeaderText = "Name";
-            this.Id.Name = "Id";
-            // 
-            // Extention
-            // 
-            this.Extention.HeaderText = "Extention";
-            this.Extention.Name = "Extention";
-            // 
-            // ZSize
-            // 
-            this.ZSize.HeaderText = "ZSize";
-            this.ZSize.Name = "ZSize";
-            // 
-            // RealSize
-            // 
-            this.RealSize.HeaderText = "RealSize";
-            this.RealSize.Name = "RealSize";
-            // 
-            // Extract
-            // 
-            this.Extract.HeaderText = "Extract";
-            this.Extract.Name = "Extract";
             // 
             // b_listing
             // 
@@ -153,10 +135,36 @@
             this.b_allpak.UseVisualStyleBackColor = true;
             this.b_allpak.Click += new System.EventHandler(this.b_allpak_Click);
             // 
-            // tool_progress
+            // Id
             // 
-            this.tool_progress.Name = "tool_progress";
-            this.tool_progress.Size = new System.Drawing.Size(100, 16);
+            this.Id.HeaderText = "Name";
+            this.Id.Name = "Id";
+            // 
+            // Extention
+            // 
+            this.Extention.HeaderText = "Extention";
+            this.Extention.Name = "Extention";
+            // 
+            // ZSize
+            // 
+            this.ZSize.HeaderText = "ZSize";
+            this.ZSize.Name = "ZSize";
+            // 
+            // RealSize
+            // 
+            this.RealSize.HeaderText = "RealSize";
+            this.RealSize.Name = "RealSize";
+            // 
+            // Extract
+            // 
+            this.Extract.HeaderText = "Extract";
+            this.Extract.Name = "Extract";
+            // 
+            // Software
+            // 
+            this.Software.HeaderText = "Software";
+            this.Software.Name = "Software";
+            this.Software.Width = 200;
             // 
             // Extractor
             // 
@@ -189,13 +197,14 @@
         private System.Windows.Forms.Button b_listing;
         private System.Windows.Forms.Button b_extract;
         private System.Windows.Forms.ComboBox l_files;
+        private System.Windows.Forms.Button b_allpak;
+        private System.Windows.Forms.ToolStripProgressBar tool_progress;
         private System.Windows.Forms.DataGridViewTextBoxColumn Id;
         private System.Windows.Forms.DataGridViewTextBoxColumn Extention;
         private System.Windows.Forms.DataGridViewTextBoxColumn ZSize;
         private System.Windows.Forms.DataGridViewTextBoxColumn RealSize;
         private System.Windows.Forms.DataGridViewButtonColumn Extract;
-        private System.Windows.Forms.Button b_allpak;
-        private System.Windows.Forms.ToolStripProgressBar tool_progress;
+        private System.Windows.Forms.DataGridViewLinkColumn Software;
     }
 }
 

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 
 using PakExtractor;
 using FrameWork.zlib;
@@ -38,6 +39,8 @@ public class PakElement
 
             if (IsCompress())
             {
+                Extractor.Instance.Tool("Decompressing " + Id + ",From " + Owner.FileName);
+
                 GetBytes();
                 Data = dat;
             }
@@ -52,18 +55,44 @@ public class PakElement
             Header.Ext = Encoding.UTF8.GetString(Data, 0, Data.Length);
 
             if (Header.Ext.IndexOf("WAVE") >= 0)
+            {
                 Header.Ext = ".wav";
+                Header.Software = "http://www.videolan.org/vlc/";
+            }
             else if (Header.Ext.IndexOf("DDS") >= 0)
+            {
                 Header.Ext = ".dds";
+                Header.Software = "http://www.xnview.com/";
+            }
             else if (Header.Ext.IndexOf("BK") >= 0 || Header.Ext.IndexOf("BIK") >= 0)
+            {
                 Header.Ext = ".bik";
+                Header.Software = "http://www.radgametools.com/bnkdown.htm";
+            }
+            else if (Header.Ext.IndexOf("Gamebryo") >= 0)
+            {
+                Header.Ext = ".nif";
+                Header.Software = "http://sourceforge.net/projects/niftools/files/nifskope/";
+            }
             else
+            {
                 Header.Ext = ".unk";
+                Header.Software = "http://notepad-plus-plus.org/download";
+            }
 
             dat = null;
         }
 
         return Header.Ext;
+    }
+
+    public void OpenSoftware()
+    {
+        string windir = Environment.GetEnvironmentVariable("WINDIR");
+        System.Diagnostics.Process prc = new System.Diagnostics.Process();
+        prc.StartInfo.FileName = "iexplore";
+        prc.StartInfo.Arguments = Header.Software;
+        prc.Start();
     }
 
     public bool IsCompress()

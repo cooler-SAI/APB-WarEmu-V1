@@ -13,6 +13,7 @@ public class FileHeader
     public int Start = 0;
     //public string Unk3 = "";
     public string Ext = "";
+    public string Software = "";
 }
 
 [Serializable]

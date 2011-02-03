@@ -12,6 +12,7 @@ using PakExtractor;
 
 public class PakFile
 {
+    public bool Decoded = false;
     public int Ids = 0;
     public int GetId()
     {
@@ -28,9 +29,6 @@ public class PakFile
     {
         FileName = Info.Name;
         Headers = ExtractorMgr.GetHeader(FileName);
-
-        Extractor.Instance.Tool(Headers != null ? "Loading from cache" : "First loading");
-
         try
         {
             Stream = new ExtendedFileStream(Info.FullName);
@@ -46,6 +44,7 @@ public class PakFile
         if (_Elements.Count > 0)
             return;
 
+        Decoded = false;
         Extractor.Instance.Progress(0);
 
         if (Headers == null)
@@ -74,30 +73,35 @@ public class PakFile
                 string Unk3 = Stream.GetString(24);
 
                 Headers.Files.Add(Header);
-            }
 
-            ExtractorMgr.SaveHeader(Headers);
+                Extractor.Instance.Tool("Reading header :" + i + "/" + Headers.HeaderSize + ": " + Headers.FileName);
+                Extractor.Instance.Progress((i * 100) / Headers.HeaderSize);
+            }
         }
 
         int Total = Headers.Files.Count;
         for (int i = 0; i < Total; ++i)
         {
             Extractor.Instance.Progress((i * 100) / Total);
-
             FileHeader Header = Headers.Files[i];
             PakElement Ep = new PakElement(this, Header, Stream);
+            Ep.GetExtention();
             _Elements.Add(Ep);
         }
 
+        ExtractorMgr.SaveHeader(Headers);
+
         Extractor.Instance.Progress(100);
+        Decoded = true;
     }
 
     public void PrintHeaders()
     {
         Extractor.Instance.ClearData();
-        foreach (PakElement Ep in _Elements)
+
+        foreach (PakElement Ep in _Elements.ToArray())
         {
-            Extractor.Instance.AddData("" + Ep.Id, Ep.GetExtention(), "" + Ep.Header.ZSize, "" + Ep.Header.Size, "Extract");
+            Extractor.Instance.AddData("" + Ep.Id, Ep.GetExtention(), "" + Ep.Header.ZSize, "" + Ep.Header.Size, "Extract" , Ep.Header.Software);
         }
     }
 }
