@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "../../StdAfx.h"
 
 class VillagerQuest : public ScriptedQuest
 {

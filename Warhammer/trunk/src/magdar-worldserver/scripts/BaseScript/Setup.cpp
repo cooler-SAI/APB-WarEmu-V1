@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "../../StdAfx.h"
 #include "Setup.h"
 
 extern "C" SCRIPT_DECL void _exp_script_register(ScriptMgr *Mgr)
