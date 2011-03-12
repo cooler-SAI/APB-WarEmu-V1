@@ -29,7 +29,6 @@ bool WorldRunnable::run()
 		
 		LastWorldUpdate=now;
 
-		sWorldSocket.Update();
 		eventholder->Update( (uint32)diff );
 		
 		now=getMSTime();

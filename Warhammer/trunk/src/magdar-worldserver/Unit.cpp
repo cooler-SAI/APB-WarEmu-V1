@@ -301,7 +301,6 @@ void Unit::SendAttackState(Unit * Victim,uint16 damage,uint16 mitiged,GameData::
 		}
 
 		dispachPacketInRange(b,true);
-		delete b;
 	}
 
 	// Dommage
@@ -329,7 +328,6 @@ void Unit::SendAttackState(Unit * Victim,uint16 damage,uint16 mitiged,GameData::
 		b->write<uint8>(0x00);
 
 		dispachPacketInRange(b,true);
-		delete b;
 	}
 
 	if(Info)
@@ -344,7 +342,6 @@ void Unit::SendAttackState(Unit * Victim,uint16 damage,uint16 mitiged,GameData::
 		b->write<uint8>(2);
 		b->fill(0,3);
 		dispachPacketInRange(b,true);
-		delete b;
 	}
 
 
@@ -398,7 +395,6 @@ void Unit::DealDamage(Unit * Victim,uint16 damage,AbilityInfo * Info)
 	b->write<uint8>( Victim->GetHealthPct() );
 	b->write<uint8>(0x00);
 	dispachPacketInRange(b,true);
-	delete b;
 	
 	if(IsPlayer())
 	{
@@ -439,7 +435,6 @@ void Unit::SetUnitDeath(Unit * killer)
 		b->write<uint16>(0); // Spell who kill unit
 
 		killer->dispachPacketInRange(b,true);
-		delete b;
 	}
 
 	Creature * cKiller = NULL;

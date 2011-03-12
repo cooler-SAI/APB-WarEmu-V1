@@ -93,7 +93,6 @@ void ClientCom::onPlayerState2() // Moving
 		b->write(&m_readBuffer,false);
 		b->write<uint8>(0);
 		m_Plr->dispachPacketInRange(b);
-		delete b;
 	}
 
 	m_readBuffer.popReaderPos();

@@ -393,7 +393,6 @@ void QuestMgr::BuildQuestForPlayer(uint32 questid,Creature * Crea,Player * Plr)
 	d->write(b);
 
 	Plr->sendPacket(d);
-	delete b;
 }
 void QuestMgr::BuildPreQuest(Buffer *b,QuestInfo *Info,bool particular)
 {
@@ -492,7 +491,6 @@ void QuestMgr::BuildInterractQuest(Creature * Crea,Player * Plr)
 	d->write<uint8>(F_INTERACT_RESPONSE);
 	d->write(b);
 	Plr->sendPacket(d);
-	delete b;
 }
 vector<const ItemProto*> QuestMgr::GetItemChoice(Player * Plr,QuestInfo * Info)
 {

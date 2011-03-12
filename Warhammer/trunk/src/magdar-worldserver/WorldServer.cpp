@@ -141,8 +141,6 @@ bool WorldServer::Run(int argc, char ** argv)
 	new StatsMgr;
 	Log.Notice("Config","Loading HookEvent...");
 	new EventHook;
-	Log.Notice("Config", "Loading WorldSocket...");
-	new WorldSocket;
 	Log.Notice("Config", "Loading EventMgr...");
 	new EventMgr;
 	Log.Notice("Config", "Loading MapMgr...");
@@ -253,7 +251,7 @@ bool WorldServer::Run(int argc, char ** argv)
 	}
 
 	Log.Notice("Config", "Removing All Players...");
-	objmgr.RemoveAllPlayer();
+	//objmgr.RemoveAllPlayer();
 
 	n.stop();
 	wr->Terminate();

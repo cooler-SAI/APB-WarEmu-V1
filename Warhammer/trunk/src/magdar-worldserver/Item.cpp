@@ -18,7 +18,11 @@ bool Item::Load(uint32 entry)
 
 bool Item::Load(const ItemProto *proto)
 {
-	if(!proto) return false;
+	if(!proto) 
+	{
+		Log.Error("Item","Error on Load : proto==NULL");
+		return false;
+	}
 
 	if(!proto->entry)
 	{
@@ -87,6 +91,9 @@ void Item::SetSlot(uint16 slot)
 }
 void Item::Delete(bool remove)
 {
+	if(m_inventory != NULL)
+		m_inventory->RemoveItem(this);
+
 	std::stringstream ssSQL;
 	ssSQL << "DELETE FROM characters_items WHERE guid=";
 	ssSQL << GetGuid() ;

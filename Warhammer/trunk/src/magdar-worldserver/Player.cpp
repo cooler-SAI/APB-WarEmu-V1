@@ -826,15 +826,6 @@ void Player::sendPacket(Buffer * b,bool del)
 {
 	if( m_Com  ) m_Com->writePacket(b,del);
 }
-void Player::delayedPacket(Buffer *b)
-{
-	PackToSend * pts = new PackToSend;
-	pts->com = GetCom();
-	pts->packet = b;
-	pts->dispose = true;
-
-	sWorldSocket.QueuePacketToSend(pts);
-}
 void Player::dispachPacket(Buffer *b)
 {
 	Buffer* d = Allocate(b->size());
@@ -1017,11 +1008,11 @@ void Player::sendLeave()
 		b->write<uint8>(F_PLAYER_QUIT);
 		b->write<uint8>(0);
 		b->write<uint8>(1);
-		sendPacket(b,false);
+		sendPacket(b,true);
+
 		m_leaved=true;
 		m_disconecting=false;
 		sEventHook.ExecuteHook(EVENTS_LOG_OUT,1,this);
-		delete b;
 	}
 }
 void Player::SendEquiped(Player * Plr)
@@ -1048,10 +1039,12 @@ void Player::SendMeTo(Player * Plr)
 		b->write<uint16>( CalcPinY() );
 		b->write<uint16>( (uint16)(GetO()/8) );
 		b->write<uint8>( GetLevel() ); // Level
-		b->write<uint8>( 0x00 ); // 00 unk
+		b->write<uint8>( 0x00 ); // Bonus Level
+
+		b->fill(0,1);
 
 		b->write<uint8>( Plr->GetRealm() == 2 ? 0x0A : 0x46 );
-		b->fill(0,3);
+		b->fill(0,2);
 
 		b->write<uint8>( GetTrait(0) );
 		b->write<uint8>( GetTrait(1) );
@@ -1074,7 +1067,7 @@ void Player::SendMeTo(Player * Plr)
 		b->write<uint8>(0x00); // Guild Name lenght
 		b->fill(0,4);
 		//7
-		Plr->delayedPacket(b);
+		Plr->sendPacket(b);
 }
 uint8 Player::GetPermission() 
 { 
@@ -1321,10 +1314,8 @@ void Player::SendBuyBack()
 	d->write(b);
 	d->write<uint8>(0x00);
 	sendPacket(d);
-	delete b;
 
 	M_buyback.Release();
-
 }
 void Player::AddBuyBack(Item * itm)
 {

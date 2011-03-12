@@ -82,8 +82,6 @@ using namespace boost;
 #include "../magdar-worldserver/EventableObject.h"
 #include "../magdar-worldserver/Storage.h"
 #include "../magdar-worldserver/EventHook.h"
-#include "../magdar-worldserver/WorldSocket.h"
-
 
 // Object
 #include "../magdar-worldserver/Object.h"

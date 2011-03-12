@@ -21,7 +21,7 @@ class ItemsInterface;
 #define MIDLE_TRADE_SLOT 241
 #define END_TRADE_SLOT 249
 
-#define DELETE_SLOT 1000
+#define DELETE_SLOT 1040
 
 class BaseInventory
 {
@@ -51,13 +51,13 @@ public:
 	virtual bool CanAddToSlot(Item *itm,uint16 slot) = 0;	// Check si l'on peut l'ajouter au slot
 	virtual void ApplyStats(Item *itm,bool add) = 0;			// Ajoute des stats si necessaire
 	bool AddToFreeSlot(Item * itm);						// Tente d'ajouter un items , si il n'y a pas de place return false
-	bool AddToSlot(Item *itm,uint16 slot,bool check=true);				// Ajoute un items dans un slot préci
+	virtual bool AddToSlot(Item *itm,uint16 slot,bool check=true);				// Ajoute un items dans un slot préci
 	bool TransfertSlot(uint16 FromSlot,uint16 ToSlot);	// Echange les place des items
 	Item * AddCountItems(const ItemProto * Proto,uint16 count); // On retourn l'item sur lequel a été ajouté les counts
 
 
 	// Suppression d'item
-	bool RemoveItem(Item * itm);			// Supprime l'item du sac
+	virtual bool RemoveItem(Item * itm);			// Supprime l'item du sac
 	bool RemoveItem(uint16 slot);
 
 protected:
@@ -76,7 +76,6 @@ class Inventory : public BaseInventory
 public:
 	bool CanAddToSlot(Item *itm,uint16 slot);			// Check si l'on peut l'ajouter au slot
 	void ApplyStats(Item *itm,bool add) { };			// Ajoute des stats si necessaire
-
 private:
 };
 
@@ -87,6 +86,8 @@ class EquipedItems : public BaseInventory
 public:
 	bool CanAddToSlot(Item *itm,uint16 slot);	// Check si l'on peut l'ajouter au slot
 	void ApplyStats(Item *itm,bool add);			// Ajoute des stats si necessaire
+	bool AddToSlot(Item *itm,uint16 slot,bool check=true);
+	bool RemoveItem(Item * itm);
 
 private:
 };
@@ -122,6 +123,7 @@ public:
 	void SendAllItems(); // Envoi la liste de tous les items
 
 	void SendAllEquiped(Player * Plr=NULL);
+	void SendEquipedSlot(uint16 Slot,Item * Itm);
 	void SendInspect(Player * Plr);
 
 	void HandleMoveItem(uint16 slot,uint16 toslot,uint16 count);

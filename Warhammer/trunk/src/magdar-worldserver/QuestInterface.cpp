@@ -314,7 +314,6 @@ void QuestInterface::SendDoneQuest(uint32 questid,Creature * Crea)
 	d->write<uint8>(F_INTERACT_RESPONSE);
 	d->write(b);
 	m_player->sendPacket(d);
-	delete b;
 }
 void QuestInterface::RemoveQuest(uint32 questid)
 {
@@ -412,7 +411,6 @@ void QuestInterface::SendQuest(QuestAchievement* Info)
 	d->write<uint8>(F_QUEST_INFO);
 	d->write(b);
 	m_player->sendPacket(d);
-	delete b;
 }
 void QuestInterface::SendQuestUpdate(uint16 questid,uint8 objectif,uint8 count,bool done)
 {

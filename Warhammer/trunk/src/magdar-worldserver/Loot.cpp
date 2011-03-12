@@ -276,7 +276,6 @@ void Loot::SendLoot(Player * Plr)
 	d->write(b,true);
 	d->Trace();
 	Plr->sendPacket(d);
-	delete b;
 
 	M_looters.Release();
 	M_loot.Release();

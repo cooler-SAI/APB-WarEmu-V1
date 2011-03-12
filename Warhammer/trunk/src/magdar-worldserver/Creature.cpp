@@ -669,6 +669,7 @@ void Creature::SellVendorItem(Player * Plr,Struct_f_interract interract)
 
 	if(selcount>=itm->GetCount())
 	{
+		Plr->GetItemInterface()->SendItem(NULL,itm->GetSlot());
 		Plr->GetItemInterface()->RemoveItemInSlot(itm->GetSlot());
 		Plr->AddBuyBack(itm);
 	}

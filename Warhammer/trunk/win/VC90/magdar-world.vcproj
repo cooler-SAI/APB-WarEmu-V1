@@ -487,14 +487,6 @@
 				RelativePath="..\..\src\magdar-worldserver\ClientCom.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\src\magdar-worldserver\WorldSocket.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\magdar-worldserver\WorldSocket.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Object"

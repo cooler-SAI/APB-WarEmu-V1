@@ -195,5 +195,5 @@ void InfluenceInterface::sendInfluenceDetail(InfluencePlayerInfo* Info)
 	d->write<uint8>(F_INFLUENCE_DETAILS);
 	d->write(b);
 	m_player->sendPacket(d);
-	delete b;
+
 }

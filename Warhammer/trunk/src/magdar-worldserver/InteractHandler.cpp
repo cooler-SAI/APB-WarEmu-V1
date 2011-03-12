@@ -163,7 +163,6 @@ void Creature::SendInterractTo(Player * Plr,Struct_f_interract &interract)
 		d->write(b);
 		d->Trace(3);
 		Plr->sendPacket(d);
-		delete b;
 
 		sEventHook.ExecuteHook(EVENTS_INTERACT_SHOW_FLIGHTMASTER,2,Plr,this);
 		}break;

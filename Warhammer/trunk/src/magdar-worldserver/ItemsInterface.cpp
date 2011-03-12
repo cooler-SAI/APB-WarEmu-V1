@@ -59,6 +59,12 @@ void ItemsInterface::HandleMoveItem(uint16 slot,uint16 toslot,uint16 count)
 	if(!ToMove || !ToMove->m_inventory)
 		return;
 
+	if(!ToMove->GetProto())
+	{
+		Log.Error("Move","Proto == null");
+		return;
+	}
+
 	if(count > ToMove->GetCount())
 		count = ToMove->GetCount();
 
@@ -70,6 +76,7 @@ void ItemsInterface::HandleMoveItem(uint16 slot,uint16 toslot,uint16 count)
 			ToMove->m_inventory->RemoveItem(ToMove);
 		
 		SendItem(NULL,slot);
+		SendEquipedSlot(slot,NULL);
 
 		ToMove->Delete(true);
 		m_player->sendLocalizedString(ToMove->GetProto()->name,TEXT_DEATH_STATIC_YOU);
@@ -104,18 +111,21 @@ void ItemsInterface::HandleMoveItem(uint16 slot,uint16 toslot,uint16 count)
 		if(ToMove->GetCount() > count) // On déplace seulement un  nombre de l'item
 		{
 			Item * itm = new Item(objmgr.GenerateItemGuid(),m_player); // On créer un nouvel item
-			itm->Load(ToMove->GetProto());
-			itm->SetCount(count);
-			if(AddToSlot(itm,toslot))
-				ToMove->RemoveCount(count);
+			if(itm->Load(ToMove->GetProto()))
+			{
+				itm->SetCount(count);
+				if(AddToSlot(itm,toslot))
+					ToMove->RemoveCount(count);
 
-			SendDoubleItem(ToMove,slot,itm,toslot);
+				SendDoubleItem(ToMove,slot,itm,toslot);
+			}
 		}
 		else // On déplace tout l'item
 		{
 			if(AddToSlot(ToMove,toslot)) 
 				SendDoubleItem(NULL,slot,ToMove,toslot);
-			else inv->AddToSlot(ToMove,slot,false);
+			else 
+				inv->AddToSlot(ToMove,slot,false);
 		}
 	}
 	else // Si il y a un item dans le slot
@@ -128,30 +138,31 @@ void ItemsInterface::HandleMoveItem(uint16 slot,uint16 toslot,uint16 count)
 			{
 				if( count + FromSlot->GetCount() <= FromSlot->GetProto()->maxstack )
 				{
-					ToMove->RemoveCount(count);
+					RemoveItem(ToMove,count);
 					FromSlot->AddCount(count);
-
-					if(!ToMove->GetCount())
-					{
-						SendDoubleItem(NULL,slot,FromSlot,toslot);
-						ToMove->Delete(true);
-					} else SendDoubleItem(ToMove,slot,FromSlot,toslot);
+					SendItem(FromSlot,FromSlot->GetCount());
 
 					return;
 				}
 			}
 			
-			inv->RemoveItem(ToMove);
-			frominv->RemoveItem(FromSlot);
+			if(inv != NULL)
+				inv->RemoveItem(ToMove);
+
+			if(frominv != NULL)
+				frominv->RemoveItem(FromSlot);
 
 			if(AddToSlot(ToMove,toslot))
 			{
 				if( AddToSlot(FromSlot,slot) )
 				{
 					SendDoubleItem(ToMove,toslot,FromSlot,slot);
-				} else frominv->AddToSlot(FromSlot,toslot);
+				} 
+				else if(frominv != NULL)
+					frominv->AddToSlot(FromSlot,toslot);
 			}
-			else inv->AddToSlot(ToMove,slot);
+			else if( inv != NULL)
+				inv->AddToSlot(ToMove,slot);
 
 		} else return;
 	}
@@ -281,9 +292,12 @@ bool ItemsInterface::AddToSlot(Item * itm,uint16 slot,bool send)
 	if(!Inv) return false;
 
 	if(Inv->AddToSlot(itm,slot))
+	{
 		if(send)
 			SendItem(itm,slot);
-	else return false;
+	}
+	else 
+		return false;
 
 	return true;
 }
@@ -453,7 +467,6 @@ void ItemsInterface::SendDoubleItem(Item * Itm1,uint16 slot1,Item * Itm2,uint16 
 	d->write(b,true);
 
 	m_player->sendPacket(d);
-	delete b;
 }
 void ItemsInterface::SendItem(Item *Itm,uint16 slot)
 {
@@ -483,7 +496,6 @@ void ItemsInterface::SendItem(Item *Itm,uint16 slot)
 	d->write(b,true);
 
 	m_player->sendPacket(d);
-	delete b;
 }
 void ItemsInterface::BuildBufferList(Buffer * b,Item * itm ,uint8 &count)
 {
@@ -507,7 +519,6 @@ void ItemsInterface::BuildBufferList(Buffer * b,Item * itm ,uint8 &count)
 		m_player->sendPacket(r);
 
 		// Remise a zéro du buffer liste
-		delete b;
 		b = new Buffer(0);
 		count=0;
 	}
@@ -569,7 +580,6 @@ void ItemsInterface::SendAllItems()
 
 		r->write(b,true);
 		m_player->sendPacket(r);
-		delete b;
 	}
 }
 void ItemsInterface::SendInspect(Player * Plr)
@@ -608,7 +618,6 @@ void ItemsInterface::SendInspect(Player * Plr)
 	d->write(b);
 	d->write<uint8>(0);
 	Plr->sendPacket(d);
-	delete b;
 }
 void ItemsInterface::SendAllEquiped(Player * Plr)
 {
@@ -625,7 +634,9 @@ void ItemsInterface::SendAllEquiped(Player * Plr)
 		itm = m_equiped.m_items[i];
 		if(!itm) continue;
 
-		BuildItemInfo(b,itm->GetProto(),itm->GetCount(),itm);
+		b->write<uint16>( itm->GetSlot() );
+		b->write<uint16>( itm->GetProto()->modelid );
+		b->write<uint8>(  0 );
 		counts++;
 	}
 	m_equiped.M_items.Release();
@@ -636,18 +647,37 @@ void ItemsInterface::SendAllEquiped(Player * Plr)
 
 	d->write<uint16>(responseSize);
 	d->write<uint8>(F_PLAYER_INVENTORY);
+
 	d->write<uint16>(m_player->GetOid());
 	d->write<uint8>(0);
 	d->write<uint8>(counts);
 	d->write<uint8>(0);
-	d->write(b);
+
+	d->write(b);	
 
 	if(Plr) 
 		Plr->sendPacket(d);
 	else 
 		m_player->dispachPacketInRange(d);
+}
+void ItemsInterface::SendEquipedSlot(uint16 Slot,Item * Itm)
+{
+	uint16 responseSize = 10;
+	Buffer *d = new Buffer(responseSize+3);
 
-	delete b;
+	d->write<uint16>(responseSize);
+	d->write<uint8>(F_PLAYER_INVENTORY);
+
+	d->write<uint16>(m_player->GetOid());
+	d->write<uint8>(0);
+	d->write<uint8>(1);
+	d->write<uint8>(0);
+
+	d->write<uint16>(Slot);
+	d->write<uint16>( Itm != NULL ? Itm->GetProto()->modelid : 0);
+	d->write<uint8>(0);
+
+	m_player->dispachPacketInRange(d);
 }
 uint8 ItemsInterface::GetAttackSpeed()
 {

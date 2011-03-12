@@ -481,7 +481,6 @@ void PQuest::sendPQuest(Player *Plr)
 	d->write<uint8>(F_OBJECTIVE_INFO);
 	d->write(b);
 	Plr->sendPacket(d);
-	delete b;
 }
 void PQuest::sendPQuestUpdate(Player *Plr,uint32 guid,uint8 count)
 {

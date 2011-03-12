@@ -31,8 +31,6 @@ ClientCom::ClientCom(boost::asio::io_service& IOService, BufferPool* hp)
 	m_Plr=NULL;
 	m_accountID=0;
 	m_permission=0;
-
- 
 }
 ClientCom::~ClientCom()
 {
@@ -315,6 +313,8 @@ void ClientCom::start(void* param)
     m_connectionID = static_cast<uint16>(connectionCount); ///\TODO will serve as session ID. Be sure not to assign twice the same (when counter returns to 0)
     connectionCount++;
 	b_connected=true;
+	m_sending = false;
+
 	Log.Debug("ClientCom","New Game connection accepted ID: %u",m_connectionID);
 }
 
@@ -430,15 +430,6 @@ void ClientCom::onRead(const boost::system::error_code& e)
     }
 }
 
-/// Report error after a failed write
-void ClientCom::onWrite(const boost::system::error_code& e)
-{
-    if (e)
-    {
-		Log.Error("ClientCom","[ID: %u] Socket write problem (%s)",m_connectionID,e.message().c_str());
-        disconnect();
-    }
-}
 
 /// Calculate the packet checksum
 uint16 ClientCom::CalculateChecksum(char* packet, int dataOffset, int dataSize)
@@ -463,27 +454,40 @@ void ClientCom::writePacket(Buffer *b, bool dispose)
 	if( !b_connected ) return;
 	if( !b ) return;
 
-	uint16 originalPacketLength;
-	originalPacketLength = b->peek<uint16>(0);
-    uint8 opcode = b->peek<uint8>(2);
+	m_send.Acquire();
 
-    if (b->remains()-3 != originalPacketLength )
-    {
-		Log.Error("ClientCom","[ID: %u] Fishy Packet %u < %u. opcode[%u]",m_connectionID,b->remains()-3,originalPacketLength,opcode);
-        return;
-    }
+	if(m_sending==false)
+	{
+		m_sending=true;
+		uint16 originalPacketLength;
+		originalPacketLength = b->peek<uint16>(0);
+		uint8 opcode = b->peek<uint8>(2);
 
-    if (m_encstate == RC4_ENCRYPTED)
-    {
-        b->pushReaderPos();
-        b->skip(2);
-        b->encryptWARRC4Packet(m_encryptionKey, 256);
-        b->popReaderPos();
-    }
+		if (b->remains()-3 != originalPacketLength )
+		{
+			Log.Error("ClientCom","[ID: %u] Fishy Packet %u < %u. opcode[%u]",m_connectionID,b->remains()-3,originalPacketLength,opcode);
+			m_send.Release();
+			return;
+		}
 
-    AsyncWrite(b,b->size());
-    if (dispose)
-        m_bufferPool->disposeBuffer(b);
+		if (m_encstate == RC4_ENCRYPTED)
+		{
+			b->pushReaderPos();
+			b->skip(2);
+			b->encryptWARRC4Packet(m_encryptionKey, 256);
+			b->popReaderPos();
+		}
+
+		AsyncWrite(b,b->size());
+		if(dispose)
+			m_bufferPool->disposeBuffer(b);
+	}
+	else
+	{
+		m_tosend.push(b);
+	}
+
+	m_send.Release();
 }
 void ClientCom::writePacket(uint8 opcode,Buffer *b)
 {
@@ -492,7 +496,28 @@ void ClientCom::writePacket(uint8 opcode,Buffer *b)
 	d->write<uint8>(opcode);
 	d->write(b,true);
 	writePacket(d,true);
-	delete b;
+}
+/// Report error after a failed write
+void ClientCom::onWrite(const boost::system::error_code& e)
+{
+    if (e)
+    {
+		Log.Error("ClientCom","[ID: %u] Socket write problem (%s)",m_connectionID,e.message().c_str());
+        disconnect();
+    }
+	else
+	{
+		m_send.Acquire();
+		m_sending=false;
+		
+		if(!m_tosend.empty())
+		{
+			writePacket(m_tosend.front(),true);
+			m_tosend.pop();
+		}
+		
+		m_send.Release();
+	}
 }
 /// Handle Encryption Key request
 void ClientCom::onEncryptKeyRequest()

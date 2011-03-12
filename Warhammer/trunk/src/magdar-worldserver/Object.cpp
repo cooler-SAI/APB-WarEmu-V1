@@ -450,6 +450,4 @@ void Object::sendRemoved(Player * Plr)
 	if(Plr==NULL)
 		dispachPacketInRange(b);
 	else Plr->sendPacket(b,false);
-
-	delete b;
 }

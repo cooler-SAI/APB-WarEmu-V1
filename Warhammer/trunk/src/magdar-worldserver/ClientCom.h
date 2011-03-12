@@ -28,6 +28,9 @@ public:
 	uint16 getConnectionID() { return m_connectionID; };
     UserStage getUserStage();
 
+	bool m_sending;
+	std::queue<Buffer*> m_tosend;
+	Mutex m_send;
     ~ClientCom();
 
 	// Responder

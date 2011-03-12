@@ -205,7 +205,6 @@ public:
 	void DisposeBuffer(Buffer *b);	// Supprime le buffer dans le bufferpool
 	void sendPacket(Buffer * b,bool del=true);	// Envoi du packet , del pour supprimé dans le buffer pool
 	void dispachPacket(Buffer *b);	// Copie le Buffer et l'envoi au joueurs
-	void delayedPacket(Buffer *b);	// Ajoute le packet dans une liste d'envoi (packet non prioritaire , F_CREATE_PLAYER,F_PLAYER_INVENTORY,...)
 
 	/************************************************************************/
 	/* INTERRACT															*/

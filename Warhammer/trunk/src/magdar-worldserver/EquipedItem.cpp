@@ -68,3 +68,28 @@ void EquipedItems::ApplyStats(Item *itm,bool add)
 {
 	Log.Debug("EquipedItems","ApplyStats %u",add);
 }
+bool EquipedItems::AddToSlot(Item *itm,uint16 slot,bool check)
+{
+	if(BaseInventory::AddToSlot(itm,slot,check))
+	{
+		if(m_player != NULL)
+			m_player->GetItemInterface()->SendEquipedSlot(itm->GetSlot(),itm);
+
+		return true;
+	}
+
+	return false;
+}
+bool EquipedItems::RemoveItem(Item *itm)
+{
+	uint16 Slot = itm->GetSlot();
+	if(BaseInventory::RemoveItem(itm))
+	{
+		if(m_player != NULL)
+			m_player->GetItemInterface()->SendEquipedSlot(Slot,NULL);
+
+		return true;
+	}
+
+	return false;
+}

@@ -1374,8 +1374,6 @@ void ObjectMgr::SendPlayerOnline(Player * Plr,string name,string guildname,uint8
 	d->write<uint8>(01);
 	d->Trace();
 	Plr->sendPacket(d);
-
-	delete b;
 }
 void ObjectMgr::CalculXpToGive(Unit * attacker,Unit * victim)
 {

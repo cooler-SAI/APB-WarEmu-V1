@@ -150,7 +150,7 @@ void Group::Update()
 
 
 	DispachToGroup(b);
-	delete b;
+
 	sEventHook.ExecuteHook(EVENTS_GROUP_UPDATED,1,this);
 }
 void Group::DispachToGroup(Buffer * b)
