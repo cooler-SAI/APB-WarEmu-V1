@@ -192,6 +192,8 @@ void AuthClient::writePacket(Buffer* b, int opcode)
     bHeader->write<uint8>(static_cast<uint8>(sz));
     bHeader->write<uint8>(opcode);
 
+		bHeader->tracePrint(0);
+		b->tracePrint(0);
     ///- Send the packet
     AsyncWrite(bHeader,bHeader->size());
     AsyncWrite(b,b->size());
@@ -234,6 +236,7 @@ AuthClient::~AuthClient()
 }
 void AuthClient::onConnect()
 {
+	m_readBuffer.tracePrint(0);
     uint32 sequence;
     uint32 unknown1;
     m_readBuffer >> sequence >> unknown1;

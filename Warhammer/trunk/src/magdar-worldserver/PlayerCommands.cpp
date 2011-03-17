@@ -4,12 +4,16 @@ void ChatHandler::onGps(Player * Plr,string command,	vector<string> m_values)
 {
 	if( Plr == NULL ) return;
 
-	stringstream ss,dd;
+	stringstream ss,dd,ee;
 	ss << "X:"<<Plr->GetX()<<" Y:"<<Plr->GetY()<<" Z:"<<Plr->GetZ()<< " O:"<<Plr->GetO();
 	Plr->sendStringMessage(Plr->GetOid(),Plr->GetName(),ss.str());
 
 	dd << "PX:"<<Plr->CalcPinX()<<" PY:"<<Plr->CalcPinY();
 	Plr->sendStringMessage(Plr->GetOid(),Plr->GetName(),dd.str());
+
+	ee << "OffX="<<Plr->GetOffX() << " OffY="+Plr->GetOffY();
+	Plr->sendStringMessage(Plr->GetOid(),Plr->GetName(),ee.str());
+
 
 	if(Plr->GetTarget())
 	{
