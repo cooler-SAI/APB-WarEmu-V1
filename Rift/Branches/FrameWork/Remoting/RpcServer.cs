@@ -18,7 +18,7 @@ namespace FrameWork
         
         // 0 = Client Class
         // 1 = Server Class
-        public List<Type>[] Registered;
+        public List<Type>[] RegisteredTypes;
 
         public int StartingPort;
         public string LocalIp;
@@ -45,7 +45,7 @@ namespace FrameWork
 
                 Channel = new TcpServerChannel("Server" + Port, Port);
                 ChannelServices.RegisterChannel(Channel, false);
-                Registered = RpcObject.RegisterHandlers(true, AllowedID);
+                RegisteredTypes = RpcObject.RegisterHandlers(true, AllowedID);
 
                 ServerMgr.Server = this;
                 Mgr = GetLocalObject<ServerMgr>();
@@ -73,9 +73,9 @@ namespace FrameWork
         {
             Pinger.Enabled = false;
 
-            List<ClientInfo> Disconnected = new List<ClientInfo>();
+            List<RpcClientInfo> Disconnected = new List<RpcClientInfo>();
 
-            foreach (ClientInfo Info in Mgr.GetClients())
+            foreach (RpcClientInfo Info in Mgr.GetClients())
             {
                 if (!Info.Connected)
                     continue;
@@ -96,13 +96,13 @@ namespace FrameWork
 
             if (Disconnected.Count > 0)
             {
-                foreach (ClientInfo Info in Mgr.GetClients())
+                foreach (RpcClientInfo Info in Mgr.GetClients())
                 {
                     try
                     {
-                        foreach (ClientInfo ToDisconnect in Disconnected)
+                        foreach (RpcClientInfo ToDisconnect in Disconnected)
                         {
-                            foreach (Type type in Registered[1])
+                            foreach (Type type in RegisteredTypes[1])
                             {
                                 RpcServer.GetObject(type, Info.Ip, Info.Port).OnClientDisconnected(ToDisconnect);
                             }
@@ -121,7 +121,7 @@ namespace FrameWork
 
         public T GetObject<T>(string Name) where T : RpcObject
         {
-            ClientInfo Info = Mgr.GetClient(Name);
+            RpcClientInfo Info = Mgr.GetClient(Name);
             if (Info == null)
             {
                 Log.Error("RpcServer", "Can not find client : " + Name);
@@ -138,7 +138,7 @@ namespace FrameWork
             return RpcServer.GetObject(typeof(T),LocalIp,LocalPort) as T;
         }
 
-        static public T GetObject<T>(ClientInfo Info) where T : RpcObject
+        static public T GetObject<T>(RpcClientInfo Info) where T : RpcObject
         {
             return GetObject(typeof(T), Info.Ip, Info.Port) as T;
         }

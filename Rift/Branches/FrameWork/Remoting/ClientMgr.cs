@@ -9,12 +9,12 @@ namespace FrameWork
     [RpcAttribute(false, System.Runtime.Remoting.WellKnownObjectMode.Singleton, 0)]
     public class ClientMgr : RpcObject
     {
-        public override void OnClientConnected(ClientInfo Info)
+        public override void OnClientConnected(RpcClientInfo Info)
         {
             Log.Notice("ClientMgr", Info.Description() + " | Connected");
         }
 
-        public override void OnClientDisconnected(ClientInfo Info)
+        public override void OnClientDisconnected(RpcClientInfo Info)
         {
             Log.Notice("ClientMgr", Info.Description() + " | Disconnected");
         }

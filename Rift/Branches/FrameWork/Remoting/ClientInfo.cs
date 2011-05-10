@@ -6,7 +6,7 @@ using System.Text;
 namespace FrameWork
 {
     [Serializable]
-    public class ClientInfo
+    public class RpcClientInfo
     {
         public string Name;
         public int RpcID;
@@ -14,7 +14,7 @@ namespace FrameWork
         public string Ip;
         public int Port;
 
-        public ClientInfo(string Name, string Ip, int Port, int RpcID)
+        public RpcClientInfo(string Name, string Ip, int Port, int RpcID)
         {
             this.Name = Name;
             this.Ip = Ip;

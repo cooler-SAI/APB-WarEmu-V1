@@ -13,21 +13,21 @@ namespace FrameWork
 
         public delegate void Function();
 
-        public List<ClientInfo> Clients = new List<ClientInfo>();
+        public List<RpcClientInfo> Clients = new List<RpcClientInfo>();
 
-        public ClientInfo GetClient(string Name)
+        public RpcClientInfo GetClient(string Name)
         {
             lock (Clients)
                 return Clients.Find(info => info.Name == Name);
         }
 
-        public ClientInfo GetClient(int RpcID)
+        public RpcClientInfo GetClient(int RpcID)
         {
             lock (Clients)
                 return Clients.Find(info => info.RpcID == RpcID);
         }
 
-        public ClientInfo[] GetClients()
+        public RpcClientInfo[] GetClients()
         {
             lock (Clients)
                 return Clients.ToArray();
@@ -39,15 +39,15 @@ namespace FrameWork
                 Clients.RemoveAll(info => info.RpcID == RpcID);
         }
 
-        public ClientInfo Connect(string Name, string Ip)
+        public RpcClientInfo Connect(string Name, string Ip)
         {
-            ClientInfo Info = GetClient(Name);
+            RpcClientInfo Info = GetClient(Name);
             if (Info == null)
             {
 
                 int RpcId = BitConverter.ToInt32(Guid.NewGuid().ToByteArray(), 0);
 
-                Info = new ClientInfo(Name, Ip, StartingPort++, RpcId);
+                Info = new RpcClientInfo(Name, Ip, StartingPort++, RpcId);
                 Info.Connected = false;
 
                 lock (Clients)
@@ -61,13 +61,13 @@ namespace FrameWork
 
         public bool Connected(int RpcID)
         {
-            ClientInfo Info = GetClient(RpcID);
+            RpcClientInfo Info = GetClient(RpcID);
             if (Info == null)
                 return false;
 
             Log.Success("ServerMgr", Info.Description() + " | Connected");
 
-            foreach (ClientInfo ConnectedClient in GetClients())
+            foreach (RpcClientInfo ConnectedClient in GetClients())
             {
                 if (Info.RpcID == ConnectedClient.RpcID)
                     continue;
@@ -75,7 +75,7 @@ namespace FrameWork
                 try
                 {
 
-                    foreach (Type type in Server.Registered[1])
+                    foreach (Type type in Server.RegisteredTypes[1])
                     {
                         Log.Debug("ServerMgr", Info.Name + " Send to : " + ConnectedClient.Name + ",T=" + type);
                         RpcServer.GetObject(type, ConnectedClient.Ip, ConnectedClient.Port).OnClientConnected(Info);

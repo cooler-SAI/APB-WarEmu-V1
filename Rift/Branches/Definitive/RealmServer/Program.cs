@@ -6,14 +6,14 @@ using System.Text;
 using FrameWork;
 using Common;
 
-namespace CharacterServer
+namespace RealmServer
 {
     class Program
     {
-        static public CharacterConfig Config;
-        static public RpcServer Server;
+        static public RealmConfig Config;
+        static public RpcClient Client;
 
-        static public AccountMgr AccountMgr;
+        static public AccountMgr Accounts;
 
         static void Main(string[] args)
         {
@@ -26,28 +26,24 @@ namespace CharacterServer
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
             // Loading log level from file
-            if (!Log.InitLog("Configs/CharactersServer.log", "Characters"))
+            if (!Log.InitLog("Configs/RealmServer.log", "RealmServer"))
                 ConsoleMgr.WaitAndExit(2000);
 
             // Loading all configs files
             ConfigMgr.LoadConfigs();
-            Config = ConfigMgr.GetConfig<CharacterConfig>();
+            Config = ConfigMgr.GetConfig<RealmConfig>();
+            Config.RealmInfo.GenerateName();
 
-            // Starting Remote Server
-            Server = new RpcServer(Config.RpcClientStartingPort, 1);
-            if (!Server.Start(Config.RpcIP, Config.RpcPort))
+            // Starting Remote Client
+            Client = new RpcClient("Realm-" + Config.RealmInfo.RealmId, Config.LocalRpcIP, 1);
+            if (!Client.Start(Config.RpcServerIp, Config.RpcServerPort))
                 ConsoleMgr.WaitAndExit(2000);
 
-            // Starting Accounts Manager
-            AccountMgr = Server.GetLocalObject<AccountMgr>();
+            // Creating proxy
+            Accounts = Client.GetServerObject<AccountMgr>();
 
-            AccountMgr.AccountDB = DBManager.Start(Config.AccountDB.Total(), ConnectionType.DATABASE_MYSQL, "Accounts");
-            if (AccountMgr.AccountDB == null)
-                ConsoleMgr.WaitAndExit(2000);
-
-            // Listening Client
-            if (!TCPManager.Listen<RiftServer>(Config.CharacterServerPort, "CharacterServer"))
-                ConsoleMgr.WaitAndExit(2000);
+            // Registering Realm on Characters Server
+            Accounts.RegisterRealm(Config.RealmInfo, Client.Info);
 
             ConsoleMgr.Start();
         }

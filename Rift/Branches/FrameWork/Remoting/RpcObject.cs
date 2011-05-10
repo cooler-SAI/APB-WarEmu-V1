@@ -25,14 +25,14 @@ namespace FrameWork
 
     public class RpcObject : MarshalByRefObject
     {
-        public ClientInfo MyInfo;
+        public RpcClientInfo MyInfo;
 
-        public virtual void OnClientConnected(ClientInfo Info)
+        public virtual void OnClientConnected(RpcClientInfo Info)
         {
 
         }
 
-        public virtual void OnClientDisconnected(ClientInfo Info)
+        public virtual void OnClientDisconnected(RpcClientInfo Info)
         {
 
         }

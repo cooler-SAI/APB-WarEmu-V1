@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Xml.Serialization;
 
 namespace FrameWork
 {
@@ -43,10 +44,12 @@ namespace FrameWork
         }
 
         // Objet Valide ?
+        [XmlIgnore()]
         [Browsable(false)]
         public bool IsValid { get; set; }
 
         // Peut être ou non ajouté a la DB
+        [XmlIgnore()]
         [Browsable(false)]
         public virtual bool AllowAdd
         {
@@ -55,6 +58,7 @@ namespace FrameWork
         }
 
         // Peut être ou non supprimé de la DB
+        [XmlIgnore()]
         [Browsable(false)]
         public virtual bool AllowDelete
         {
@@ -63,14 +67,17 @@ namespace FrameWork
         }
 
         // Numéro de l'objet dans la table
+        [XmlIgnore()]
         [Browsable(false)]
         public string ObjectId { get; set; }
 
         // Objet différent ke celui de la table ?
+        [XmlIgnore()]
         [Browsable(false)]
         public virtual bool Dirty { get; set; }
 
         // Cette objet a été delete de la table ?
+        [XmlIgnore()]
         [Browsable(false)]
         public virtual bool IsDeleted { get; set; }
 

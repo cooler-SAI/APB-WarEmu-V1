@@ -19,7 +19,8 @@ namespace FrameWork
         public ServerMgr Mgr;
         public Timer Pinger;
 
-        public ClientInfo Info;
+        public RpcClientInfo Info;
+        public List<Type>[] RegisteredTypes;
 
         public string ServerName;
         public string ServerIp;
@@ -88,9 +89,9 @@ namespace FrameWork
                 ServerChannel = new TcpServerChannel("Server" + Info.RpcID, Info.Port);
                 ChannelServices.RegisterChannel(ServerChannel, false);
 
-                RpcObject.RegisterHandlers(false, AllowedID);
-                ClientMgr Client = GetLocalObject<ClientMgr>();
-                Client.MyInfo = Info;
+                RegisteredTypes = RpcObject.RegisterHandlers(false, AllowedID);
+                    foreach (Type t in RegisteredTypes[1])
+                        RpcServer.GetObject(t, Info.Ip, Info.Port).MyInfo = Info;
 
                 Mgr.Connected(Info.RpcID);
 
@@ -151,7 +152,7 @@ namespace FrameWork
 
         public T GetClientObject<T>(string Name) where T : RpcObject
         {
-            ClientInfo Info = GetServerObject<ServerMgr>().GetClient(Name);
+            RpcClientInfo Info = GetServerObject<ServerMgr>().GetClient(Name);
             if (Info == null)
                 return GetLocalObject<T>();
             else
@@ -160,7 +161,7 @@ namespace FrameWork
 
         public T GetClientObject<T>(int RpcID) where T : RpcObject
         {
-            ClientInfo Info = GetServerObject<ServerMgr>().GetClient(RpcID);
+            RpcClientInfo Info = GetServerObject<ServerMgr>().GetClient(RpcID);
             if (Info == null)
                 return GetLocalObject<T>();
             else

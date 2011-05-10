@@ -30,5 +30,64 @@ namespace Common
         }
 
         #endregion
+
+        #region Realms
+
+        private List<Realm> Realms = new List<Realm>();
+
+        public Realm GetRealm(byte RealmId)
+        {
+            return Realms.Find(info => info.RealmId == RealmId);
+        }
+
+        public Realm GetRealm(int RiftId)
+        {
+            return Realms.Find(info => info.RiftId == RiftId);
+        }
+
+        public Realm[] GetRealms()
+        {
+            return Realms.ToArray();
+        }
+
+        public bool RegisterRealm(Realm Rm,RpcClientInfo Info)
+        {
+            Log.Debug("AccountMgr", "Realm Registering : " + Rm.Name);
+
+            if (Rm == null)
+                return false;
+
+            Realm Already = GetRealm(Rm.RealmId);
+            if (Already == null)
+            {
+                Already = AccountDB.SelectObject<Realm>("RealmId=" + Rm.RealmId);
+                if (Already == null)
+                    AccountDB.AddObject(Rm);
+            }
+
+            if(Already != null)
+                Rm.ObjectId = Already.ObjectId;
+
+            Rm.RpcInfo = Info;
+            Rm.Dirty = true;
+
+            AccountDB.SaveObject(Rm);
+
+            Log.Success("AccountMgr", "Realm Online : " + Rm.Name);
+
+            return true;
+        }
+
+        public override void OnClientDisconnected(RpcClientInfo Info)
+        {
+            foreach (Realm Rm in GetRealms())
+                if (Rm.RpcInfo != null && Rm.RpcInfo.RpcID == Info.RpcID)
+                {
+                    Log.Notice("AccountMgr", "Realm Offline : " + Rm.Name);
+                    Rm.RpcInfo = null;
+                }
+        }
+
+        #endregion
     }
 }
