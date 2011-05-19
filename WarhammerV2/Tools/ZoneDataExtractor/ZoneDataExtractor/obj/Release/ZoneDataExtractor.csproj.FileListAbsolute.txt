@@ -1,0 +1,5 @@
+C:\Users\Thomas\Desktop\svn\Ap\WarhammerV2\Tools\ZoneDataExtractor\bin\Release\ZoneDataExtractor.exe
+C:\Users\Thomas\Desktop\svn\Ap\WarhammerV2\Tools\ZoneDataExtractor\bin\Release\ZoneDataExtractor.pdb
+C:\Users\Thomas\Desktop\svn\Ap\WarhammerV2\Tools\ZoneDataExtractor\ZoneDataExtractor\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Thomas\Desktop\svn\Ap\WarhammerV2\Tools\ZoneDataExtractor\ZoneDataExtractor\obj\Release\ZoneDataExtractor.exe
+C:\Users\Thomas\Desktop\svn\Ap\WarhammerV2\Tools\ZoneDataExtractor\ZoneDataExtractor\obj\Release\ZoneDataExtractor.pdb

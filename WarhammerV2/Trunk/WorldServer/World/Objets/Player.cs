@@ -1,0 +1,777 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
+using System.Text;
+
+using Common;
+
+using FrameWork.Logger;
+using FrameWork.NetWork;
+
+namespace WorldServer
+{
+    public class Player : Unit
+    {
+        #region Statics
+
+        static public int DISCONNECT_TIME = 20000;
+
+        static public List<Player> _Players = new List<Player>();
+        static public void AddPlayer(Player Plr)
+        {
+            lock (_Players)
+                if (!_Players.Contains(Plr))
+                    _Players.Add(Plr);
+        }
+        static public void RemovePlayer(Player Plr)
+        {
+            lock (_Players)
+                _Players.Remove(Plr);
+        }
+        static public Player GetPlayer(string Name)
+        {
+            Name = Name.ToLower();
+
+            lock (_Players)
+                return _Players.Find(plr => plr.Name.ToLower() == Name);
+        }
+        static public Player GetPlayer(int CharacterId)
+        {
+            lock (_Players)
+                return _Players.Find(plr => plr.CharacterId == CharacterId);
+        }
+        static public Player CreatePlayer(GameClient Client, Character Char)
+        {
+            Log.Succes("Player", "CreatePlayer");
+
+            GameClient Other = (Client.Server as TCPServer).GetClientByAccount(Client,Char.AccountId);
+            if (Other != null)
+                Other.Disconnect();
+
+            Player Plr = new Player(Client, Char);
+
+            return Plr;
+        }
+        static public List<Player> GetPlayers(string Name, string GuildName, UInt16 Career, UInt16 ZoneId, byte MinLevel, byte MaxLevel)
+        {
+            List<Player> Plrs = new List<Player>();
+            lock (_Players)
+            {
+                Name = Name.ToLower();
+                GuildName = GuildName.ToLower();
+
+                Log.Succes("GetPlayers", "N=" + Name + ",G=" + GuildName + ",C=" + Career + ",Z=" + ZoneId + ",Ml=" + MinLevel + ",MaL=" + MaxLevel);
+
+                foreach (Player Plr in _Players)
+                {
+                    if (Plr == null || Plr.IsDisposed || !Plr.IsInWorld())
+                        continue;
+
+                    if ( Plr.SocInterface.Hide
+                        || (Name.Length > 0 && !Plr.Name.ToLower().StartsWith(Name))
+                        || (Career != 0 && Career != Plr._Info.Career)
+                        || (ZoneId != 255 && Plr.Zone.ZoneId != ZoneId)
+                        || (Plr.Level < MinLevel)
+                        || (Plr.Level > MaxLevel)
+                        )
+                        continue;
+
+                    Plrs.Add(Plr);
+                }
+            }
+
+            return Plrs;
+        }
+        static public void Stop()
+        {
+            Log.Succes("Player", "Stop");
+            foreach (Player Plr in _Players)
+                Plr.Quit();
+        }
+
+        #endregion
+
+        public Character _Info;
+        public Character_value _Value;
+        public GameClient _Client;
+        public GameClient Client
+        {
+            get { return _Client; }
+        }
+
+        public SocialInterface SocInterface;
+        public TokInterface TokInterface;
+
+        public int CharacterId
+        {
+            get
+            {
+                if (_Info != null)
+                    return _Info.CharacterId;
+                else
+                    return 0;
+            }
+        }
+        public int GmLevel
+        {
+            get
+            {
+                if (Client != null)
+                    return Client._Account.GmLevel;
+                else
+                    return 0;
+            }
+        }
+        public bool _Inited = false;
+
+        public Player(GameClient Client,Character Info) : base()
+        {
+            Log.Succes("Player", "Construction de " + Info.Name);
+
+            _Client = Client;
+            _Info = Info;
+            _Value = Info.Value[0];
+
+            Name = Info.Name;
+
+            EvtInterface = EventInterface.GetEventInterface((uint)_Info.CharacterId);
+            EvtInterface.AddEventNotify("Playing", Save);
+            EvtInterface.Start();
+
+            SocInterface = new SocialInterface(this);
+            TokInterface = new TokInterface(this);
+        }
+        ~Player()
+        {
+            Log.Succes("Player", "Destruction de " + Name);
+        }
+        public override void OnLoad()
+        {
+            _Client.State = eClientState.WorldEnter;
+
+            if (!_Inited)
+            {
+                EvtInterface.Obj = this;
+
+                ItmInterface.Load(CharMgr.GetItemChar(_Info.CharacterId));
+                StsInterface.Load(CharMgr.GetCharacterInfoStats(_Info.CareerLine, _Value.Level));
+                
+                
+                StsInterface.ApplyStats();
+
+                TokInterface.Load(_Info.Toks);
+                SocInterface.Load(_Info.Socials);
+
+                SetLevel(_Value.Level);
+                SetRenownLevel(_Value.RenownRank);
+                SetOffset((UInt16)(_Value.WorldX >> 12), (UInt16)(_Value.WorldY >> 12));
+                _Inited = true;
+            }
+
+            base.OnLoad();
+
+            StartInit();
+        }
+        public override void Dispose()
+        {
+            RemovePlayer(this);
+
+            SendLeave();
+            StopQuit();
+
+            EvtInterface.Notify("Leave", this, null);
+            SocInterface.Stop();
+
+            Save();
+
+            if (_Client != null)
+            {
+                _Client.Plr = null;
+                _Client.Disconnect();
+            }
+
+            base.Dispose();
+        }
+
+        public void StartInit()
+        {
+            RemovePlayer(this);
+            Client.State = eClientState.WorldEnter;
+            SendMoney();
+            SendStats();
+            SendSpeed();
+            SendInited();
+            SendRankUpdate(this);
+            SendXp();
+            SendRenown();
+            TokInterface.SendAllToks();
+            SendSkills();
+            Health = TotalHealth;
+            ItmInterface.SendAllItems(this);
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_CHARACTER_INFO);
+            Out.WriteByte(1);
+            Out.WriteByte(1);
+            Out.WriteUInt16(0x300);
+            Out.WriteUInt16(8159);
+            Out.WriteByte(1);
+            SendPacket(Out);
+
+            SendInitComplete();
+            SocInterface.SendFriends();
+        }
+        public override void Update()
+        {
+            if (Client == null)
+            {
+                Dispose();
+                return;
+            }
+            base.Update();
+            UpdatePackets();
+        }
+
+        #region Packets
+
+        public List<PacketIn> _PacketIn = new List<PacketIn>(20);
+        public List<PacketOut> _PacketOut = new List<PacketOut>(20);
+
+        public void ReceivePacket(PacketIn Packet)
+        {
+            if (_Client == null)
+                return;
+
+            if (IsInWorld())
+                lock (_PacketIn)
+                    _PacketIn.Add(Packet);
+            else
+                _Client.Server.HandlePacket(_Client, Packet);
+        }
+        public void SendPacket(PacketOut Out)
+        {
+            if (_Client == null)
+                return;
+
+            if (IsInWorld())
+                lock (_PacketOut)
+                    _PacketOut.Add(Out);
+            else
+                _Client.SendTCP(Out);
+        }
+        public void SendCopy(PacketOut Out)
+        {
+            Out.WritePacketLength();
+            PacketOut packet = new PacketOut(0);
+            packet.Position = 0;
+            packet.Write(Out.ToArray(), 0, Out.ToArray().Length);
+            SendPacket(packet);
+            
+        }
+        public PacketIn[] GetPacketIn(bool Clear)
+        {
+            lock (_PacketIn)
+            {
+                PacketIn[] Ins = _PacketIn.ToArray();
+                if (Clear) _PacketIn.Clear();
+                return Ins;
+            }
+        }
+        public PacketOut[] GetPacketOut(bool Clear)
+        {
+            lock (_PacketOut)
+            {
+                PacketOut[] Outs = _PacketOut.ToArray();
+                if (Clear) _PacketOut.Clear();
+                return Outs;
+            }
+        }
+        public void UpdatePackets()
+        {
+            PacketIn[] Ins = GetPacketIn(true);
+            PacketOut[] Outs = GetPacketOut(true);
+
+            if (_Client == null)
+                return;
+
+            for (int i = 0; i < Ins.Length; ++i)
+                if (Ins[i] != null)
+                    _Client.Server.HandlePacket(_Client, Ins[i]);
+
+            for (int i = 0; i < Outs.Length; ++i)
+                if (Outs[i] != null)
+                    _Client.SendTCP(Outs[i]);
+        }
+
+        #endregion
+
+        #region Money
+
+        public bool HaveMoney(uint Money) { return _Value.Money >= Money; }
+        public bool RemoveMoney(uint Money)
+        {
+            if (!HaveMoney(Money))
+                return false;
+
+            _Value.Money -= Money;
+            SendMoney();
+            return true;
+        }
+        public uint GetMoney() { return _Value.Money; }
+        public void AddMoney(uint Money)
+        {
+            _Value.Money += Money;
+            SendMoney();
+        }
+
+        #endregion
+
+        #region Stats
+
+        public void SendStats()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_STATS);
+            ItmInterface.BuildStats(ref Out);
+            StsInterface.BuildStats(ref Out);
+            SendPacket(Out);
+        }
+
+        public override void SetDeath(Unit Killer)
+        {
+            base.SetDeath(Killer);
+
+            EvtInterface.AddEvent(RezUnit, 20000, 1);
+            SendDialog((ushort)5, (ushort)20);
+            
+        }
+
+        public override void RezUnit()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_CLEAR_DEATH);
+            Out.WriteUInt16(Oid);
+            Out.WriteUInt16(0);
+            DispatchPacket(Out,true);
+
+            base.RezUnit();
+        }
+
+        #endregion
+
+        #region Xp
+
+        private Xp_Info CurrentXp = null;
+        public void SetLevel(byte Level)
+        {
+            CurrentXp = WorldMgr.GetXp_Info(Level);
+            _Value.Level = Level;
+
+            if (_Loaded)
+            {
+                SendLevelUp(ApplyLevel());
+                SendXp();
+            }
+
+            ApplyLevel();
+        }
+        public void AddXp(uint Xp)
+        {
+            if (CurrentXp == null)
+                return;
+
+            if (Xp + _Value.Xp > CurrentXp.Xp)
+                LevelUp((uint)(Xp + _Value.Xp - CurrentXp.Xp));
+            else
+            {
+                _Value.Xp += Xp;
+                SendXp();
+            }
+        }
+        public void RemoveXp(uint Xp)
+        {
+
+        }
+        public void LevelUp(uint RestXp)
+        {
+            _Value.Xp = 0;
+            SetLevel((byte)(_Value.Level + 1));
+
+            if (CurrentXp == null)
+                return;
+
+            AddXp(RestXp);
+        }
+        public Dictionary<byte,UInt16> ApplyLevel()
+        {
+            Dictionary<byte, UInt16> Diff = new Dictionary<byte, ushort>();
+
+            CharacterInfo_stats[] NewStats = CharMgr.GetCharacterInfoStats(_Info.CareerLine, _Value.Level);
+            if (NewStats == null || NewStats.Length <= 0)
+                return Diff;
+
+            foreach (CharacterInfo_stats Stat in NewStats)
+            {
+                UInt16 Base = StsInterface.GetBaseStat(Stat.StatId);
+                
+                if(Stat.StatValue > Base)
+                    Diff.Add(Stat.StatId,(ushort)(Stat.StatValue-Base));
+
+                StsInterface.SetBaseStat(Stat.StatId, Stat.StatValue);
+            }
+
+            StsInterface.ApplyStats();
+            return Diff;
+        }
+
+        #endregion
+
+        #region Renown
+
+        public Renown_Info CurrentRenown;
+        public void SetRenownLevel(byte Level)
+        {
+            CurrentRenown = WorldMgr.GetRenown_Info(Level);
+            _Value.RenownRank = Level;
+        }
+        public void AddRenown(uint Renown)
+        {
+            if (_Value.Renown + Renown > CurrentRenown.Renown)
+                RenownUp(_Value.Renown + Renown - CurrentRenown.Renown);
+            else
+            {
+                _Value.Renown += Renown;
+                SendRenown();
+            }
+        }
+        public void RenownUp(uint Rest)
+        {
+
+        }
+
+        #endregion
+
+        #region Senders
+
+        public void SendSpeed()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_MAX_VELOCITY);
+            Out.WriteUInt16(Speed);
+            Out.WriteByte(1);
+            Out.WriteByte(100);
+            SendPacket(Out);
+
+        }
+        public void SendMoney()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_WEALTH);
+            Out.WriteUInt32(0);
+            Out.WriteUInt32(_Value.Money);
+            SendPacket(Out);
+        }
+        public void SendHealh()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_HEALTH);
+            Out.WriteUInt32(Health);
+            Out.WriteUInt32(TotalHealth);
+            Out.WriteUInt16(0); // Todo, Actionpoints
+            Out.WriteUInt16(0); // Todo, MaxAction
+            Out.WriteUInt16(0); // Control le cercle bleu
+            Out.WriteUInt16(0x0E10); // Idem
+            SendPacket(Out);
+        }
+        public void SendInited()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.S_PLAYER_INITTED);
+            Out.WriteUInt16(_ObjectId);
+            Out.WriteUInt16(0);
+            Out.WriteUInt32((uint)_Info.CharacterId);
+            Out.WriteUInt16((ushort)_Value.WorldZ);
+            Out.WriteUInt16(0);
+            Out.WriteUInt32((uint)_Value.WorldX);
+            Out.WriteUInt32((uint)_Value.WorldY);
+            Out.WriteUInt16((ushort)_Value.WorldO);
+            Out.WriteByte(0);
+            Out.WriteByte(_Info.Realm);
+            Out.Fill(0, 5); // ??
+            Out.WriteByte((byte)Zone.Info.Region);
+            Out.WriteUInt16(1);
+            Out.WriteByte(0);
+            Out.WriteByte(_Info.Career);
+            Out.Fill(0, 6);
+            Out.WritePascalString(Program.Rm.Name);
+            Out.Fill(0, 3);
+            SendPacket(Out);
+        }
+        public void SendSkills()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_CHARACTER_INFO);
+            Out.WriteByte(3); // Skills
+            Out.Fill(0, 3);
+            Out.WriteByte(_Info.CareerLine);
+            Out.WriteByte(_Info.Race);
+            Out.WriteUInt32R(_Value.Skills);
+            Out.WriteUInt16(_Value.RallyPoint);
+            SendPacket(Out);
+
+        }
+        public void SendXp()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_EXPERIENCE);
+            Out.WriteUInt32(_Value.Xp);
+            Out.WriteUInt32(CurrentXp != null ? CurrentXp.Xp : 0);
+            Out.WriteUInt32(0);
+            Out.WriteByte(_Value.Level);
+            Out.Fill(0, 3);
+            SendPacket(Out);
+        }
+        public void SendRenown()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_RENOWN);
+            Out.WriteUInt32(_Value.Renown);
+            Out.WriteUInt32(CurrentRenown.Renown);
+            Out.WriteByte(_Value.RenownRank);
+            Out.Fill(0, 3);
+            SendPacket(Out);
+        }
+        public void SendInitComplete()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_INIT_COMPLETE);
+            Out.WriteUInt16R(_ObjectId);
+            SendPacket(Out);
+        }
+        public void SendLocalizeString(string Msg, GameData.Localized_text Type)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_LOCALIZED_STRING);
+            Out.WriteByte(0);
+            Out.WriteByte(0);
+            Out.WriteUInt16(0);
+            Out.WriteUInt16((ushort)Type);
+            Out.WriteUInt16(0);
+            Out.WriteByte(0);
+
+            Out.WriteByte(1);
+            Out.WriteByte(1);
+
+            Out.WriteByte(0);
+            Out.WritePascalString(Msg);
+            SendPacket(Out);
+        }
+        public void SendDialog(UInt16 Type, UInt16 Value)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_SHOW_DIALOG);
+            Out.WriteUInt16(Type);
+            Out.WriteUInt16(0);
+            Out.WriteUInt16(Value);
+            SendPacket(Out);
+        }
+        public void SendDialog(UInt16 Type, string Text)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_SHOW_DIALOG);
+            Out.WriteUInt16(Type);
+            Out.WriteByte(0);
+            Out.WritePascalString(Text);
+            SendPacket(Out);
+        }
+        public void SendLeave()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_QUIT);
+            Out.WriteByte(0); // 0=déco, 1=Ejecté du serveur
+            Out.WriteByte(1);
+            SendPacket(Out);
+        }
+        public void SendLevelUp(Dictionary<byte, UInt16> Diff)
+        {
+            SendRankUpdate(null);
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_LEVEL_UP);
+            Out.WriteUInt32(0);
+            Out.WriteByte((byte)Diff.Count);
+            foreach (KeyValuePair<byte, UInt16> Stat in Diff)
+            {
+                Out.WriteByte(Stat.Key);
+                Out.WriteUInt16(Stat.Value);
+            }
+            SendPacket(Out);
+        }
+        public void SendRankUpdate(Player Plr)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_RANK_UPDATE);
+            Out.WriteByte((byte)(Level-1));
+            Out.WriteByte(0x20);
+            Out.WriteUInt16(Oid);
+            if (Plr == null)
+                DispatchPacket(Out,true);
+            else
+                Plr.SendPacket(Out);
+
+        }
+        public void SendMessage(UInt16 Oid, string NameSender, string Text, SystemData.ChatLogFilters Filter)
+        {
+            if (Text.IndexOf("<LINK") >= 0 && Text.IndexOf("ITEM:") > 0)
+            {
+                int Pos = Text.IndexOf("ITEM:")+5;
+                int LastPos = Text.IndexOf(" ",Pos)-1;
+                string Value = Text.Substring(Pos, LastPos-Pos);
+                uint ItemId = uint.Parse(Value);
+                Item_Infos Info = WorldMgr.GetItem_Infos(ItemId);
+                if (Info != null)
+                {
+
+                }
+            }
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_CHAT);
+            Out.WriteUInt16(Oid);
+            Out.WriteByte((byte)Filter);
+            Out.Fill(0, 4);
+            Out.WritePascalString(NameSender);
+            Out.WriteByte(0);
+            Out.WritePascalString(Text);
+            Out.WriteByte(0);
+            SendPacket(Out);
+        }
+        public void SendMessage(Object Sender, string Text,SystemData.ChatLogFilters Filter)
+        {
+            SendMessage(Sender != null ? Sender.Oid : (UInt16)0, Sender != null ? Sender.Name : "", Text, Filter);
+        }
+        public override void SendMeTo(Player Plr)
+        {
+            Log.Succes("SendMeTo", "[" + Plr.Name + "] voit : " + Name);
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_CREATE_PLAYER);
+            Out.WriteUInt16((UInt16)_Client.Id);
+            Out.WriteUInt16(Oid);
+            Out.WriteUInt16(_Info.ModelId);
+            Out.WriteUInt16(_Info.CareerLine);
+            Out.WriteUInt16((UInt16)Z);
+            Out.WriteUInt16(Zone.ZoneId);
+
+            Out.WriteUInt16((UInt16)X);
+            Out.WriteUInt16((UInt16)Y);
+            Out.WriteUInt16(Heading);
+
+            Out.WriteByte(_Value.Level); // Level
+            Out.WriteByte(0); // Level
+
+            Out.WriteByte(0);
+            Out.WriteByte(0x46);
+            Out.WriteByte(0);
+            Out.WriteByte(0x46);
+
+            Out.Write(_Info.bTraits, 0, _Info.bTraits.Length);
+            Out.Fill(0, 12);
+
+            Out.WriteByte(_Info.Race);
+            Out.Fill(0, 11);
+            Out.WritePascalString(_Info.Name);
+            Out.WritePascalString("");
+            Out.WriteByte(0);
+            Out.Fill(0, 4);
+
+            Plr.SendPacket(Out);
+
+            base.SendMeTo(Plr);
+        }
+
+        #endregion
+
+        #region Quit
+
+        public int  DisconnectTime= DISCONNECT_TIME; // 20 Secondes = 20000
+        public bool Leaving = false;
+        public void StopQuit()
+        {
+            EvtInterface.RemoveEvent(Quit);
+            DisconnectTime = DISCONNECT_TIME;
+            Leaving = false;
+        }
+        public bool MovingStopQuit(Object Sender, EventArgs Args)
+        {
+            SendLocalizeString("", GameData.Localized_text.TEXT_CANCELLED_LOGOUT);
+            StopQuit();
+            return true;
+        }
+        public void Quit()
+        {
+            Log.Succes("Player", "Quit");
+
+            Leaving = true;
+
+            if (IsMoving)
+            {
+                SendLocalizeString("", GameData.Localized_text.TEXT_MUST_NOT_MOVE_TO_QUIT);
+                return;
+            }
+
+            if (DisconnectTime >= DISCONNECT_TIME)
+            {
+                EvtInterface.AddEvent(Quit, 5000, 5);
+                EvtInterface.AddEventNotify("Moving", MovingStopQuit);
+            }
+
+            SendLocalizeString("" + DisconnectTime / 1000, GameData.Localized_text.TEXT_YOU_WILL_LOG_OUT_IN_X_SECONDS);
+            DisconnectTime -= 5000;
+
+            if (DisconnectTime < 0 || GmLevel >= 1) // Leave
+                Dispose();
+        }
+
+        public bool Save(Object Sender, EventArgs Args)
+        {
+            EvtInterface.AddEvent(Save, 20000, 0);
+            return true; // True, doit être delete après lancement
+        }
+        public void Save()
+        {
+            ItmInterface.Save();
+            CalcWorldPositions();
+            Program.CharacterDatabase.SaveObject(_Value);
+        }
+
+        #endregion
+
+        #region Positions
+
+        public int LastCX,LastCY = 0;
+        public int LastX, LastY = 0;
+
+        public void CalcWorldPositions()
+        {
+            int x = X > 32768 ? X - 32768 : X;
+            int y = Y > 32768 ? Y - 32768 : Y;
+
+            _Value.WorldX = (int)((int)XZone + ((int)((int)x) & 0x00000FFF));
+            _Value.WorldY = (int)((int)YZone + ((int)((int)y) & 0x00000FFF));
+            _Value.WorldZ = (int)(((int)((int)Z/2) & 0x00000FFF));
+        }
+
+        public override void SetPosition(ushort WorldX, ushort WorldY, ushort WorldZ, ushort Head)
+        {
+            if (_Client.State != eClientState.Playing)
+            {
+                _Client.State = eClientState.Playing;
+                AddPlayer(this);
+                EvtInterface.Notify("Playing", this, null);
+            }
+
+            _Value.WorldO = Head;
+
+            base.SetPosition(WorldX, WorldY, WorldZ, Head);
+        }
+
+        #endregion
+
+        #region Info
+
+        public override string ToString()
+        {
+            string Info="";
+
+            Info += "Name=" + Name + ",Ip=" + (Client != null ? Client.GetIp : "Disconnected");
+
+            return Info;
+        }
+
+        #endregion
+
+    }
+}

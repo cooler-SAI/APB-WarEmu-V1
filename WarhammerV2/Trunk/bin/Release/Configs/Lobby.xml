@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<LobbyConfigs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <IConfiguredTheFile>true</IConfiguredTheFile>
+  <AccountCacher>
+    <Ip>127.0.0.1</Ip>
+    <Port>2100</Port>
+    <Key>Pass</Key>
+  </AccountCacher>
+  <ClientPort>8040</ClientPort>
+  <ClientVersion>1.3.5</ClientVersion>
+</LobbyConfigs>

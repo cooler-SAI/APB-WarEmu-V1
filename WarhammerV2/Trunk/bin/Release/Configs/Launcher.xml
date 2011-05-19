@@ -1,0 +1,14 @@
+<?xml version="1.0" standalone="yes"?>
+<root>
+	<AccountCacher>
+		<Key>Pass</Key>
+		<Ip>127.0.0.1</Ip>
+		<Port>2100</Port>
+	</AccountCacher>
+	
+	<LauncherServer>
+		<Port>8000</Port>
+		<Version>1</Version>
+		<Message>Version du launcher incorrecte : Veuillez vous rendre sur http://aps.com/</Message>
+	</LauncherServer>
+</root>
