@@ -12,8 +12,21 @@ namespace Common
     {
         static public MySQLObjectDatabase CharactersDB;
 
-        #region Characters
+        #region Realm
 
+        static public Realm MyRealm;
+        static public RpcClient Client;
+
+        public override void OnServerConnected()
+        {
+            if(MyRealm != null && Client != null)
+                Client.GetServerObject<AccountMgr>().RegisterRealm(MyRealm, Client.Info);
+        }
+
+
+        #endregion
+
+        #region Characters
 
         #endregion
     }

@@ -19,6 +19,11 @@ namespace FrameWork
             Log.Notice("ClientMgr", Info.Description() + " | Disconnected");
         }
 
+        public override void OnServerConnected()
+        {
+            Log.Notice("ClientMgr", "Server connected !");
+        }
+
         public override void OnServerDisconnected()
         {
             Log.Notice("ClientMgr", "Server disconnected !");

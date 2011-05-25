@@ -51,6 +51,10 @@
     <Compile Include="Database\Accounts\Account_Banned.cs" />
     <Compile Include="Database\Accounts\Realm.cs" />
     <Compile Include="Database\Characters\Character.cs" />
+    <Compile Include="NetWork\Handlers\Crypto\HandshakeClientKey.cs" />
+    <Compile Include="NetWork\Handlers\Crypto\HandshakeCompression.cs" />
+    <Compile Include="NetWork\Handlers\Crypto\HanshakeServerKey.cs" />
+    <Compile Include="NetWork\Handlers\PingPong.cs" />
     <Compile Include="NetWork\Opcodes.cs" />
     <Compile Include="NetWork\RiftClient.cs" />
     <Compile Include="NetWork\RiftServer.cs" />

@@ -27,6 +27,8 @@ namespace Common
     public class RiftClient : BaseClient
     {
         public long ClientVersion;
+        public Account Acct;
+        public Realm Rm;
 
         public RiftClient(TCPManager Server)
             : base(Server)

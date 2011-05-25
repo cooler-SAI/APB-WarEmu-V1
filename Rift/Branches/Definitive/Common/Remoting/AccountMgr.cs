@@ -12,6 +12,11 @@ namespace Common
     {
         static public MySQLObjectDatabase AccountDB;
 
+        public void Test()
+        {
+            Console.WriteLine("TEST FUCK YOU");
+        }
+
         #region Accounts
 
         public Account GetAccount(long Id)
@@ -27,6 +32,11 @@ namespace Common
         public Account GetAccount(string Username, string Sha_Password)
         {
             return AccountDB.SelectObject<Account>("Username = '" + AccountDB.Escape(Username) + "' AND Sha_Password='" + AccountDB.Escape(Sha_Password) + "'");
+        }
+
+        public Account GetAccountByUsername(string Username)
+        {
+            return AccountDB.SelectObject<Account>("Username='" + AccountDB.Escape(Username) + "'");
         }
 
         #endregion
@@ -72,7 +82,7 @@ namespace Common
             Rm.Dirty = true;
 
             AccountDB.SaveObject(Rm);
-
+            Realms.Add(Rm);
             Log.Success("AccountMgr", "Realm Online : " + Rm.Name);
 
             return true;

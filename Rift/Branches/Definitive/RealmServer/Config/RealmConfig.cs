@@ -17,5 +17,6 @@ namespace RealmServer
         public Realm RealmInfo = new Realm();
 
         public DatabaseInfo CharactersDB = new DatabaseInfo();
+        public LogInfo LogLevel = new LogInfo();
     }
 }

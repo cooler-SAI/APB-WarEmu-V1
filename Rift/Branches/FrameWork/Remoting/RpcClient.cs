@@ -100,6 +100,9 @@ namespace FrameWork
                 if (Pinger != null)
                     Pinger.Close();
 
+                foreach (Type t in RegisteredTypes[1])
+                    RpcServer.GetObject(t, Info.Ip, Info.Port).OnServerConnected();
+
                 Pinger = new Timer();
                 Pinger.Interval = 100;
                 Pinger.Elapsed += CheckPing;
@@ -133,7 +136,8 @@ namespace FrameWork
             }
             catch (Exception e)
             {
-                GetLocalObject<ClientMgr>().OnServerDisconnected();
+                foreach (Type t in RegisteredTypes[1])
+                    RpcServer.GetObject(t, Info.Ip, Info.Port).OnServerDisconnected();
 
                 Connect();
             }

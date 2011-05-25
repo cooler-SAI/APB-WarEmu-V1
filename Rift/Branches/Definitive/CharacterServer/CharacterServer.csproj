@@ -44,6 +44,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configs\CharacterConfig.cs" />
+    <Compile Include="Console\CreateAccount.cs" />
+    <Compile Include="NetWork\Authentification\HandshakeVersion.cs" />
+    <Compile Include="NetWork\Authentification\ProtocolHandshakeAuthenticationRequest.cs" />
+    <Compile Include="NetWork\Authentification\ProtocolHandshakeAuthenticationResponse.cs" />
+    <Compile Include="NetWork\Realms\LobbyWorldEntry.cs" />
+    <Compile Include="NetWork\Realms\LobbyWorldListRequest.cs" />
+    <Compile Include="NetWork\Realms\LobbyWorldListResponse.cs" />
+    <Compile Include="NetWork\Realms\LobbyWorldSelectRequest.cs" />
+    <Compile Include="NetWork\Realms\LobbyWorldSelectResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -57,10 +66,7 @@
       <Name>Common</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Console\" />
-    <Folder Include="NetWork\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

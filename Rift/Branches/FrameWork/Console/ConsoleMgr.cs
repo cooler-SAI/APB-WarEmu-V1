@@ -49,17 +49,14 @@ namespace FrameWork
                     break;
                 }
 
-                lock (Console.Out)
-                {
                     
-                    if (line.StartsWith("."))
-                    {
-                        line = line.Substring(1);
+                if (line.StartsWith("."))
+                {
+                    line = line.Substring(1);
 
-                        if (!Instance.ExecuteCommand(line))
-                            Log.Error("ConsoleMgr", "Command not found");
-                    }else CleanLine(line.Length);
-                }
+                    if (!Instance.ExecuteCommand(line))
+                        Log.Error("ConsoleMgr", "Command not found");
+                }else CleanLine(line.Length);
             }
         }
 
@@ -160,8 +157,15 @@ namespace FrameWork
                 Log.Error("ConsoleMgr", "Invalid parameter count : " + args.Count + " / " + consoleHandlerAttribs[0].ArgCount);
             else
             {
-                if (!Handler.HandleCommand(command, args))
-                    Log.Error("ConsoleMgr", "Invalid command parameter !");
+                try
+                {
+                    if (!Handler.HandleCommand(command, args))
+                        Log.Error("ConsoleMgr", "Invalid command parameter !");
+                }
+                catch (Exception e)
+                {
+                    Log.Error("ConsoleMgr", e.ToString());
+                }
             }
 
             return true;

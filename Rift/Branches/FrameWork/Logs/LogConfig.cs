@@ -72,6 +72,11 @@ namespace FrameWork
             Level = level;
         }
 
+        public LogConfig(LogInfo Info)
+        {
+            this.Info = Info;
+        }
+
         public bool LoadInfoFromFile(string filename)
         {
             _file = new FileInfo(filename);

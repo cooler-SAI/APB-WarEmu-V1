@@ -19,5 +19,6 @@ namespace CharacterServer
         public bool UseCertificate = false;
 
         public DatabaseInfo AccountDB = new DatabaseInfo();
+        public LogInfo LogLevel = new LogInfo();
     }
 }

@@ -37,6 +37,11 @@ namespace FrameWork
 
         }
 
+        public virtual void OnServerConnected()
+        {
+
+        }
+
         public virtual void OnServerDisconnected()
         {
 

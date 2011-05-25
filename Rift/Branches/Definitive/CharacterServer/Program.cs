@@ -13,8 +13,9 @@ namespace CharacterServer
         static public CharacterConfig Config;
         static public RpcServer Server;
 
-        static public AccountMgr AccountMgr;
+        static public AccountMgr AcctMgr;
 
+        [STAThread()]
         static void Main(string[] args)
         {
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
@@ -25,13 +26,13 @@ namespace CharacterServer
             Log.Texte("", "http://siennacore.com", ConsoleColor.Blue);
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
-            // Loading log level from file
-            if (!Log.InitLog("Configs/CharactersServer.log", "Characters"))
-                ConsoleMgr.WaitAndExit(2000);
-
             // Loading all configs files
             ConfigMgr.LoadConfigs();
             Config = ConfigMgr.GetConfig<CharacterConfig>();
+
+            // Loading log level from file
+            if (!Log.InitLog(Config.LogLevel,"Character"))
+                ConsoleMgr.WaitAndExit(2000);
 
             // Starting Remote Server
             Server = new RpcServer(Config.RpcClientStartingPort, 1);
@@ -39,7 +40,9 @@ namespace CharacterServer
                 ConsoleMgr.WaitAndExit(2000);
 
             // Starting Accounts Manager
-            AccountMgr = Server.GetLocalObject<AccountMgr>();
+            AcctMgr = Server.GetLocalObject<AccountMgr>();
+            if(AcctMgr == null)
+                ConsoleMgr.WaitAndExit(2000);
 
             AccountMgr.AccountDB = DBManager.Start(Config.AccountDB.Total(), ConnectionType.DATABASE_MYSQL, "Accounts");
             if (AccountMgr.AccountDB == null)

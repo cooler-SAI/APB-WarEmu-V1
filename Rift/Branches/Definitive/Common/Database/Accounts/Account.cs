@@ -21,6 +21,8 @@ public class Account : DataObject
     [DataElement]
     public string SessionKey;
 
+    public long SessionTicket;
+
     [DataElement]
     public string Email;
 

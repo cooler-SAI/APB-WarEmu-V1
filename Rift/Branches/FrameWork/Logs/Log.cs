@@ -39,6 +39,13 @@ namespace FrameWork
             return true;
         }
 
+        static public bool InitLog(LogInfo Info, string PrefileName)
+        {
+            Init(new LogConfig(Info));
+            _config.PreFileName = PrefileName;
+            return true;
+        }
+
         static public void InitInstance(LogConfig Config)
         {
             try

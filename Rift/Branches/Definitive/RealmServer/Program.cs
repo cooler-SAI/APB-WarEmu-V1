@@ -25,25 +25,25 @@ namespace RealmServer
             Log.Texte("", "http://siennacore.com", ConsoleColor.Blue);
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
-            // Loading log level from file
-            if (!Log.InitLog("Configs/RealmServer.log", "RealmServer"))
-                ConsoleMgr.WaitAndExit(2000);
-
             // Loading all configs files
             ConfigMgr.LoadConfigs();
             Config = ConfigMgr.GetConfig<RealmConfig>();
             Config.RealmInfo.GenerateName();
+
+            // Loading log level from file
+            if (!Log.InitLog(Config.LogLevel,"Realm"))
+                ConsoleMgr.WaitAndExit(2000);
 
             // Starting Remote Client
             Client = new RpcClient("Realm-" + Config.RealmInfo.RealmId, Config.LocalRpcIP, 1);
             if (!Client.Start(Config.RpcServerIp, Config.RpcServerPort))
                 ConsoleMgr.WaitAndExit(2000);
 
-            // Creating proxy
             Accounts = Client.GetServerObject<AccountMgr>();
-
-            // Registering Realm on Characters Server
             Accounts.RegisterRealm(Config.RealmInfo, Client.Info);
+
+            CharacterMgr.Client = Client;
+            CharacterMgr.MyRealm = Config.RealmInfo;
 
             ConsoleMgr.Start();
         }
