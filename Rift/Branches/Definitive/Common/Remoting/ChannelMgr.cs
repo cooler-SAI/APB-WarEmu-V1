@@ -12,14 +12,16 @@ namespace Common
         public delegate void OnPlayerJoinOrLeave(Channel Chan, string PlayerName, int TickCount);
         public delegate void OnMessage(Channel Chan, string PlayerName, string Message, int TickCount);
 
-        public Channel(string ChannelName, string ChannelPassword)
+        public string ChannelName;
+        public string ChannelPassword;
+        public string ChannelDescription;
+
+        public Channel(string ChannelName, string ChannelPassword, string ChannelDescription)
         {
             this.ChannelName = ChannelName;
             this.ChannelPassword = ChannelPassword;
+            this.ChannelDescription = ChannelDescription;
         }
-        
-        public string ChannelName;
-        public string ChannelPassword;
 
         #region Messages
 
@@ -126,12 +128,12 @@ namespace Common
             return Chan;
         }
 
-        public Channel CreateChannel(string ChannelName, string ChannelPassword)
+        public Channel CreateChannel(string ChannelName, string ChannelPassword, string ChannelDescription)
         {
             if (HasChannel(ChannelName))
                 return null;
 
-            Channel Chan = new Channel(ChannelName, ChannelPassword);
+            Channel Chan = new Channel(ChannelName, ChannelPassword, ChannelDescription);
             Channels.Add(ChannelName, Chan);
 
             return Chan;
@@ -151,7 +153,7 @@ namespace Common
         {
             Channel Chan = GetChannel(ChannelName);
             if (Chan == null && Create)
-                Chan = CreateChannel(ChannelName, ChannelPassword);
+                Chan = CreateChannel(ChannelName, ChannelPassword, "");
 
             if (Chan == null)
                 return null;
