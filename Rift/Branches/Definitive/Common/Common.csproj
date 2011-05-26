@@ -75,6 +75,7 @@
     <Compile Include="NetWork\Stream\PacketProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Remoting\AccountMgr.cs" />
+    <Compile Include="Remoting\ChannelMgr.cs" />
     <Compile Include="Remoting\CharacterMgr.cs" />
   </ItemGroup>
   <ItemGroup>

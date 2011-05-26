@@ -28,6 +28,16 @@ namespace Common
 
         #region Characters
 
+        public Character[] GetCharacters(long AccountId)
+        {
+            return CharactersDB.SelectObjects<Character>("AccountId=" + AccountId).ToArray();
+        }
+
+        public int GetCharactersCount(long AccountId)
+        {
+            return CharactersDB.GetObjectCount<Character>("AccountId=" + AccountId);
+        }
+
         #endregion
     }
 }
