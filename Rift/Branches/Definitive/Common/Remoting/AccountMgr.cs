@@ -12,11 +12,6 @@ namespace Common
     {
         static public MySQLObjectDatabase AccountDB;
 
-        public void Test()
-        {
-            Console.WriteLine("TEST FUCK YOU");
-        }
-
         #region Accounts
 
         public Account GetAccount(long Id)
@@ -67,6 +62,8 @@ namespace Common
             if (Rm == null)
                 return false;
 
+            Rm.GenerateName();
+
             Realm Already = GetRealm(Rm.RealmId);
             if (Already == null)
             {
@@ -75,17 +72,31 @@ namespace Common
                     AccountDB.AddObject(Rm);
             }
 
-            if(Already != null)
+            if (Already != null)
+            {
                 Rm.ObjectId = Already.ObjectId;
+                Realms.Remove(Already);
+            }
 
             Rm.RpcInfo = Info;
             Rm.Dirty = true;
 
             AccountDB.SaveObject(Rm);
             Realms.Add(Rm);
-            Log.Success("AccountMgr", "Realm Online : " + Rm.Name);
+
+            if(Info != null)
+                Log.Success("AccountMgr", "Realm Online : " + Rm.Name);
+            else
+                Log.Success("AccountMgr", "Realm loaded : " + Rm.Name);
 
             return true;
+        }
+
+        public void LoadRealms()
+        {
+            Realm[] Rms = AccountDB.SelectAllObjects<Realm>().ToArray();
+            foreach (Realm Rm in Rms)
+                RegisterRealm(Rm, null);
         }
 
         public override void OnClientDisconnected(RpcClientInfo Info)

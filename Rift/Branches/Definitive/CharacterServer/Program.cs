@@ -52,6 +52,8 @@ namespace CharacterServer
             if (!TCPManager.Listen<RiftServer>(Config.CharacterServerPort, "CharacterServer"))
                 ConsoleMgr.WaitAndExit(2000);
 
+            AcctMgr.LoadRealms();
+
             ConsoleMgr.Start();
         }
     }
