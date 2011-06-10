@@ -7,6 +7,18 @@ using FrameWork;
 
 namespace Common
 {
+    public enum ChannelResult
+    {
+        CHANNEL_OK = 0,
+        CHANNEL_FULL = 1,
+        CHANNEL_INVALID_PASSWORD = 2,
+        CHANNEL_ALREADY_EXIST = 3,
+        CHANNEL_NOT_FOUND = 4,
+        CHANNEl_ERROR = 5,
+        
+        CHANNEL_PLAYER_NOT_FOUND = 6,
+    };
+
     public class Channel
     {
         public delegate void OnPlayerJoinOrLeave(Channel Chan, string PlayerName, int TickCount);
@@ -15,12 +27,14 @@ namespace Common
         public string ChannelName;
         public string ChannelPassword;
         public string ChannelDescription;
+        public int MaxPlayers;
 
-        public Channel(string ChannelName, string ChannelPassword, string ChannelDescription)
+        public Channel(string ChannelName, string ChannelPassword, string ChannelDescription, int MaxPlayers)
         {
             this.ChannelName = ChannelName;
             this.ChannelPassword = ChannelPassword;
             this.ChannelDescription = ChannelDescription;
+            this.MaxPlayers = MaxPlayers;
         }
 
         #region Messages
@@ -51,7 +65,7 @@ namespace Common
 
         public List<string> Players = new List<string>();
 
-        public int PlayerCount
+        public int PlayersCount
         {
             get
             {
@@ -63,28 +77,35 @@ namespace Common
         {
             return Players.Contains(PlayerName);
         }
-        public bool CanJoin(string PlayerName, string Password)
+        public ChannelResult CanJoin(string PlayerName, string Password)
         {
             if (Password != ChannelPassword)
-                return false;
+                return ChannelResult.CHANNEL_INVALID_PASSWORD;
 
-            return true;
+            if (PlayersCount >= MaxPlayers)
+                return ChannelResult.CHANNEL_FULL;
+
+            return ChannelResult.CHANNEL_OK;
         }
-        public bool Join(string PlayerName, string Password , bool Check)
+        public ChannelResult Join(string PlayerName, string Password, bool Check)
         {
-            if (Check && !CanJoin(PlayerName, Password))
-                return false;
+            ChannelResult Result = CanJoin(PlayerName, Password);
+            if (Check && Result != ChannelResult.CHANNEL_OK)
+                return Result;
 
             OnPlayerJoin(PlayerName);
             Players.Add(PlayerName);
 
-            return true;
+            return ChannelResult.CHANNEL_OK;
         }
-        public bool Remove(string PlayerName)
+        public ChannelResult Remove(string PlayerName)
         {
-            Players.Remove(PlayerName);
-            OnPlayerLeave(PlayerName);
-            return true;
+            if (Players.Remove(PlayerName))
+            {
+                OnPlayerLeave(PlayerName);
+                return ChannelResult.CHANNEL_OK;
+            }
+            else return ChannelResult.CHANNEL_PLAYER_NOT_FOUND;
         }
 
         public List<OnPlayerJoinOrLeave> PlayerJoinEvents = new List<OnPlayerJoinOrLeave>();
@@ -128,40 +149,41 @@ namespace Common
             return Chan;
         }
 
-        public Channel CreateChannel(string ChannelName, string ChannelPassword, string ChannelDescription)
+        public ChannelResult CreateChannel(out Channel Chan,string ChannelName, string ChannelPassword, string ChannelDescription, int MaxPlayers)
         {
-            if (HasChannel(ChannelName))
-                return null;
+            Chan = null;
 
-            Channel Chan = new Channel(ChannelName, ChannelPassword, ChannelDescription);
+            if (HasChannel(ChannelName))
+                return ChannelResult.CHANNEL_ALREADY_EXIST;
+
+            Chan = new Channel(ChannelName, ChannelPassword, ChannelDescription, MaxPlayers);
             Channels.Add(ChannelName, Chan);
 
-            return Chan;
+            return ChannelResult.CHANNEL_OK;
         }
-        public Channel RemoveChannel(string ChannelName)
+        public ChannelResult RemoveChannel(out Channel Chan, string ChannelName)
         {
-            Channel Chan = GetChannel(ChannelName);
+            Chan = GetChannel(ChannelName);
             if (Chan == null)
-                return null;
+                return ChannelResult.CHANNEL_NOT_FOUND;
 
             Channels.Remove(ChannelName);
 
-            return Chan;
+            return ChannelResult.CHANNEL_OK;
         }
 
-        public Channel JoinChannel(string ChannelName, string ChannelPassword, string PlayerName, bool Create)
+        public ChannelResult JoinChannel(out Channel Chan, string ChannelName, string ChannelPassword, string PlayerName, int MaxPlayers, bool Create)
         {
-            Channel Chan = GetChannel(ChannelName);
+            ChannelResult Result = ChannelResult.CHANNEL_OK;
+
+            Chan = GetChannel(ChannelName);
             if (Chan == null && Create)
-                Chan = CreateChannel(ChannelName, ChannelPassword, "");
+                Result = CreateChannel(out Chan, ChannelName, ChannelPassword, "", MaxPlayers);
 
             if (Chan == null)
-                return null;
+                return Result;
 
-            if (Chan.Join(PlayerName, ChannelPassword, true))
-                return Chan;
-            else
-                return null;
+            return Chan.Join(PlayerName, ChannelPassword, true);
         }
         public List<Channel> JoinChannels(string PlayerName, bool CheckPassword)
         {
@@ -169,7 +191,7 @@ namespace Common
 
             foreach (Channel Chan in Channels.Values.ToArray())
             {
-                if (Chan.Join(PlayerName, "", CheckPassword))
+                if (Chan.Join(PlayerName, "", CheckPassword) == ChannelResult.CHANNEL_OK)
                     Chans.Add(Chan);
             }
 
@@ -205,6 +227,19 @@ namespace Common
 
             foreach (Channel Chan in Channels.Values.ToArray())
                 if (Chan.DispatchMessage(PlayerName, Message, CheckNameExist))
+                    Chans.Add(Chan);
+
+            return Chans;
+        }
+
+        public List<Channel> SearchChannels(string Key, bool ByName)
+        {
+            List<Channel> Chans = new List<Channel>();
+
+            foreach (Channel Chan in Channels.Values.ToArray())
+                if (ByName && Chan.ChannelName.Contains(Key))
+                    Chans.Add(Chan);
+                else if (!ByName && Chan.ChannelDescription.Contains(Key))
                     Chans.Add(Chan);
 
             return Chans;
