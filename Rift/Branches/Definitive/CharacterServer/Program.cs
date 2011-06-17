@@ -48,11 +48,12 @@ namespace CharacterServer
             if (AccountMgr.AccountDB == null)
                 ConsoleMgr.WaitAndExit(2000);
 
+            AcctMgr.LoadRealms();
+
+
             // Listening Client
             if (!TCPManager.Listen<RiftServer>(Config.CharacterServerPort, "CharacterServer"))
                 ConsoleMgr.WaitAndExit(2000);
-
-            AcctMgr.LoadRealms();
 
             ConsoleMgr.Start();
         }

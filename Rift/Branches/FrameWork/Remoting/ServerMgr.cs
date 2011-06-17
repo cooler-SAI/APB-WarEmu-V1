@@ -47,7 +47,7 @@ namespace FrameWork
 
                 int RpcId = BitConverter.ToInt32(Guid.NewGuid().ToByteArray(), 0);
 
-                Info = new RpcClientInfo(Name, Ip, StartingPort++, RpcId);
+                Info = new RpcClientInfo(Name, Ip, ++StartingPort, RpcId);
                 Info.Connected = false;
 
                 lock (Clients)

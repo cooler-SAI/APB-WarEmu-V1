@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Timers;
+using System.Threading;
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
@@ -14,16 +14,20 @@ namespace FrameWork
 {
     public class RpcClient
     {
+        static public int PING_TIME = 200;
         public TcpClientChannel Channel;
         public TcpServerChannel ServerChannel;
         public ServerMgr Mgr;
-        public Timer Pinger;
+
+        public bool IsRunning = true;
+        public Thread Pinger;
 
         public RpcClientInfo Info;
         public List<Type>[] RegisteredTypes;
 
         public string ServerName;
         public string ServerIp;
+        public bool Connecting;
 
         public string RpcServerIp;
         public int RpcServerPort;
@@ -34,6 +38,9 @@ namespace FrameWork
             this.ServerName = Name;
             this.ServerIp = Ip;
             this.AllowedID = AllowedID;
+            this.Connecting = false;
+
+            Pinger = new Thread(new ThreadStart(CheckPing));
         }
 
         public bool Start(string Ip, int Port)
@@ -41,10 +48,17 @@ namespace FrameWork
             return Connect(Ip, Port);
         }
 
+        public void Stop()
+        {
+            IsRunning = false;
+        }
+
         public bool Connect()
         {
             try
             {
+                Connecting = true;
+
                 if (Channel != null)
                     ChannelServices.UnregisterChannel(Channel);
 
@@ -53,6 +67,7 @@ namespace FrameWork
 
                 Channel = null;
                 ServerChannel = null;
+                Mgr = null;
             }
             catch (Exception e)
             {
@@ -67,6 +82,7 @@ namespace FrameWork
 
             RpcServerIp = Ip;
             RpcServerPort = Port;
+            Connecting = true;
 
             try
             {
@@ -74,6 +90,9 @@ namespace FrameWork
                     return false;
 
                 Log.Debug("RpcClient", "Connecting to : " + Ip);
+
+                if(!Pinger.IsAlive)
+                    Pinger.Start();
 
                 Channel = new TcpClientChannel(ServerName, null);
                 ChannelServices.RegisterChannel(Channel, false);
@@ -97,23 +116,17 @@ namespace FrameWork
 
                 Log.Success("RpcClient", "Client/Server started : " + Ip + ":" + Port);
 
-                if (Pinger != null)
-                    Pinger.Close();
-
                 foreach (Type t in RegisteredTypes[1])
                     RpcServer.GetObject(t, Info.Ip, Info.Port).OnServerConnected();
 
-                Pinger = new Timer();
-                Pinger.Interval = 100;
-                Pinger.Elapsed += CheckPing;
-                Pinger.Start();
-
+                Connecting = false;
             }
             catch (Exception e)
             {
                 Log.Error("RpcClient", e.ToString());
                 Log.Notice("RpcClient", "Can not start RPC : " + Ip + ":" + Port);
 
+                Connecting = false;
                 Mgr = null;
                 Info = null;
 
@@ -123,25 +136,34 @@ namespace FrameWork
             return true;
         }
 
-        public void CheckPing(object Sender, EventArgs Args)
+        public void CheckPing()
         {
-            Pinger.Enabled = false;
-
-            try
+            while (IsRunning)
             {
-                if (Mgr != null)
-                    Mgr.Ping();
-                else
-                    Connect();
-            }
-            catch (Exception e)
-            {
-                foreach (Type t in RegisteredTypes[1])
-                    RpcServer.GetObject(t, Info.Ip, Info.Port).OnServerDisconnected();
+                int Start = Environment.TickCount;
 
-                Connect();
+                if (!Connecting)
+                {
+                    try
+                    {
+                        if (Mgr != null)
+                            Mgr.Ping();
+                        else
+                            Connect();
+                    }
+                    catch (Exception e)
+                    {
+                        foreach (Type t in RegisteredTypes[1])
+                            RpcServer.GetObject(t, Info.Ip, Info.Port).OnServerDisconnected();
+
+                        Connect();
+                    }
+
+                }
+                int Diff = Environment.TickCount - Start;
+                if (Diff < PING_TIME)
+                    Thread.Sleep(PING_TIME - Diff);
             }
-            Pinger.Enabled = true;
         }
 
         public T GetServerObject<T>() where T : RpcObject

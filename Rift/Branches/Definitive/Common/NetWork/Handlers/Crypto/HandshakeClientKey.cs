@@ -13,6 +13,15 @@ namespace Common
         [ArrayBitAttribute(0)]
         public byte[] ClientKey;
 
+        [ArrayBit(1)]
+        public byte[] Unknown;
+
+        [ArrayBit(2)]
+        public byte[] Unknown1;
+
+        [Encoded7BitAttribute(3)]
+        public long Version;
+
         public override void OnRead(RiftClient From)
         {
             Log.Dump("ClientKey", ClientKey, 0, ClientKey.Length);
@@ -26,7 +35,8 @@ namespace Common
 
 
             HandshakeServerKey ServerKey = new HandshakeServerKey();
-            ServerKey.Nid = 420;
+            ServerKey.Nid = 2980549511;
+            ServerKey.Unk = 3061945505;
             ServerKey.ServerKey = From.LocalPublicKey;
             From.SendSerialized(ServerKey);
         }

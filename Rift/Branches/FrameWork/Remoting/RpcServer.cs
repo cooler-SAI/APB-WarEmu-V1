@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Timers;
+using System.Threading;
 using System.Reflection;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
@@ -12,9 +12,12 @@ namespace FrameWork
 {
     public class RpcServer
     {
+        static public int PING_TIME = 200;
         public TcpServerChannel Channel;
         public ServerMgr Mgr;
-        public Timer Pinger;
+
+        public bool IsRunning = true;
+        public Thread Pinger;
         
         // 0 = Client Class
         // 1 = Server Class
@@ -29,6 +32,9 @@ namespace FrameWork
         {
             this.StartingPort = StartingPort;
             this.AllowedID = AllowedID;
+
+            Pinger = new Thread(new ThreadStart(Ping));
+            Pinger.Start();
         }
 
         public bool Start(string Ip, int Port)
@@ -52,10 +58,6 @@ namespace FrameWork
                 Mgr.StartingPort = StartingPort;
 
                 Log.Success("RpcServer", "Listening on : " + Ip + ":" + Port);
-
-                Pinger = new Timer(200);
-                Pinger.Elapsed += Ping;
-                Pinger.Enabled = true;
             }
             catch (Exception e)
             {
@@ -68,56 +70,61 @@ namespace FrameWork
             return true;
         }
 
-        public bool IsPinging = false;
-        public void Ping(object sender, EventArgs Args)
+        public void Stop()
         {
-            Pinger.Enabled = false;
-
-            List<RpcClientInfo> Disconnected = new List<RpcClientInfo>();
-
-            foreach (RpcClientInfo Info in Mgr.GetClients())
-            {
-                if (!Info.Connected)
-                    continue;
-
-                try
-                {
-                    GetObject<ClientMgr>(Info).Ping();
-                }
-                catch (Exception e)
-                {
-                    Log.Error("RpcServer", e.ToString());
-                    Log.Notice("RpcServer", Info.Description() + " | Disconnected");
-
-                    Disconnected.Add(Info);
-                    Mgr.Remove(Info.RpcID);
-                }
-            }
-
-            if (Disconnected.Count > 0)
-            {
-                foreach (RpcClientInfo Info in Mgr.GetClients())
-                {
-                    try
-                    {
-                        foreach (RpcClientInfo ToDisconnect in Disconnected)
-                        {
-                            foreach (Type type in RegisteredTypes[1])
-                            {
-                                RpcServer.GetObject(type, Info.Ip, Info.Port).OnClientDisconnected(ToDisconnect);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error("RpcServer", e.ToString());
-                    }
-                }
-            }
-
-            Pinger.Enabled = true;
+            IsRunning = false;
         }
 
+        public void Ping()
+        {
+            while (IsRunning)
+            {
+                int Start = Environment.TickCount;
+
+                if (Mgr != null)
+                {
+                    List<RpcClientInfo> Disconnected = new List<RpcClientInfo>();
+
+                    foreach (RpcClientInfo Info in Mgr.GetClients())
+                    {
+                        if (!Info.Connected)
+                            continue;
+
+                        try
+                        {
+                            GetObject<ClientMgr>(Info).Ping();
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error("RpcServer", e.ToString());
+                            Log.Notice("RpcServer", Info.Description() + " | Disconnected");
+
+                            Disconnected.Add(Info);
+                            Mgr.Remove(Info.RpcID);
+                        }
+                    }
+
+                    if (Disconnected.Count > 0)
+                        foreach (RpcClientInfo Info in Mgr.GetClients())
+                        {
+                            try
+                            {
+                                foreach (RpcClientInfo ToDisconnect in Disconnected)
+                                    foreach (Type type in RegisteredTypes[1])
+                                        RpcServer.GetObject(type, Info.Ip, Info.Port).OnClientDisconnected(ToDisconnect);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error("RpcServer", e.ToString());
+                            }
+                        }
+                }
+
+                int Diff = Environment.TickCount - Start;
+                if (Diff < PING_TIME)
+                    Thread.Sleep(PING_TIME - Diff);
+            }
+        }
 
         public T GetObject<T>(string Name) where T : RpcObject
         {
@@ -130,8 +137,6 @@ namespace FrameWork
 
             return GetObject<T>(Info);
         }
-
-
 
         public T GetLocalObject<T>() where T : RpcObject
         {

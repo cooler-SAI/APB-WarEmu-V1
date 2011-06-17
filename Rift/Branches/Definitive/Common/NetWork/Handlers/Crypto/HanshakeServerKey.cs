@@ -13,7 +13,10 @@ namespace Common
         [Unsigned7BitAttribute(0)]
         public long Nid;
 
-        [ArrayBit(1)]
+        [Encoded7BitAttribute(1)]
+        public long Unk;
+
+        [ArrayBit(2)]
         public byte[] ServerKey;
 
         public override void OnRead(RiftClient From)
