@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.IO;
+using System.Xml;
 
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
@@ -65,50 +67,7 @@ namespace FrameWork
                         values.Append(", ");
                         columns.Append("`" + objMembers[i].Name + "`");
 
-                        if (val is bool)
-                        {
-                            val = ((bool)val) ? (byte)1 : (byte)0;
-                        }
-                        else if (val is DateTime)
-                        {
-                            val = ((DateTime)val).ToString(dateFormat);
-                        }
-                        else if (val is float)
-                        {
-                            val = ((float)val).ToString(Nfi);
-                        }
-                        else if (val is double)
-                        {
-                            val = ((double)val).ToString(Nfi);
-                        }
-                        else if (val is string)
-                        {
-                            val = Escape(val.ToString());
-                        }
-                        else if (val is List<byte>)
-                        {
-                            List<byte> bytes = val as List<byte>;
-                            string Result="";
-                            foreach (byte b in bytes)
-                                Result += b.ToString("X2") + " ";
-                            val = Result;
-                        }
-                        else if (val is List<UInt32>)
-                        {
-                            List<UInt32> bytes = val as List<UInt32>;
-                            string Result = "";
-                            foreach (UInt32 b in bytes)
-                                Result += b.ToString("X4") + " ";
-                            val = Result;
-                        }
-                        else if (val is List<long>)
-                        {
-                            List<long> bytes = val as List<long>;
-                            string Result = "";
-                            foreach (long b in bytes)
-                                Result += b.ToString("X8") + " ";
-                            val = Result;
-                        }
+                        val = ConvertVal(val, dateFormat);
 
                         values.Append('\'');
                         values.Append(val);
@@ -144,6 +103,161 @@ namespace FrameWork
             }
 
             return false;
+        }
+
+        protected object ConvertVal(object val, string dateFormat)
+        {
+            object Obj = null;
+
+            if (val is bool)
+                Obj = ((bool)val) ? (byte)1 : (byte)0;
+            else if (val is DateTime)
+                Obj = ((DateTime)val).ToString(dateFormat);
+            else if (val is float)
+                Obj = ((float)val).ToString(Nfi);
+            else if (val is double)
+                Obj = ((double)val).ToString(Nfi);
+            else if (val is string)
+                Obj = Escape(val.ToString());
+
+            else if (val is List<byte>)
+                Obj = ConvertArrayToString<byte>((val as List<byte>).ToArray());
+            else if (val is byte[])
+                Obj = ConvertArrayToString<byte>((val as byte[]));
+
+            else if (val is List<Int16>)
+                Obj = ConvertArrayToString<Int16>((val as List<Int16>).ToArray());
+            else if (val is Int16[])
+                Obj = ConvertArrayToString<Int16>((val as Int16[]));
+
+            else if (val is List<Int32>)
+                Obj = ConvertArrayToString<Int32>((val as List<Int32>).ToArray());
+            else if (val is Int32[])
+                Obj = ConvertArrayToString<Int32>((val as Int32[]));
+
+            else if (val is List<UInt32>)
+                Obj = ConvertArrayToString<UInt32>((val as List<UInt32>).ToArray());
+            else if (val is UInt32[])
+                Obj = ConvertArrayToString<UInt32>((val as UInt32[]));
+
+            else if (val is List<float>)
+                Obj = ConvertArrayToString<float>((val as List<float>).ToArray());
+            else if (val is float[])
+                Obj = ConvertArrayToString<float>((val as float[]));
+
+            else if (val is List<ulong>)
+                Obj = ConvertArrayToString<ulong>((val as List<ulong>).ToArray());
+            else if (val is ulong[])
+                Obj = ConvertArrayToString<ulong>((val as ulong[]));
+
+            else if (val is List<long>)
+                Obj = ConvertArrayToString<long>((val as List<long>).ToArray());
+            else if (val is long[])
+                Obj = ConvertArrayToString<long>((val as long[]));
+
+            else if(val != null)
+                Obj = Escape(val.ToString());
+
+            return Obj;
+        }
+
+        protected Exception GetVal(object Object,MemberInfo Info, object val)
+        {
+            try
+            {
+                Type type = null;
+                if (Info is FieldInfo)
+                    type = (Info as FieldInfo).FieldType;
+                else if (Info is PropertyInfo)
+                    type = (Info as PropertyInfo).PropertyType;
+                else
+                    return null;
+
+                object Obj;
+
+                if (type == typeof(bool))
+                    Obj = val.ToString() == "0" ? false : true;
+                else if (type == typeof(DateTime))
+                {
+                    if (val is MySqlDateTime)
+                        Obj = ((MySqlDateTime)val).GetDateTime();
+                    else
+                        Obj = ((IConvertible)val).ToDateTime(null);
+                }
+                else if (type == typeof(byte[]))
+                    Obj = ConvertStringToArray<byte>(val as string).ToArray();
+                else if (type == typeof(List<byte>))
+                    Obj = ConvertStringToArray<byte>(val as string);
+
+                else if (type == typeof(Int16[]))
+                    Obj = ConvertStringToArray<Int16>(val as string).ToArray();
+                else if (type == typeof(List<Int16>))
+                    Obj = ConvertStringToArray<Int16>(val as string);
+
+                else if (type == typeof(UInt16[]))
+                    Obj = ConvertStringToArray<UInt16>(val as string).ToArray();
+                else if (type == typeof(List<UInt16>))
+                    Obj = ConvertStringToArray<UInt16>(val as string);
+
+                else if (type == typeof(Int32[]))
+                    Obj = ConvertStringToArray<Int32>(val as string).ToArray();
+                else if (type == typeof(List<Int32>))
+                    Obj = ConvertStringToArray<Int32>(val as string);
+
+                else if (type == typeof(UInt32[]))
+                    Obj = ConvertStringToArray<UInt32>(val as string).ToArray();
+                else if (type == typeof(List<UInt32>))
+                    Obj = ConvertStringToArray<UInt32>(val as string);
+
+                else if (type == typeof(Int64[]))
+                    Obj = ConvertStringToArray<Int64>(val as string).ToArray();
+                else if (type == typeof(List<Int64>))
+                    Obj = ConvertStringToArray<Int64>(val as string);
+
+                else if (type == typeof(UInt64[]))
+                    Obj = ConvertStringToArray<UInt64>(val as string).ToArray();
+                else if (type == typeof(List<UInt64>))
+                    Obj = ConvertStringToArray<UInt64>(val as string);
+
+                else if (type == typeof(float[]))
+                    Obj = ConvertStringToArray<float>(val as string).ToArray();
+                else if (type == typeof(List<float>))
+                    Obj = ConvertStringToArray<float>(val as string);
+                else
+                    Obj = val;
+
+                if (Info is PropertyInfo)
+                    ((PropertyInfo)Info).SetValue(Object, Obj, null);
+                else if (Info is FieldInfo)
+                    ((FieldInfo)Info).SetValue(Object, Obj);
+
+            }
+            catch(Exception e)
+            {
+                return e;
+            }
+
+            return null;
+        }
+
+        static public List<T> ConvertStringToArray<T>(string Value)
+        {
+            string[] Values = Value.Split(' ');
+            List<T> L = new List<T>();
+            foreach (string Val in Values)
+                if (Val.Length > 0)
+                    L.Add((T)Convert.ChangeType(Val, typeof(T)));
+
+            return L;
+        }
+
+        static public string ConvertArrayToString<T>(T[] Value)
+        {
+            string Result = "";
+            foreach (T val in Value)
+                Result += (string)Convert.ChangeType(val, typeof(string)) + " ";
+
+            return Result;
         }
 
         // Persiste l'objet dans la DB
@@ -199,50 +313,7 @@ namespace FrameWork
                             first = false;
                         }
 
-                        if (val is bool)
-                        {
-                            val = ((bool)val) ? (byte)1 : (byte)0;
-                        }
-                        else if (val is DateTime)
-                        {
-                            val = ((DateTime)val).ToString(dateFormat);
-                        }
-                        else if (val is float)
-                        {
-                            val = ((float)val).ToString(Nfi);
-                        }
-                        else if (val is double)
-                        {
-                            val = ((double)val).ToString(Nfi);
-                        }
-                        else if (val is string)
-                        {
-                            val = Escape(val.ToString());
-                        }
-                        else if (val is List<byte>)
-                        {
-                            List<byte> bytes = val as List<byte>;
-                            string Result = "";
-                            foreach (byte b in bytes)
-                                Result += b.ToString("X2") + " ";
-                            val = Result;
-                        }
-                        else if (val is List<UInt32>)
-                        {
-                            List<UInt32> bytes = val as List<UInt32>;
-                            string Result = "";
-                            foreach (UInt32 b in bytes)
-                                Result += b.ToString("X4") + " ";
-                            val = Result;
-                        }
-                        else if (val is List<long>)
-                        {
-                            List<long> bytes = val as List<long>;
-                            string Result = "";
-                            foreach (long b in bytes)
-                                Result += b.ToString("X8") + " ";
-                            val = Result;
-                        }
+                        val = ConvertVal(val, dateFormat);
 
                         sb.Append("`" + bind.Member.Name + "` = ");
                         sb.Append('\'');
@@ -467,87 +538,13 @@ namespace FrameWork
                             object val = data[field++];
                             if (val != null && !val.GetType().IsInstanceOfType(DBNull.Value))
                             {
-                                if (bind.Member is PropertyInfo)
+                                Exception e = GetVal(obj, bind.Member, val);
+                                if (e != null)
                                 {
-                                    Type type = ((PropertyInfo)bind.Member).PropertyType;
-
-                                    try
-                                    {
-                                        if (type == typeof(bool))
-                                        {
-                                            // special handling for bool
-                                            ((PropertyInfo)bind.Member).SetValue(obj,
-                                                                                  (val.ToString() == "0") ? false : true,
-                                                                                  null);
-                                        }
-                                        else if (type == typeof(DateTime))
-                                        {
-                                            // special handling for datetime
-                                            if (val is MySqlDateTime)
-                                            {
-                                                ((PropertyInfo)bind.Member).SetValue(obj,
-                                                                                      ((MySqlDateTime)val).GetDateTime(),
-                                                                                      null);
-                                            }
-                                            else
-                                            {
-                                                ((PropertyInfo)bind.Member).SetValue(obj,
-                                                                                      ((IConvertible)val).ToDateTime(null),
-                                                                                      null);
-                                            }
-                                        }
-                                        else if (type == typeof(List<byte>))
-                                        {
-                                            string sVal = val as string;
-                                            List<byte> bytes = new List<byte>();
-                                            foreach (string R in sVal.Split(' '))
-                                                bytes.Add(byte.Parse(R));
-
-                                            val = bytes;
-
-                                        }
-                                        else
-                                        {
-                                            ((PropertyInfo)bind.Member).SetValue(obj, val, null);
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Log.Error("MysqlObject",
-                                                tableName + ": " + bind.Member.Name + " = " + val.GetType().FullName +
-                                                " doesnt fit to " + bind.Member.DeclaringType.FullName + e.ToString() );
-                                        continue;
-                                    }
-                                }
-                                else if (bind.Member is FieldInfo)
-                                {
-                                    FieldInfo Info = (FieldInfo)bind.Member;
-                                    if (Info.FieldType == typeof(List<byte>))
-                                    {
-                                        List<byte> bytes = new List<byte>();
-                                        string sval = val.ToString();
-                                        foreach (string R in sval.Split(' '))
-                                            if (R.Length > 0) bytes.Add(byte.Parse(R));
-                                        val = bytes;
-                                    }
-                                    else if (Info.FieldType == typeof(List<UInt32>))
-                                    {
-                                        List<UInt32> bytes = new List<UInt32>();
-                                        string sval = val.ToString();
-                                        foreach (string R in sval.Split(' '))
-                                            if (R.Length > 0) bytes.Add(UInt32.Parse(R));
-                                        val = bytes;
-                                    }
-                                    else if (Info.FieldType == typeof(List<long>))
-                                    {
-                                        List<long> bytes = new List<long>();
-                                        string sval = val.ToString();
-                                        foreach (string R in sval.Split(' '))
-                                            if (R.Length > 0) bytes.Add(long.Parse(R));
-                                        val = bytes;
-                                    }
-
-                                    ((FieldInfo)bind.Member).SetValue(obj, val);
+                                    Log.Error("MysqlObject",
+                                tableName + ": " + bind.Member.Name + " = " + val.GetType().FullName +
+                                " doesnt fit to " + bind.Member.DeclaringType.FullName + e.ToString());
+                                    continue;
                                 }
                             }
                         }
@@ -636,77 +633,13 @@ namespace FrameWork
                             object val = data[field++];
                             if (val != null && !val.GetType().IsInstanceOfType(DBNull.Value))
                             {
-                                if (bind.Member is PropertyInfo)
+                                Exception e = GetVal(obj, bind.Member, val);
+                                if (e != null)
                                 {
-                                    Type type = ((PropertyInfo)bind.Member).PropertyType;
-
-                                    try
-                                    {
-                                        if (type == typeof(bool))
-                                        {
-                                            // special handling for bool
-                                            ((PropertyInfo)bind.Member).SetValue(obj,
-                                                                                  (val.ToString() == "0") ? false : true,
-                                                                                  null);
-                                        }
-                                        else if (type == typeof(DateTime))
-                                        {
-                                            // special handling for datetime
-                                            if (val is MySqlDateTime)
-                                            {
-                                                ((PropertyInfo)bind.Member).SetValue(obj,
-                                                                                      ((MySqlDateTime)val).GetDateTime(),
-                                                                                      null);
-                                            }
-                                            else
-                                            {
-                                                ((PropertyInfo)bind.Member).SetValue(obj,
-                                                                                      ((IConvertible)val).ToDateTime(null),
-                                                                                      null);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            ((PropertyInfo)bind.Member).SetValue(obj, val, null);
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Log.Error("MysqlObject",
-                                                tableName + ": " + bind.Member.Name + " = " + val.GetType().FullName +
-                                                " doesnt fit to " + bind.Member.DeclaringType.FullName + e.ToString() );
-                                        continue;
-                                    }
-                                }
-                                else if (bind.Member is FieldInfo)
-                                {
-                                    FieldInfo Info = (FieldInfo)bind.Member;
-                                    if (Info.FieldType == typeof(List<byte>))
-                                    {
-                                        List<byte> bytes = new List<byte>();
-                                        string sval = val.ToString();
-                                        foreach (string R in sval.Split(' '))
-                                            if(R.Length > 0) bytes.Add(byte.Parse(R));
-                                        val = bytes;
-                                    }
-                                    else if(Info.FieldType == typeof(List<UInt32>))
-                                    {
-                                        List<UInt32> bytes = new List<UInt32>();
-                                        string sval = val.ToString();
-                                        foreach (string R in sval.Split(' '))
-                                            if (R.Length > 0) bytes.Add(UInt32.Parse(R));
-                                        val = bytes;
-                                    }
-                                    else if (Info.FieldType == typeof(List<long>))
-                                    {
-                                        List<long> bytes = new List<long>();
-                                        string sval = val.ToString();
-                                        foreach (string R in sval.Split(' '))
-                                            if (R.Length > 0) bytes.Add(long.Parse(R));
-                                        val = bytes;
-                                    }
-
-                                    ((FieldInfo)bind.Member).SetValue(obj, val);
+                                    Log.Error("MysqlObject",
+                                tableName + ": " + bind.Member.Name + " = " + val.GetType().FullName +
+                                " doesnt fit to " + bind.Member.DeclaringType.FullName + e.ToString());
+                                    continue;
                                 }
                             }
                         }
