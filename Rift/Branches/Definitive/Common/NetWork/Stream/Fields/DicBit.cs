@@ -20,6 +20,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class DicBitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -45,6 +46,9 @@ namespace Common
 
         public override bool Serialize(ref PacketOutStream Data)
         {
+            if (val == null)
+                return false;
+
             if (val is Dictionary<long, ISerializablePacket>)
             {
                 Dictionary<long, ISerializablePacket> Dic = val as Dictionary<long, ISerializablePacket>;

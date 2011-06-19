@@ -22,6 +22,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class PacketBitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -33,10 +34,11 @@ namespace Common
             ISerializableField Field = null;
 
             Log.Debug("Packet", "----------------------> New " + Opcode.ToString("X8"));
+            Packet.Opcode = Opcode;
 
             while ((Field = PacketProcessor.ReadField(ref Data)) != null)
             {
-                Log.Success("Packet", "------> ++T : " + Field.PacketType);
+                Log.Debug("Packet", "------> ++T : " + Field.PacketType);
                 Packet.AddField(Field.Index, Field);
             }
 
@@ -48,6 +50,9 @@ namespace Common
 
         public override bool Serialize(ref PacketOutStream Data)
         {
+            if (val == null)
+                return false;
+
             return PacketProcessor.WritePacket(ref Data, (ISerializablePacket)val, false, true, true);
         }
 

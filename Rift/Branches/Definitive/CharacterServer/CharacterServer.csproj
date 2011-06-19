@@ -48,9 +48,8 @@
     <Compile Include="NetWork\Authentification\HandshakeVersion.cs" />
     <Compile Include="NetWork\Authentification\ProtocolHandshakeAuthenticationRequest.cs" />
     <Compile Include="NetWork\Authentification\ProtocolHandshakeAuthenticationResponse.cs" />
-    <Compile Include="NetWork\Characters\LobbyCharacterEntry.cs" />
+    <Compile Include="NetWork\Characters\LobbyCharacterCreationCacheRequest.cs" />
     <Compile Include="NetWork\Characters\LobbyCharacterListRequest.cs" />
-    <Compile Include="NetWork\Characters\LobbyCharacterListResponse.cs" />
     <Compile Include="NetWork\Realms\LobbyWorldEntry.cs" />
     <Compile Include="NetWork\Realms\LobbyWorldListRequest.cs" />
     <Compile Include="NetWork\Realms\LobbyWorldListResponse.cs" />

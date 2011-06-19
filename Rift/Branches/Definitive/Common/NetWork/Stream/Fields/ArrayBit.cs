@@ -22,6 +22,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class ArrayBitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -32,6 +33,9 @@ namespace Common
 
         public override bool Serialize(ref PacketOutStream Data)
         {
+            if (val == null || val.ToString() == "")
+                return false;
+
             byte[] Result = new byte[0];
 
             if (val is string)

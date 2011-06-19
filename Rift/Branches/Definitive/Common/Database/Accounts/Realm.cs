@@ -279,6 +279,11 @@ public class Realm : DataObject
     [XmlIgnore()]
     public RpcClientInfo RpcInfo;
 
+    public T GetObject<T>() where T : RpcObject
+    {
+        return RpcServer.GetObject<T>(RpcInfo);
+    }
+
     #endregion
 }
 

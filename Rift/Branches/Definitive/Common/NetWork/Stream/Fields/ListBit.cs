@@ -21,6 +21,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class ListBitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -32,7 +33,7 @@ namespace Common
             PacketInStream.Decode2Parameters(ListData, out ListType, out ListCount);
             List<ISerializableField> Fields = new List<ISerializableField>();
 
-            Log.Success("Packet", "------> List : " + ListType + "("+ListCount+")");
+            Log.Debug("Packet", "------> List : " + ListType + "("+ListCount+")");
             for (int i = 0; i < ListCount; ++i)
             {
                 ISerializableField Field = PacketProcessor.GetFieldType((EPacketFieldType)ListType);
@@ -50,6 +51,9 @@ namespace Common
         {
             Log.Success("WriteList", "Serialize : " + val);
 
+            if (val == null)
+                return false;
+
             if (val is List<ISerializablePacket>)
             {
                 List<ISerializablePacket> Packets = val as List<ISerializablePacket>;
@@ -64,19 +68,38 @@ namespace Common
                 foreach (ISerializablePacket Packet in Packets)
                     PacketProcessor.WritePacket(ref Data, Packet, false, true, true);
             }
-            else if (val is List<long>)
+            else if (val is ISerializablePacket[])
             {
-                List<long> Values = val as List<long>;
+                ISerializablePacket[] Packets = val as ISerializablePacket[];
 
-                /*if (Values.Count <= 0)
-                    return false;*/
+                long ListData;
+                PacketOutStream.Encode2Parameters(out ListData, (int)EPacketFieldType.Packet, Packets.Length);
+                Data.WriteEncoded7Bit(ListData);
+
+                foreach (ISerializablePacket Packet in Packets)
+                    PacketProcessor.WritePacket(ref Data, Packet, false, true, true);
+            }
+            else if (val is List<ulong>)
+            {
+                List<ulong> Values = val as List<ulong>;
 
                 long ListData;
                 PacketOutStream.Encode2Parameters(out ListData, (int)EPacketFieldType.Unsigned7BitEncoded, Values.Count);
                 Data.WriteEncoded7Bit(ListData);
 
                 for (int i = 0; i < Values.Count; ++i)
-                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Unsigned7BitEncoded, (long)Values[i]);
+                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Unsigned7BitEncoded, (ulong)Values[i]);
+            }
+            else if (val is List<long>)
+            {
+                List<long> Values = val as List<long>;
+
+                long ListData;
+                PacketOutStream.Encode2Parameters(out ListData, (int)EPacketFieldType.Signed7BitEncoded, Values.Count);
+                Data.WriteEncoded7Bit(ListData);
+
+                for (int i = 0; i < Values.Count; ++i)
+                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Signed7BitEncoded, (long)Values[i]);
             }
             else if (val is List<uint>)
             {
@@ -161,6 +184,13 @@ namespace Common
                 foreach (ISerializableField Value in (List<ISerializableField>)val)
                     Packets.Add(Value.GetPacket());
                 Info.SetValue(Packet, Packets);
+            }
+            else if (Field.Equals(typeof(ISerializablePacket[])))
+            {
+                List<ISerializablePacket> Packets = new List<ISerializablePacket>();
+                foreach (ISerializableField Value in (List<ISerializableField>)val)
+                    Packets.Add(Value.GetPacket());
+                Info.SetValue(Packet, Packets.ToArray());
             }
             else if (Field.Equals(typeof(List<bool>)))
             {

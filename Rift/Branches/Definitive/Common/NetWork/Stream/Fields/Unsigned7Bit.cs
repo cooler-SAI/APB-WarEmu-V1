@@ -20,6 +20,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class Unsigned7BitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -29,13 +30,16 @@ namespace Common
 
         public override bool Serialize(ref PacketOutStream Data)
         {
+            if (val == null || val.ToString() == "0")
+                return false;
+
             Data.WriteEncoded7Bit((long)val);
             return true;
         }
 
         public override void ApplyToFieldInfo(FieldInfo Info, ISerializablePacket Packet, Type Field)
         {
-            Info.SetValue(Packet, (long)val);
+            Info.SetValue(Packet, Convert.ChangeType(val,Info.FieldType));
         }
     }
 }

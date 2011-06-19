@@ -9,7 +9,7 @@ using FrameWork;
 namespace Common
 {
     [Serializable]
-    public class ISerializablePacket
+    public class ISerializablePacket : DataObject
     {
         public ISerializablePacket()
         {
@@ -41,7 +41,7 @@ namespace Common
                 FieldInfo Info = GetFieldInfo(Fields, Field.Index);
                 if (Info != null)
                 {
-                    Log.Success("ApplyToFieldInfo", "" + Info.Name + ", Index=" + Field.Index);
+                    Log.Debug("ApplyToFieldInfo", "" + Info.Name + ", Index=" + Field.Index);
                     Field.ApplyToFieldInfo(Info, this, Info.FieldType);
                 }
                 else
@@ -82,7 +82,7 @@ namespace Common
 
         #region Fields
 
-        private SortedDictionary<int, ISerializableField> Fields = new SortedDictionary<int, ISerializableField>();
+        public SortedDictionary<int, ISerializableField> Fields = new SortedDictionary<int, ISerializableField>();
 
         public SortedDictionary<int, ISerializableField> GetFields()
         {

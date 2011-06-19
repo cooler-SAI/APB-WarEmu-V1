@@ -34,6 +34,10 @@ namespace CharacterServer
             if (!Log.InitLog(Config.LogLevel,"Character"))
                 ConsoleMgr.WaitAndExit(2000);
 
+            AccountMgr.AccountDB = DBManager.Start(Config.AccountDB.Total(), ConnectionType.DATABASE_MYSQL, "Accounts");
+            if (AccountMgr.AccountDB == null)
+                ConsoleMgr.WaitAndExit(2000);
+
             // Starting Remote Server
             Server = new RpcServer(Config.RpcClientStartingPort, 1);
             if (!Server.Start(Config.RpcIP, Config.RpcPort))
@@ -44,12 +48,7 @@ namespace CharacterServer
             if(AcctMgr == null)
                 ConsoleMgr.WaitAndExit(2000);
 
-            AccountMgr.AccountDB = DBManager.Start(Config.AccountDB.Total(), ConnectionType.DATABASE_MYSQL, "Accounts");
-            if (AccountMgr.AccountDB == null)
-                ConsoleMgr.WaitAndExit(2000);
-
             AcctMgr.LoadRealms();
-
 
             // Listening Client
             if (!TCPManager.Listen<RiftServer>(Config.CharacterServerPort, "CharacterServer"))

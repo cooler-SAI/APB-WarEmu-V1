@@ -22,6 +22,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class Raw8BitBitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -31,6 +32,9 @@ namespace Common
 
         public override bool Serialize(ref PacketOutStream Data)
         {
+            if (val == null || val.ToString() == "0")
+                return false;
+
             if (val is byte[])
                 Data.Write((byte[])val);
             else if (val is long)

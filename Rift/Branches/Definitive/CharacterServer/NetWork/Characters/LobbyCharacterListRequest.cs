@@ -13,24 +13,15 @@ namespace CharacterServer
     {
         public override void OnRead(RiftClient From)
         {
-            Log.Success("CharacterListRequest", "Characters Requested For : " + From.GetIp);
+            Log.Success("CharacterListRequest", "Characters For : " + From.GetIp + " RPC : " + From.Rm.RpcInfo.Description());
 
             if (From.Acct == null || From.Rm == null)
                 return;
 
-            Character[] Chars = RpcServer.GetObject<CharacterMgr>(From.Rm.RpcInfo).GetCharacters(From.Acct.Id);
+            LobbyCharacterListResponse ListRp = From.Rm.GetObject<CharacterMgr>().GetCharactersList(From.Acct.Id);
 
-            LobbyCharacterListResponse ListRp = new LobbyCharacterListResponse();
-
-            foreach (Character Char in Chars)
-            {
-                LobbyCharacterEntry Entry = new LobbyCharacterEntry();
-                Entry.AccountId = Char.AccountId;
+            foreach (LobbyCharacterEntry Entry in ListRp.Characters)
                 Entry.Email = From.Acct.Email;
-                Entry.CharacterId = Char.Id;
-                Entry.CharacterName = Char.Name;
-                ListRp.Characters.Add(Entry);
-            }
 
             From.SendSerialized(ListRp);
         }

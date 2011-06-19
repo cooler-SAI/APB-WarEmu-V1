@@ -37,6 +37,7 @@ namespace Common
         public abstract Type GetSerializableType();
     }
 
+    [Serializable]
     public abstract class ISerializableField
     {
         public EPacketFieldType PacketType;
@@ -59,7 +60,7 @@ namespace Common
             else if (val is uint)
                 return (uint)val;
 
-            return 0;
+            return (uint)val;
         }
 
         public float GetFloat()

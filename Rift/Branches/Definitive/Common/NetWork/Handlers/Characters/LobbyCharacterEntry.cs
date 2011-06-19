@@ -6,8 +6,9 @@ using System.Text;
 using Common;
 using FrameWork;
 
-namespace CharacterServer
+namespace Common
 {
+    [Serializable]
     [ISerializableAttribute((long)Opcodes.LobbyCharacterEntry)]
     public class LobbyCharacterEntry : ISerializablePacket
     {

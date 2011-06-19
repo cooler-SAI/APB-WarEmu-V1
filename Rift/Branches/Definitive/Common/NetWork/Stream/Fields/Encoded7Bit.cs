@@ -20,6 +20,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class Encoded7BitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -29,6 +30,9 @@ namespace Common
 
         public override bool Serialize(ref PacketOutStream Data)
         {
+            if ((long)val == 0)
+                return false;
+
             Data.WriteEncoded7Bit((long)val);
             return true;
         }

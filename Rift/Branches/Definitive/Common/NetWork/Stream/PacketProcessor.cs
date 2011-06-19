@@ -57,9 +57,13 @@ namespace Common
 
                 foreach (Type Class in types)
                 {
-                    if (Class.BaseType == typeof(ISerializablePacket) && Class.GetCustomAttributes(typeof(ISerializableAttribute), true) != null)
+                    if (Class.BaseType == typeof(ISerializablePacket))
                     {
-                        ISerializableAttribute PacketAttribute = Class.GetCustomAttributes(typeof(ISerializableAttribute), true)[0] as ISerializableAttribute;
+                        ISerializableAttribute[] PacketAttributes = Class.GetCustomAttributes(typeof(ISerializableAttribute), true) as ISerializableAttribute[];
+                        if (PacketAttributes == null || PacketAttributes.Length <= 0)
+                            continue;
+
+                        ISerializableAttribute PacketAttribute = PacketAttributes[0];
                         PacketHandlerDefinition PacketDef = new PacketHandlerDefinition(PacketAttribute.GetOpcode(), Class);
 
                         Log.Success("RegisterDefinitions", "Registering Handler : " + PacketAttribute.GetOpcode().ToString("X8"));
@@ -134,6 +138,48 @@ namespace Common
 
         #region Readers
 
+        public static void BytesToField(ISerializablePacket Packet, byte[] Bytes, string FieldName)
+        {
+            if (Bytes == null || Bytes.Length <= 0)
+                return;
+
+            FieldInfo Info = Packet.GetType().GetField(FieldName);
+            ISerializableFieldAttribute[] FieldsAttr = Info.GetCustomAttributes(typeof(ISerializableFieldAttribute), true) as ISerializableFieldAttribute[];
+            if (FieldsAttr != null && FieldsAttr.Length > 0)
+            {
+                ISerializableField Field = Activator.CreateInstance(FieldsAttr[0].GetSerializableType()) as ISerializableField;
+                Field.Index = FieldsAttr[0].Index;
+                Field.val = Info.GetValue(Packet);
+                Field.PacketType = PacketProcessor.GetFieldType(Field);
+
+                PacketInStream Str = new PacketInStream(Bytes, Bytes.Length);
+                Field.Deserialize(ref Str);
+                Field.ApplyToFieldInfo(Info, Packet, Info.FieldType);
+            }
+            else
+                Info.SetValue(Packet, null);
+        }
+
+        public static byte[] FieldToBytes(ISerializablePacket Packet, string FieldName)
+        {
+            FieldInfo Info = Packet.GetType().GetField(FieldName);
+            ISerializableFieldAttribute[] FieldsAttr = Info.GetCustomAttributes(typeof(ISerializableFieldAttribute), true) as ISerializableFieldAttribute[];
+            if (FieldsAttr != null && FieldsAttr.Length > 0)
+            {
+                ISerializableField Field = Activator.CreateInstance(FieldsAttr[0].GetSerializableType()) as ISerializableField;
+                Field.Index = FieldsAttr[0].Index;
+                Field.val = Info.GetValue(Packet);
+                Field.PacketType = PacketProcessor.GetFieldType(Field);
+
+                PacketOutStream Str = new PacketOutStream();
+                Field.Serialize(ref Str);
+                byte[] Result =  Str.ToArray();
+                return Result;
+            }
+            else
+                return null;
+        }
+
         public static ISerializablePacket ReadPacket(ref PacketInStream Stream)
         {
             return (ISerializablePacket)ReadField(ref Stream, 0, (int)EPacketFieldType.Packet).val;
@@ -166,7 +212,7 @@ namespace Common
                 return null;
             }
 
-            Log.Success("ReadField", "Index = " + FieldIndex + ",Type=" + FieldType);
+            Log.Debug("ReadField", "Index = " + FieldIndex + ",Type=" + FieldType);
             Field.Index = FieldIndex;
             Field.PacketType = (EPacketFieldType)FieldType;
             Field.Deserialize(ref Stream);
@@ -206,7 +252,7 @@ namespace Common
         public static bool WriteField(ref PacketOutStream Stream, EPacketFieldType FieldType, object Value)
         {
             ISerializableField Field = GetFieldType(FieldType);
-            Log.Success("WriteField", "Type=" + FieldType + ",Val=" + Value + ",Field="+Field);
+            Log.Debug("WriteField", "Type=" + FieldType + ",Val=" + Value + ",Field="+Field);
             if (Field != null)
             {
                 Field.val = Value;
@@ -220,28 +266,30 @@ namespace Common
         public static bool WritePacket(ref PacketOutStream Stream,ISerializablePacket Packet, bool WithSize = true , bool WithTerminator = true, bool WithOpcode = true)
         {
             if (Packet == null)
-            {
-                Log.Error("WritePacket", "Packet == null");
                 return false;
+
+            lock (Packet)
+            {
+                Packet.ConvertToField();
+
+                PacketOutStream Data = new PacketOutStream();
+
+                if (WithOpcode)
+                    Data.WriteEncoded7Bit(Packet.Opcode);
+
+                foreach (ISerializableField Field in Packet.GetFields().Values)
+                    WriteField(ref Data, Field);
+
+                if (WithTerminator && Packet.Opcode != (int)Opcodes.ProtocolHandshakeCompression)
+                    WriteField(ref Data, null, 0, (int)EPacketFieldType.Terminator);
+
+                if (WithSize)
+                    Stream.WriteEncoded7Bit(Data.Length);
+
+                Stream.Write(Data.ToArray());
+
+                Packet.Fields.Clear();
             }
-
-            Packet.ConvertToField();
-
-            PacketOutStream Data = new PacketOutStream();
-
-            if (WithOpcode)
-                Data.WriteEncoded7Bit(Packet.Opcode);
-
-            foreach (ISerializableField Field in Packet.GetFields().Values)
-                WriteField(ref Data, Field);
-
-            if (WithTerminator && Packet.Opcode != (int)Opcodes.ProtocolHandshakeCompression)
-                WriteField(ref Data, null, 0, (int)EPacketFieldType.Terminator);
-
-            if (WithSize)
-                Stream.WriteEncoded7Bit(Data.Length);
-
-            Stream.Write(Data.ToArray());
 
             return true;
         }

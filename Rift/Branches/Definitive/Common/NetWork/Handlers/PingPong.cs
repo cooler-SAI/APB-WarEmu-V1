@@ -7,6 +7,7 @@ using FrameWork;
 
 namespace Common
 {
+    [Serializable]
     [ISerializableAttribute((long)Opcodes.ProtocolPingPong)]
     public class PingPong : ISerializablePacket
     {

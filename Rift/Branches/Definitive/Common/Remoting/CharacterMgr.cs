@@ -38,6 +38,31 @@ namespace Common
             return CharactersDB.GetObjectCount<Character>("AccountId=" + AccountId);
         }
 
+        public LobbyCharacterListResponse GetCharactersList(long AccountId)
+        {
+            Character[] Chars = GetCharacters(AccountId);
+
+            LobbyCharacterListResponse Rp = new LobbyCharacterListResponse();
+            foreach (Character Char in Chars)
+            {
+                LobbyCharacterEntry Entry = new LobbyCharacterEntry();
+                Entry.AccountId = Char.AccountId;
+                Entry.CharacterId = Char.Id;
+                Entry.CharacterName = Char.Name;
+                Rp.Characters.Add(Entry);
+            }
+
+            return Rp;
+        }
+
+        public List<ISerializablePacket> GetCreationCache()
+        {
+            List<ISerializablePacket> Caches = new List<ISerializablePacket>();
+
+            return Caches;
+
+        }
+
         #endregion
     }
 }

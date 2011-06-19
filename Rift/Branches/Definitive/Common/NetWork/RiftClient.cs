@@ -186,12 +186,15 @@ namespace Common
                     if (Size > Packet.Length)
                     {
                         Log.Error("ReadPacket", "Size > Packet.Lenght,Size=" + Size + ",Lenght=" + Packet.Length);
+                        Packet.Dispose();
                         continue;
                     }
 
                     ISerializablePacket Pack = PacketProcessor.ReadPacket(ref Packet);
                     if (Pack != null)
                         Pack.OnRead(this);
+
+                    Packet.Dispose();
                 }
             }
 
@@ -267,9 +270,10 @@ namespace Common
 
             byte[] ToSend = Out.ToArray();
             SendTCP(ToSend);
+            Out.Dispose();
          }
 
-        public void SendTCP(byte[] ToSend)
+        public new void SendTCP(byte[] ToSend)
         {
             Log.Dump("ToSend", ToSend, 0, ToSend.Length);
 

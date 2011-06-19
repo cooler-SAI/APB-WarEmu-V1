@@ -20,6 +20,7 @@ namespace Common
         }
     }
 
+    [Serializable]
     public class BoolBitField : ISerializableField
     {
         public override void Deserialize(ref PacketInStream Data)
@@ -40,6 +41,8 @@ namespace Common
         {
             if (Field.Equals(typeof(bool)))
                 Info.SetValue(Packet, val);
+            else
+                Info.SetValue(Packet, ((bool)val) == true ? 1 : 0);
                 
         }
     }

@@ -42,15 +42,15 @@ public enum Opcodes
     LobbyCharacterCreation_NameResponse = 0x01F0,
 
     CacheUpdate = 0x0025,
-    TemplateCreationData = 0x027E,
+    CacheTemplate = 0x027E,
+    CacheData = 0x0274,
+    CacheReference = 0x1C9C,
     TemplateCreationUnknown1Data = 0x0ECD,
-    TemplateCreationSubData = 0x0274,
     TemplateCreationSubUnknown1Data = 0x1C97,
     TemplateCreationSubUnknown2Data = 0x1C9D,
-    TemplateCreationSubUnknown3Data = 0x1C9C,
     TemplateCreationSubUnknown4Data = 0x1CD2,
     
-    WorldText_Info = 0x1E17,
+    WorldText = 0x1E17,
 
     LobbyCharacterSelectRequest = 0x01B1,
     LobbyCharacterSelectResponse = 0x01B2,
