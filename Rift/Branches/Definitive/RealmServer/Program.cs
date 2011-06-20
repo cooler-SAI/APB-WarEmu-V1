@@ -15,20 +15,19 @@ namespace RealmServer
         static public RpcClient Client;
 
         static public AccountMgr Accounts;
-        static public CharacterMgr Characters;
+        static public CharactersMgr Characters;
         static public WorldMgr World;
-
-        static public CacheData[] Data;
-        static public CacheTemplate[] Templates;
 
         static void Main(string[] args)
         {
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
-            Log.Texte("", ",---.o", ConsoleColor.Cyan);
-            Log.Texte("", "`---..,---.,---.,---.,---.", ConsoleColor.Cyan);
-            Log.Texte("", "    |||---'|   ||   |,---|", ConsoleColor.Cyan);
-            Log.Texte("", "`---'``---'`   '`   '`---^ Core", ConsoleColor.Cyan);
-            Log.Texte("", "http://siennacore.com", ConsoleColor.Blue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ Rift", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
             // Loading all configs files
@@ -40,8 +39,8 @@ namespace RealmServer
             if (!Log.InitLog(Config.LogLevel,"Realm"))
                 ConsoleMgr.WaitAndExit(2000);
 
-            CharacterMgr.CharactersDB = DBManager.Start(Config.CharactersDB.Total(), ConnectionType.DATABASE_MYSQL, "Characters");
-            if (CharacterMgr.CharactersDB == null)
+            CharactersMgr.CharactersDB = DBManager.Start(Config.CharactersDB.Total(), ConnectionType.DATABASE_MYSQL, "Characters");
+            if (CharactersMgr.CharactersDB == null)
                 ConsoleMgr.WaitAndExit(2000);
 
             WorldMgr.WorldDB = DBManager.Start(Config.WorldDB.Total(), ConnectionType.DATABASE_MYSQL, "World");
@@ -55,14 +54,19 @@ namespace RealmServer
             if (!Client.Start(Config.RpcServerIp, Config.RpcServerPort))
                 ConsoleMgr.WaitAndExit(2000);
 
-            Client.GetLocalObject<WorldMgr>().LoadCache();
+            World = Client.GetLocalObject<WorldMgr>();
             Accounts = Client.GetServerObject<AccountMgr>();
+            Characters = Client.GetLocalObject<CharactersMgr>();
+
+            // 1 : Loading WorldMgr
+            World.Load();
+
+            // 2 : Loading CharactersMgr
+            CharactersMgr.Client = Client;
+            CharactersMgr.MyRealm = Config.RealmInfo;
+
+            // 3 : Loading AccountsMgr
             Accounts.RegisterRealm(Config.RealmInfo, Client.Info);
-
-            Characters = Client.GetLocalObject<CharacterMgr>();
-
-            CharacterMgr.Client = Client;
-            CharacterMgr.MyRealm = Config.RealmInfo;
             
             ConsoleMgr.Start();
         }

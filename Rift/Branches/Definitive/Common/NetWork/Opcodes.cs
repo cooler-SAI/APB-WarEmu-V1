@@ -38,8 +38,8 @@ public enum Opcodes
     LobbyCharacterCreateRequest = 0x01D5,
     LobbyCharacterCreateResponse = 0x01D6,
 
-    LobbyCharacterCreation_NameRequest = 0x01EF,
-    LobbyCharacterCreation_NameResponse = 0x01F0,
+    LobbyCharacterRandomNameRequest = 0x01EF,
+    LobbyCharacterRandomNameResponse = 0x01F0,
 
     CacheUpdate = 0x0025,
     CacheTemplate = 0x027E,

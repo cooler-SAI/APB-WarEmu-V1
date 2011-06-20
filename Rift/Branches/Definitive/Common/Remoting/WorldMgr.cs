@@ -16,6 +16,20 @@ namespace Common
         static public Dictionary<uint, CacheTemplate> Templates;
         static public Dictionary<long, TextInfo> TextInfos;
 
+        public void Load()
+        {
+            Log.Success("WorldMgr", "Loading World Database");
+
+            int Start = Environment.TickCount;
+
+            // Here all Load functions
+            LoadCache();
+
+            int End = Environment.TickCount;
+
+            Log.Success("WorldMgr", "World loaded in : " + (End - Start) + "ms");
+        }
+
         public TextInfo GetText(long ID)
         {
             TextInfo Info;
@@ -47,7 +61,7 @@ namespace Common
             return Datas.Values.ToArray();
         }
 
-        public void LoadCache()
+        private void LoadCache()
         {
             Datas = new Dictionary<uint, CacheData>();
             Templates = new Dictionary<uint, CacheTemplate>();

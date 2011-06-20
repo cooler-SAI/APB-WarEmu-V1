@@ -14,11 +14,13 @@ namespace MapServer
         static void Main(string[] args)
         {
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
-            Log.Texte("", ",---.o", ConsoleColor.Cyan);
-            Log.Texte("", "`---..,---.,---.,---.,---.", ConsoleColor.Cyan);
-            Log.Texte("", "    |||---'|   ||   |,---|", ConsoleColor.Cyan);
-            Log.Texte("", "`---'``---'`   '`   '`---^ Core", ConsoleColor.Cyan);
-            Log.Texte("", "http://siennacore.com", ConsoleColor.Blue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ Rift", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
 

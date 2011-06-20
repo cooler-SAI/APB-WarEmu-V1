@@ -8,7 +8,7 @@ using FrameWork;
 namespace Common
 {
     [Rpc(false, System.Runtime.Remoting.WellKnownObjectMode.Singleton, 1)]
-    public class CharacterMgr : RpcObject
+    public class CharactersMgr : RpcObject
     {
         static public MySQLObjectDatabase CharactersDB;
 

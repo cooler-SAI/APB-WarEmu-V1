@@ -18,7 +18,7 @@ namespace CharacterServer
             if (From.Acct == null || From.Rm == null)
                 return;
 
-            LobbyCharacterListResponse ListRp = From.Rm.GetObject<CharacterMgr>().GetCharactersList(From.Acct.Id);
+            LobbyCharacterListResponse ListRp = From.Rm.GetObject<CharactersMgr>().GetCharactersList(From.Acct.Id);
 
             foreach (LobbyCharacterEntry Entry in ListRp.Characters)
                 Entry.Email = From.Acct.Email;
