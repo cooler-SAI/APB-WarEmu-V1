@@ -47,7 +47,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\FrameWork\FrameWork.csproj">
+    <ProjectReference Include="..\..\..\..\FrameWork\FrameWork.csproj">
       <Project>{D5C98F3A-D5D2-4AED-A5A7-06D2DE095095}</Project>
       <Name>FrameWork</Name>
     </ProjectReference>

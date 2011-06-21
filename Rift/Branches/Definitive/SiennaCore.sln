@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapServer", "MapServer\MapS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmServer", "RealmServer\RealmServer.csproj", "{E468567D-45D8-4F07-A7AC-17703D67B62D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork", "..\FrameWork\FrameWork.csproj", "{D5C98F3A-D5D2-4AED-A5A7-06D2DE095095}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameWork", "..\..\..\FrameWork\FrameWork.csproj", "{D5C98F3A-D5D2-4AED-A5A7-06D2DE095095}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

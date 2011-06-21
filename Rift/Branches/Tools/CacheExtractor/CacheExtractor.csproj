@@ -48,13 +48,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\FrameWork\FrameWork.csproj">
+      <Project>{D5C98F3A-D5D2-4AED-A5A7-06D2DE095095}</Project>
+      <Name>FrameWork</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Definitive\Common\Common.csproj">
       <Project>{2045BAA2-435E-442E-8387-A2884E2E3413}</Project>
       <Name>Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\FrameWork\FrameWork.csproj">
-      <Project>{D5C98F3A-D5D2-4AED-A5A7-06D2DE095095}</Project>
-      <Name>FrameWork</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
