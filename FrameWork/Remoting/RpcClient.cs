@@ -12,6 +12,26 @@ using System.Diagnostics;
 
 namespace FrameWork
 {
+    [Serializable]
+    public class RpcClientConfig
+    {
+        public RpcClientConfig()
+        {
+
+        }
+
+        public RpcClientConfig(string RpcLocalIp, string RpcServerIp, int RpcServerPort)
+        {
+            this.RpcLocalIp = RpcLocalIp;
+            this.RpcServerIp = RpcServerIp;
+            this.RpcServerPort = RpcServerPort;
+        }
+
+        public string RpcLocalIp;
+        public string RpcServerIp;
+        public int RpcServerPort;
+    }
+
     public class RpcClient
     {
         static public int PING_TIME = 200;

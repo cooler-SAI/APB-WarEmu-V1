@@ -10,6 +10,25 @@ using System.Runtime.Remoting.Channels.Tcp;
 
 namespace FrameWork
 {
+    [Serializable]
+    public class RpcServerConfig
+    {
+        public RpcServerConfig()
+        {
+        }
+
+        public RpcServerConfig(string RpcIp, int RpcPort, int RpcClientStartingPort)
+        {
+            this.RpcIp = RpcIp;
+            this.RpcPort = RpcPort;
+            this.RpcClientStartingPort = RpcClientStartingPort;
+        }
+
+        public string RpcIp;
+        public int RpcPort;
+        public int RpcClientStartingPort;
+    }
+
     public class RpcServer
     {
         static public int PING_TIME = 200;
