@@ -31,7 +31,7 @@ namespace WorldServer
 
         public void AddObject(Object Obj)
         {
-            //Log.Succes("AddObject", "[" + X + "," + Y + "] Cell Add " + Obj.Name);
+            //Log.Success("AddObject", "[" + X + "," + Y + "] Cell Add " + Obj.Name);
 
             if (Obj.IsPlayer())
             {
@@ -44,7 +44,7 @@ namespace WorldServer
         }
         public void RemoveObject(Object Obj)
         {
-            //Log.Succes("RemoveObject", "[" + X + "," + Y + "] Cell Remove " + Obj.Name);
+            //Log.Success("RemoveObject", "[" + X + "," + Y + "] Cell Remove " + Obj.Name);
 
             if (Obj.IsPlayer())
                 _Players.Remove(Obj.GetPlayer());
@@ -63,7 +63,7 @@ namespace WorldServer
             if (_Loaded)
                 return;
 
-            Log.Succes("Load", "[" + X + "," + Y + "] Chargement ");
+            Log.Success("Load", "[" + X + "," + Y + "] Chargement ");
             foreach (Creature_spawn Spawn in Spawns.CreatureSpawns)
             {
                 Region.CreateCreature(Spawn);

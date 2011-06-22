@@ -4,47 +4,57 @@ using System.Linq;
 using System.Text;
 
 using Common;
-
 using FrameWork;
-using FrameWork.Logger;
-using FrameWork.Config;
 
 namespace LobbyServer
 {
     class Program
     {
-        static public AccountMgr AcctMgr = null;
         static public LobbyConfigs Config = null;
+
+        static public RpcClient Client = null;
+        static public TCPServer Server = null;
+
+        static public AccountMgr AcctMgr
+        {
+            get
+            {
+                return Client.GetServerObject<AccountMgr>();
+            }
+        }
 
         static void Main(string[] args)
         {
-            Log.Info("LobbyServer", "Lancement...");
-
-            AppDomain.CurrentDomain.Load("Common");
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(onError);
 
-            try
-            {
-                if (!EasyServer.InitLog("Lobby", "Configs/Lobby.log"))
-                    return;
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ Warhammer", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
-                ConfigMgr.LoadConfigs();
-                Config = ConfigMgr.GetConfig<LobbyConfigs>();
+            // Loading all configs files
+            ConfigMgr.LoadConfigs();
+            Config = ConfigMgr.GetConfig<LobbyConfigs>();
 
-                if (!EasyServer.InitRpcClient("LobbyAccount",Config.AccountCacher.Key,Config.AccountCacher.Ip,Config.AccountCacher.Port))
-                    return;
+            // Loading log level from file
+            if (!Log.InitLog(Config.LogLevel, "LobbyServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-                if (!EasyServer.Listen<TCPServer>(Config.ClientPort,"Lobby"))
-                    return;
+            Client = new RpcClient("LobbyServer", Config.RpcInfo.RpcLocalIp, 1);
+            if (!Client.Start(Config.RpcInfo.RpcServerIp, Config.RpcInfo.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
 
-                AcctMgr = new AccountMgr();
-            }
-            catch (Exception e)
-            {
-                Log.Error("Erreur", e.ToString());
-            }
+            if (!TCPManager.Listen<TCPServer>(Config.ClientPort, "LobbyServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            EasyServer.StartConsole();
+            Server = TCPManager.GetTcp<TCPServer>("LobbyServer");
+
+            ConsoleMgr.Start();
         }
 
         static void onError(object sender, UnhandledExceptionEventArgs e)

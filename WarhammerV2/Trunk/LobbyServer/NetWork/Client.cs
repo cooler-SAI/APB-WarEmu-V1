@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace LobbyServer
 {
@@ -34,10 +33,11 @@ namespace LobbyServer
         private int m_expectSize = 0;
         public bool m_expectData = false;
 
-        protected override void OnReceive(PacketIn packet)
+        protected override void OnReceive(byte[] Packet)
         {
             lock (this)
             {
+                PacketIn packet = new PacketIn(Packet, 0, Packet.Length);
                 long byteLeft = packet.Length;
 
                 while (byteLeft > 0)

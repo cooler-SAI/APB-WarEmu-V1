@@ -16,7 +16,7 @@ namespace WorldServer
         {
             GameClient cclient = client as GameClient;
 
-            Log.Succes("F_INIT_PLAYER", "Lancement !");
+            Log.Success("F_INIT_PLAYER", "Lancement !");
 
             Player Plr = cclient.Plr;
 

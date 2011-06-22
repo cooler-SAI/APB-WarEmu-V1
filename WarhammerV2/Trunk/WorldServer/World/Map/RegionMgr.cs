@@ -63,7 +63,7 @@ namespace WorldServer
 
         public void Stop()
         {
-            Log.Succes("RegionMgr", "[" + RegionId + "] Stop");
+            Log.Success("RegionMgr", "[" + RegionId + "] Stop");
             Running = false;
 
             foreach (ZoneMgr Zone in ZonesMgr)
@@ -290,7 +290,7 @@ namespace WorldServer
         public bool AddObject(Object Obj,UInt16 ZoneId)
         {
             if(Obj.IsChapter())
-                Log.Succes("AddObject", "RegionMgr : " + Obj.Name + "," + ZoneId);
+                Log.Success("AddObject", "RegionMgr : " + Obj.Name + "," + ZoneId);
 
             Zone_Info Info = GetZone_Info(ZoneId);
             if (Info == null)
@@ -311,7 +311,7 @@ namespace WorldServer
         }
         public bool RemoveObject(Object Obj)
         {
-            Log.Succes("RemoveObject", Obj.Name);
+            Log.Success("RemoveObject", Obj.Name);
 
             if (Obj.IsInWorld())
                 Obj.Zone.RemoveObject(Obj);

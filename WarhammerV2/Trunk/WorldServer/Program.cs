@@ -9,7 +9,7 @@ using Common;
 
 using FrameWork;
 using FrameWork.Logger;
-using FrameWork.Database;
+using FrameWork;
 using FrameWork.Config;
 
 namespace WorldServer

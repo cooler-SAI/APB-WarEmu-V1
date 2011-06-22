@@ -25,7 +25,7 @@ namespace WorldServer
             UInt16 Unk3 = packet.GetUint16();
             UInt16 OffY = packet.GetUint16();
 
-            Log.Succes("F_DUMP_STATIC", "X=" + OffX + ",Y=" + OffY);
+            Log.Success("F_DUMP_STATIC", "X=" + OffX + ",Y=" + OffY);
 
             cclient.Plr.SetOffset(OffX, OffY);
         }

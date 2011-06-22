@@ -6,7 +6,7 @@ using System.Text;
 using Common;
 
 using FrameWork.Logger;
-using FrameWork.Database;
+using FrameWork;
 using FrameWork.NetWork;
 
 namespace WorldServer
@@ -24,7 +24,7 @@ namespace WorldServer
             if (Infos != null)
                 _Zone_Info.AddRange(Infos);
 
-            Log.Succes("LoadZone_Info", "Loaded " + _Zone_Info.Count + " Zone_Info");
+            Log.Success("LoadZone_Info", "Loaded " + _Zone_Info.Count + " Zone_Info");
         }
         static public Zone_Info GetZone_Info(UInt16 ZoneId)
         {
@@ -32,7 +32,7 @@ namespace WorldServer
         }
         static public List<Zone_Info> GetZoneRegion(UInt16 RegionId)
         {
-            Log.Succes("GetZoneRegion", "RegionId=" + RegionId);
+            Log.Success("GetZoneRegion", "RegionId=" + RegionId);
             return _Zone_Info.FindAll(zone => zone != null && zone.Region == RegionId);
         }
 
@@ -55,7 +55,7 @@ namespace WorldServer
                         _Chapters.Add(Info.Entry, Info);
             }
 
-            Log.Succes("LoadChapter_Infos", "Loaded " + _Chapters.Count + " Chapter_Infos");
+            Log.Success("LoadChapter_Infos", "Loaded " + _Chapters.Count + " Chapter_Infos");
         }
         static public Chapter_Info GetChapter(uint Entry)
         {
@@ -94,7 +94,7 @@ namespace WorldServer
                         _Toks.Add(Info.Entry, Info);
             }
 
-            Log.Succes("LoadTok_Infos", "Loaded " + _Toks.Count + " Tok_Infos");
+            Log.Success("LoadTok_Infos", "Loaded " + _Toks.Count + " Tok_Infos");
         }
         static public Tok_Info GetTok(uint Entry)
         {
@@ -119,7 +119,7 @@ namespace WorldServer
                 if (!_Item_Infos.ContainsKey(Info.Entry))
                     _Item_Infos.Add(Info.Entry, Info);
 
-            Log.Succes("LoadItem_Infoss", "Loaded " + _Item_Infos.Count + " Item_Infoss");
+            Log.Success("LoadItem_Infoss", "Loaded " + _Item_Infos.Count + " Item_Infoss");
         }
 
         static public Item_Infos GetItem_Infos(uint Entry)
@@ -137,7 +137,7 @@ namespace WorldServer
 
         static public RegionMgr GetRegion(UInt16 RegionId,bool Create)
         {
-            Log.Succes("GetRegion", "RegionId=" + RegionId);
+            Log.Success("GetRegion", "RegionId=" + RegionId);
 
             lock (_Regions)
             {
@@ -154,7 +154,7 @@ namespace WorldServer
 
         static public void Stop()
         {
-            Log.Succes("WorldMgr", "Stop");
+            Log.Success("WorldMgr", "Stop");
             foreach (RegionMgr Mgr in _Regions)
                 Mgr.Stop();
         }
@@ -171,7 +171,7 @@ namespace WorldServer
             foreach (Xp_Info Info in Infos)
                 _Xp_Infos.Add(Info.Level, Info);
 
-            Log.Succes("LoadXp_Info", "Loaded " + _Xp_Infos.Count + " Xp_Infos");
+            Log.Success("LoadXp_Info", "Loaded " + _Xp_Infos.Count + " Xp_Infos");
         }
 
         static public Xp_Info GetXp_Info(byte Level)
@@ -214,7 +214,7 @@ namespace WorldServer
             foreach (Renown_Info Info in Infos)
                 _Renown_Infos.Add(Info.Level, Info);
 
-            Log.Succes("LoadRenown_Info", "Loaded " + Infos.Length + " Renown_Info");
+            Log.Success("LoadRenown_Info", "Loaded " + Infos.Length + " Renown_Info");
         }
 
         static public Renown_Info GetRenown_Info(byte Level)
@@ -239,7 +239,7 @@ namespace WorldServer
                    if(Proto != null)
                         _Protos.Add(Proto.Entry, Proto);
 
-           Log.Succes("LoadCreatureProto", "Loaded " + _Protos.Count + " CreatureProtos");
+           Log.Success("LoadCreatureProto", "Loaded " + _Protos.Count + " CreatureProtos");
         }
         static public Creature_proto GetCreatureProto(uint Entry)
         {
@@ -264,7 +264,7 @@ namespace WorldServer
                     _Spawns.Add(Spawn.Guid,Spawn);
 
 
-            Log.Succes("LoadCreatureSpawns","Loaded " + _Spawns.Count + " Creature Spawns");
+            Log.Success("LoadCreatureSpawns","Loaded " + _Spawns.Count + " Creature Spawns");
         }
 
         #endregion
@@ -286,7 +286,7 @@ namespace WorldServer
                     _CreatureItems[Item.Entry].Add(Item);
                 }
 
-            Log.Succes("LoadCreatureItems", "Loaded " + (Items != null ? Items.Count : 0) + " Creature items");
+            Log.Success("LoadCreatureItems", "Loaded " + (Items != null ? Items.Count : 0) + " Creature items");
         }
         static public List<Creature_item> GetCreatureItems(uint Entry)
         {
@@ -324,7 +324,7 @@ namespace WorldServer
                     _Creature_loots[Loot.Entry].Add(Loot);
                 }
 
-            Log.Succes("LoadCreatureLoots","Loaded " + Loots.Count + " loots");
+            Log.Success("LoadCreatureLoots","Loaded " + Loots.Count + " loots");
         }
         static public List<Creature_loot> GetLoots(uint Entry)
         {
@@ -362,7 +362,7 @@ namespace WorldServer
                     else
                         _Vendors[Vendor.Entry].Add(Vendor);
 
-            Log.Succes("LoadCreatureVendors", "Loaded " + Vendors.Count + " Vendors");
+            Log.Success("LoadCreatureVendors", "Loaded " + Vendors.Count + " Vendors");
         }
 
         static public void SendVendor(Player Plr, uint Entry)
@@ -376,7 +376,7 @@ namespace WorldServer
             while (Count > 0)
             {
                 byte ToSend = (byte)Math.Min(Count, MAX_ITEM_PAGE);
-                Log.Succes("SendVendor", "ToSend=" + ToSend + ",Max=" + Count);
+                Log.Success("SendVendor", "ToSend=" + ToSend + ",Max=" + Count);
                 if (ToSend <= Count)
                     Count -= ToSend;
                 else
@@ -393,7 +393,7 @@ namespace WorldServer
         {
             Count = (byte)Math.Min(Count, Vendors.Count);
 
-            Log.Succes("SendVendorPage", "Count=" + Count + ",Page=" + Page + ",ItmC=" + Vendors.Count);
+            Log.Success("SendVendorPage", "Count=" + Count + ",Page=" + Page + ",ItmC=" + Vendors.Count);
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_INIT_STORE);
             Out.WriteByte(0);
@@ -424,7 +424,7 @@ namespace WorldServer
             ushort Count = (ushort)(Menu.Count > 0 ? Menu.Count : 1);
             List<Creature_vendor> Vendors = GetVendorItems(Entry);
 
-            Log.Succes("BuyItemVendor", "Count=" + Count + ",Num=" + Num + ",Size=" + Vendors.Count);
+            Log.Success("BuyItemVendor", "Count=" + Count + ",Num=" + Num + ",Size=" + Vendors.Count);
 
             if (Vendors.Count <= Num)
                 return;
@@ -465,7 +465,7 @@ namespace WorldServer
                 foreach (Quest Q in Quests)
                     _Quests.Add(Q.Entry, Q);
 
-            Log.Succes("LoadQuests", "Loaded " + _Quests.Count + " Quests");
+            Log.Success("LoadQuests", "Loaded " + _Quests.Count + " Quests");
         }
         static public Quest GetQuest(ushort QuestID)
         {
@@ -485,7 +485,7 @@ namespace WorldServer
                 foreach (Quest_Objectives Obj in Objectives)
                     _Objectives.Add(Obj.Guid, Obj);
 
-            Log.Succes("LoadQuestsObjectives", "Loaded " + _Objectives.Count + " Quests Objectives");
+            Log.Success("LoadQuestsObjectives", "Loaded " + _Objectives.Count + " Quests Objectives");
         }
         static public Quest_Objectives GetQuestObjective(int Guid)
         {
@@ -515,7 +515,7 @@ namespace WorldServer
                 }
             }
 
-            Log.Succes("LoadCreatureQuests", "Loaded " + _CreatureStarter.Count + " Quests Creature Starter");
+            Log.Success("LoadCreatureQuests", "Loaded " + _CreatureStarter.Count + " Quests Creature Starter");
         }
         static public List<Quest> GetStartQuests(UInt32 CreatureID)
         {
@@ -545,7 +545,7 @@ namespace WorldServer
                 }
             }
 
-            Log.Succes("LoadCreatureQuests", "Loaded " + _CreatureFinisher.Count + " Quests Creature Finisher");
+            Log.Success("LoadCreatureQuests", "Loaded " + _CreatureFinisher.Count + " Quests Creature Finisher");
         }
         static public List<Quest> GetFinishersQuests(UInt32 CreatureID)
         {
@@ -585,7 +585,7 @@ namespace WorldServer
 
         static public void LoadRelation()
         {
-            Log.Succes("LoadRelation", "Chargement et Attachement des dataobjects");
+            Log.Success("LoadRelation", "Chargement et Attachement des dataobjects");
 
             LoadRegionSpawns();
             LoadVendorsItem();
@@ -635,11 +635,11 @@ namespace WorldServer
                 Log.Error("LoadRegionSpawns", "[" + InvalidSpawns + "] Invalid Spawns");
 
             foreach (KeyValuePair<string, int> Counts in RegionCount)
-                Log.Succes("Region", "[" + Counts.Key + "] : " + Counts.Value);
+                Log.Success("Region", "[" + Counts.Key + "] : " + Counts.Value);
         }
         static public void LoadVendorsItem()
         {
-            Log.Succes("LoadVendorsItem", "Attachement des Item_Infoss aux vendeurs");
+            Log.Success("LoadVendorsItem", "Attachement des Item_Infoss aux vendeurs");
 
             long InvalidCreatures = 0;
             long InvalidItems = 0;
@@ -669,7 +669,7 @@ namespace WorldServer
         }
         static public void LoadLoots()
         {
-            Log.Succes("LoadLoots", "Attachement des loots aux creatures");
+            Log.Success("LoadLoots", "Attachement des loots aux creatures");
             long MissingCreature = 0;
             long MissingItemProto =0;
 
@@ -704,7 +704,7 @@ namespace WorldServer
         }
         static public void LoadChapters()
         {
-            Log.Succes("LoadChapters", "Attachement aux zones");
+            Log.Success("LoadChapters", "Attachement aux zones");
 
             long InvalidChapters = 0;
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 using FrameWork.Config;
-using FrameWork.Database;
+using FrameWork;
 using FrameWork.RpcV3;
 
 namespace WorldServer

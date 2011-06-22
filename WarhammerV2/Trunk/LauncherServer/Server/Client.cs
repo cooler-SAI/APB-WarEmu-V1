@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
-using FrameWork.Database;
+using FrameWork;
 
 namespace LauncherServer
 {
@@ -27,10 +25,11 @@ namespace LauncherServer
             Log.Debug("Client", "Deconnexion " + GetIp);
         }
 
-        protected override void OnReceive(PacketIn pack)
+        protected override void OnReceive(byte[] Packet)
         {
             lock (this)
             {
+                PacketIn pack = new PacketIn(Packet, 0, Packet.Length);
                 pack.Size = pack.GetUint32();
                 pack.Opcode = pack.GetUint8();
 

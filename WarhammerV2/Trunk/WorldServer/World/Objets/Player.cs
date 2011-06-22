@@ -43,7 +43,7 @@ namespace WorldServer
         }
         static public Player CreatePlayer(GameClient Client, Character Char)
         {
-            Log.Succes("Player", "CreatePlayer");
+            Log.Success("Player", "CreatePlayer");
 
             GameClient Other = (Client.Server as TCPServer).GetClientByAccount(Client,Char.AccountId);
             if (Other != null)
@@ -61,7 +61,7 @@ namespace WorldServer
                 Name = Name.ToLower();
                 GuildName = GuildName.ToLower();
 
-                Log.Succes("GetPlayers", "N=" + Name + ",G=" + GuildName + ",C=" + Career + ",Z=" + ZoneId + ",Ml=" + MinLevel + ",MaL=" + MaxLevel);
+                Log.Success("GetPlayers", "N=" + Name + ",G=" + GuildName + ",C=" + Career + ",Z=" + ZoneId + ",Ml=" + MinLevel + ",MaL=" + MaxLevel);
 
                 foreach (Player Plr in _Players)
                 {
@@ -85,7 +85,7 @@ namespace WorldServer
         }
         static public void Stop()
         {
-            Log.Succes("Player", "Stop");
+            Log.Success("Player", "Stop");
             foreach (Player Plr in _Players)
                 Plr.Quit();
         }
@@ -127,7 +127,7 @@ namespace WorldServer
 
         public Player(GameClient Client,Character Info) : base()
         {
-            Log.Succes("Player", "Construction de " + Info.Name);
+            Log.Success("Player", "Construction de " + Info.Name);
 
             _Client = Client;
             _Info = Info;
@@ -144,7 +144,7 @@ namespace WorldServer
         }
         ~Player()
         {
-            Log.Succes("Player", "Destruction de " + Name);
+            Log.Success("Player", "Destruction de " + Name);
         }
         public override void OnLoad()
         {
@@ -635,7 +635,7 @@ namespace WorldServer
         }
         public override void SendMeTo(Player Plr)
         {
-            Log.Succes("SendMeTo", "[" + Plr.Name + "] voit : " + Name);
+            Log.Success("SendMeTo", "[" + Plr.Name + "] voit : " + Name);
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_CREATE_PLAYER);
             Out.WriteUInt16((UInt16)_Client.Id);
@@ -692,7 +692,7 @@ namespace WorldServer
         }
         public void Quit()
         {
-            Log.Succes("Player", "Quit");
+            Log.Success("Player", "Quit");
 
             Leaving = true;
 

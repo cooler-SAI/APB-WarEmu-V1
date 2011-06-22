@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace LobbyServer
 {
@@ -19,7 +18,6 @@ namespace LobbyServer
             PacketOut.OpcodeReverse = false;
             PacketOut.SizeReverse = false;
             PacketOut.Struct = PackStruct.SizeAndOpcode;
-            DisposePackets = false;
         }
 
         protected override BaseClient GetNewClient()

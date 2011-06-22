@@ -86,7 +86,7 @@ namespace WorldServer
             {
                 List<Quest> Starts = Starter.FindAll(q => Plr.QtsInterface.CanStartQuest(q) );
 
-                Log.Succes("QuestInterface", "Handle Interact : Starts=" + Starts.Count);
+                Log.Success("QuestInterface", "Handle Interact : Starts=" + Starts.Count);
 
                 Out.WriteByte((byte)Starts.Count);
                 foreach (Quest Q in Starts)
@@ -107,7 +107,7 @@ namespace WorldServer
             {
                 List<Quest> Finishs = Finisher.FindAll(q => Plr.QtsInterface.CanEndQuest(q));
 
-                Log.Succes("QuestInterface", "Handle Interact : Finishs=" + Finishs.Count);
+                Log.Success("QuestInterface", "Handle Interact : Finishs=" + Finishs.Count);
 
                 Out.WriteByte((byte)Finishs.Count);
                 foreach (Quest Q in Finishs)

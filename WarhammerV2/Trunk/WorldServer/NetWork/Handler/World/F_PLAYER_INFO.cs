@@ -26,7 +26,7 @@ namespace WorldServer
             UInt16 Oid = packet.GetUint16();
             packet.Skip(1);
             byte Faction = packet.GetUint8();
-            Log.Succes("F_PLAYER_INFO", "Target de =" + Oid);
+            Log.Success("F_PLAYER_INFO", "Target de =" + Oid);
             cclient.Plr.CbtInterface.SetTarget(Oid, (GameData.TargetTypes)Faction);
         }
     }

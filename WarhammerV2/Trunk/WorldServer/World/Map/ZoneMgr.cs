@@ -26,7 +26,7 @@ namespace WorldServer
         }
         public void Stop()
         {
-            Log.Succes("ZoneMgr", "[" + ZoneId + "] Stop");
+            Log.Success("ZoneMgr", "[" + ZoneId + "] Stop");
         }
 
 
@@ -66,7 +66,7 @@ namespace WorldServer
         }
         public void RemoveObject(Object Obj)
         {
-            Log.Succes("RemoveObjectZone", Obj.Name);
+            Log.Success("RemoveObjectZone", Obj.Name);
             lock (_Objects)
             {
                 _Objects.Remove(Obj);

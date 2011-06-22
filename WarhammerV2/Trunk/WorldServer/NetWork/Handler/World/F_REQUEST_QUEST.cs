@@ -16,7 +16,7 @@ namespace WorldServer
         {
             GameClient cclient = client as GameClient;
 
-            Log.Succes("HandlePacket", "Handle F_REQUEST_QUEST");
+            Log.Success("HandlePacket", "Handle F_REQUEST_QUEST");
 
             UInt16 QuestID = packet.GetUint16();
             byte State = packet.GetUint8();

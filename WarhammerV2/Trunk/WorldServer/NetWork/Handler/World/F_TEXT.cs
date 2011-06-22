@@ -22,7 +22,7 @@ namespace WorldServer
             byte Unk = packet.GetUint8();
             string Text = packet.GetString((int)(packet.Length-packet.Position));
 
-            Log.Succes("Text", "Unk = " + Unk + ",String="+Text);
+            Log.Success("Text", "Unk = " + Unk + ",String="+Text);
             CommandMgr.HandleText(cclient.Plr, Text);
         }
     }

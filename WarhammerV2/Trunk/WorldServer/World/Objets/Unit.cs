@@ -218,7 +218,7 @@ namespace WorldServer
 
             RealDamage = (int)(Damage-( (float)(DmgReduce/100 * DmgReduce)));
 
-            Log.Succes("Strike","["+ Name + "] Strike -> " + Target.Name +"Dmg="+Damage+",Reduce="+DmgReduce);
+            Log.Success("Strike","["+ Name + "] Strike -> " + Target.Name +"Dmg="+Damage+",Reduce="+DmgReduce);
 
             SendAttackState(Target, (UInt16)RealDamage, (UInt16)Damage);
             SendAttackMovement(Target);
@@ -258,7 +258,7 @@ namespace WorldServer
         }
         public void SendAttackMovement(Unit Target)
         {
-            Log.Succes("SendAttackMovement", "Target =" + Target.Name);
+            Log.Success("SendAttackMovement", "Target =" + Target.Name);
 
             /*PacketOut Out = new PacketOut((byte)Opcodes.F_HIT_PLAYER);
             Out.WriteUInt16(Oid);
@@ -274,7 +274,7 @@ namespace WorldServer
             if (Target == null || Target.IsDead)
                 return;
 
-            Log.Succes("DealDamage",Name + " Deal " + RealDamage + "/"+Target.Health + "/"+Target.PctHealth + "% To " + Target.Name);
+            Log.Success("DealDamage",Name + " Deal " + RealDamage + "/"+Target.Health + "/"+Target.PctHealth + "% To " + Target.Name);
             CbtInterface.OnDealDamage(Target, (UInt32)RealDamage);
 
             if (Target.Health <= RealDamage)

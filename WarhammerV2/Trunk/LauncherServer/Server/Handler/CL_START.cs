@@ -4,16 +4,14 @@ using System.Linq;
 using System.Text;
 
 using Common;
-
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace LauncherServer
 {
-    [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.CL_START, "onStart")]
-    public class CL_START : IPacketHandler
+    public class LauncherPackets : IPacketHandler
     {
-        public void HandlePacket(BaseClient client, PacketIn packet)
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.CL_START, 0, "OnStart")]
+        static public void CL_START(BaseClient client, PacketIn packet)
         {
             Client cclient = client as Client;
 
@@ -33,6 +31,44 @@ namespace LauncherServer
             }
             else 
                 Out.WriteByte(1);
+
+            cclient.SendTCP(Out);
+        }
+
+
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.CL_CHECK, 0, "OnCheck")]
+        static public void HandlePacket(BaseClient client, PacketIn packet)
+        {
+            Client cclient = client as Client;
+            uint Version = packet.GetUint32();
+
+            Log.Debug("CL_CHECK", "Vérification du launcher : " + Version);
+
+            PacketOut Out = new PacketOut((byte)Opcodes.LCR_CHECK);
+
+            if (Version != Program.Version)
+            {
+                Out.WriteByte((byte)CheckResult.LAUNCHER_VERSION); // Version incorrect + message
+                Out.WriteString(Program.Message);
+                client.SendTCP(Out);
+
+                cclient.Disconnect();
+                return;
+            }
+
+            byte File = packet.GetUint8();
+            UInt64 Len = 0;
+
+            if (File >= 1)
+                Len = packet.GetUint64();
+
+            if ((long)Len != Program.Info.Length)
+            {
+                Out.WriteByte((byte)CheckResult.LAUNCHER_FILE);
+                Out.WriteString(Program.StrInfo);
+            }
+            else
+                Out.WriteByte((byte)CheckResult.LAUNCHER_OK);
 
             cclient.SendTCP(Out);
         }

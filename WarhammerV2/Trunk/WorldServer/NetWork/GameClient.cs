@@ -41,7 +41,7 @@ namespace WorldServer
         }
         public override void OnDisconnect()
         {
-            Log.Succes("GameClient", "Deconnexion " + GetIp + ",Id="+Id);
+            Log.Success("GameClient", "Deconnexion " + GetIp + ",Id="+Id);
             if (Plr != null)
                 Plr._Client = null;
         }

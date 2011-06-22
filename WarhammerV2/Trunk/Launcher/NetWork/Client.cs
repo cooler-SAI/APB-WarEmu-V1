@@ -47,7 +47,7 @@ namespace Launcher
             }
             catch (Exception e)
             {
-                MessageBox.Show("Impossible de se connecter au serveur !");
+                MessageBox.Show("Can not connect to : " + IP + ":" + Port + "\n" + e.Message);
                 return false;
             }
 
@@ -339,7 +339,7 @@ namespace Launcher
         {
             if(!Enum.IsDefined(typeof(Opcodes),(byte)packet.Opcode))
             {
-                Print("Opcode invalide : " + packet.Opcode.ToString("X02"));
+                Print("Invalid opcode : " + packet.Opcode.ToString("X02"));
                 return;
             }
 
@@ -380,7 +380,7 @@ namespace Launcher
 
                     if (Res >= 1)
                     {
-                        Print("Erreur : Compte introuvable ou invalide !");
+                        Print("Error : wrong account !\n\r");
                         return;
                     }
                     else

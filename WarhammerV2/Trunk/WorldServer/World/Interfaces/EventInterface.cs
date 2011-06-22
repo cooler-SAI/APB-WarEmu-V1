@@ -57,7 +57,7 @@ namespace WorldServer
             if (Interval == 0 )
                 ToDelete = true;
 
-            Log.Succes("AddEvent", "Del =" + Del.Method.Name + ",Name" + Del.Target.ToString());
+            Log.Success("AddEvent", "Del =" + Del.Method.Name + ",Name" + Del.Target.ToString());
         }
 
         public bool Update(int Tick)

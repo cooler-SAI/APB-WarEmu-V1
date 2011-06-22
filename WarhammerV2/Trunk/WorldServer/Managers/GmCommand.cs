@@ -86,7 +86,7 @@ namespace WorldServer
         {
             string Command = GetString(ref Values);
 
-            Log.Succes("DecodeCommand", "Command = " + Command);
+            Log.Success("DecodeCommand", "Command = " + Command);
 
             GmCommandHandler Handler = Handlers.Find(com => com != null && com.Name.StartsWith(Command));
 

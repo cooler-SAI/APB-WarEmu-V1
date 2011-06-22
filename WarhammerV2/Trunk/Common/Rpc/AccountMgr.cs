@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 
-using FrameWork.Logger;
-using FrameWork.RpcV3;
-using FrameWork.Database;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace Common
 {
@@ -20,16 +17,16 @@ namespace Common
         AUTH_ACCT_SUSPENDED = 0x0E
     };
 
-    [V3RpcAttributes(new string[] { "Launcher", "AccountCacher" , "LobbyAccount" ,"WorldAccount" })]
-    public class AccountMgr : ARpc
+    [Rpc(true, System.Runtime.Remoting.WellKnownObjectMode.Singleton,1)]
+    public class AccountMgr : RpcObject
     {
-        // Database des compte (initialisé par l'AccountChacher)
+        // Account Database
         static public MySQLObjectDatabase Database = null;
 
         #region Account
 
-        // Liste des comptes classé par nom de compte
-        static public Dictionary<string, Account> _Accounts = new Dictionary<string, Account>();
+        // Account : Username,Account
+        public Dictionary<string, Account> _Accounts = new Dictionary<string, Account>();
 
         public bool LoadAccount(string Username)
         {
@@ -164,7 +161,7 @@ namespace Common
 
         #region Realm
 
-        static public Dictionary<byte, Realm> _Realms = new Dictionary<byte, Realm>();
+        public Dictionary<byte, Realm> _Realms = new Dictionary<byte, Realm>();
         
         public void LoadRealms()
         {
@@ -179,7 +176,7 @@ namespace Common
                 if (_Realms.ContainsKey(Rm.RealmId))
                     return false;
 
-                Log.Info("AddRealm", "Ajout du royaume : " + Rm.Name);
+                Log.Info("AddRealm", "New Realm : " + Rm.Name);
 
                 _Realms.Add(Rm.RealmId, Rm);
             }
@@ -199,23 +196,23 @@ namespace Common
         {
             lock (_Realms)
                 foreach (Realm Rm in _Realms.Values)
-                    if (Rm.RpcId == RpcId)
+                    if (Rm != null && Rm.Info != null && Rm.Info.RpcID == RpcId)
                         return Rm;
 
             return null;
         }
-        public bool UpdateRealm(int RpcId, byte RealmId)
+        public bool UpdateRealm(RpcClientInfo Info, byte RealmId)
         {
             Realm Rm = GetRealm(RealmId);
 
             if (Rm != null)
             {
-                Log.Succes("Realm", "Royaume (" + RpcId + ") en ligne");
-                Rm.RpcId = RpcId;
+                Log.Success("Realm", "Realm (" + Info.RpcID + ") online");
+                Rm.Info = Info;
             }
             else
             {
-                Log.Error("UpdateRealm", "Royaume (" + RealmId + ") Introuvable : veuillez remplir la table Realm");
+                Log.Error("UpdateRealm", "Realm (" + RealmId + ") missing : Please complete the table 'realm'");
                 return false;
             }
 
@@ -232,13 +229,13 @@ namespace Common
                 Out.WriteUInt16(0);
                 lock (_Realms)
                 {
-                    Log.Info("BuildRealm", "Envoi de " + _Realms.Count + " royaumes");
+                    Log.Info("BuildRealm", "Sending " + _Realms.Count + " realm(s)");
                     Out.WriteUInt32((uint)_Realms.Count);
 
                     foreach (Realm Rm in _Realms.Values)
                     {
                         Out.WriteByte(Rm.RealmId);
-                        Out.WriteByte((byte)(Rm.RpcId != 0 ? 1 : 0));
+                        Out.WriteByte((byte)(Rm.Info != null ? 1 : 0));
                         Out.WriteUInt32(1);
                         Out.WriteByte(Rm.RealmId);
                         Out.WriteByte(Rm.RealmId);
@@ -293,13 +290,13 @@ namespace Common
                 return new byte[0];
             }
         }
-        public override void Disconnected(int Id)
+        public override void OnClientConnected(RpcClientInfo Info)
         {
-            Realm Rm = GetRealmByRpc(Id);
-            if (Rm != null && Rm.RpcId == Id)
+            Realm Rm = GetRealmByRpc(Info.RpcID);
+            if (Rm != null && Rm.Info.RpcID == Info.RpcID)
             {
-                Log.Error("Realm", "Déconnection du world : " + Rm.Name);
-                Rm.RpcId = 0;
+                Log.Error("Realm", "Realm offline : " + Rm.Name);
+                Rm.Info = null;
             }
         }
 

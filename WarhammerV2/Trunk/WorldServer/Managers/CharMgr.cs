@@ -5,7 +5,7 @@ using System.Text;
 
 using Common;
 
-using FrameWork.Database;
+using FrameWork;
 using FrameWork.Logger;
 using FrameWork.NetWork;
 
@@ -92,7 +92,7 @@ namespace WorldServer
 
             _RandomNames = Program.WorldDatabase.SelectAllObjects<Random_name>().ToList<Random_name>();
 
-            Log.Succes("CharacterMgr", "Chargement de " + Chars.Count + " CharacterInfo");
+            Log.Success("CharacterMgr", "Chargement de " + Chars.Count + " CharacterInfo");
         }
 
         static public void LoadCharacterInfoItems()
@@ -109,7 +109,7 @@ namespace WorldServer
                 }
                 else _InfoItems[Info.CareerLine].Add(Info);
 
-            Log.Succes("CharacterMgr", "Chargement de " + _InfoItems.Count + " CharacterInfo_Item");
+            Log.Success("CharacterMgr", "Chargement de " + _InfoItems.Count + " CharacterInfo_Item");
         }
 
         static public void LoadCharacterInfoStats()
@@ -124,7 +124,7 @@ namespace WorldServer
                 }
                 else _InfoStats[Info.CareerLine].Add(Info);
 
-            Log.Succes("CharacterMgr", "Chargement de " + Chars.Count + " CharacterInfo_Stats");
+            Log.Success("CharacterMgr", "Chargement de " + Chars.Count + " CharacterInfo_Stats");
         }
 
         static public CharacterInfo GetCharacterInfo(byte Career)
@@ -230,7 +230,7 @@ namespace WorldServer
             foreach (Character Char in Chars)
                 AddChar(Char);
 
-            Log.Succes("LoadCharacters","Chargement de " + Chars.Length + " Personnages");
+            Log.Success("LoadCharacters","Chargement de " + Chars.Length + " Personnages");
         }
         static public bool NameIsUsed(string Name)
         {
@@ -373,7 +373,7 @@ namespace WorldServer
                     foreach (Character_items Itm in Items)
                         LoadItem(Itm);
 
-            Log.Succes("LoadItems", "Chargement de " + Items.Count + " Items");
+            Log.Success("LoadItems", "Chargement de " + Items.Count + " Items");
         }
         static public void LoadItem(Character_items CharItem)
         {

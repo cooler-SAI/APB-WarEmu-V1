@@ -228,13 +228,13 @@ namespace WorldServer
 
         public void CombatStart(Unit Fighter)
         {
-            Log.Succes("CombatStart", Obj.Name + " Start combat with " + Fighter.Name);
+            Log.Success("CombatStart", Obj.Name + " Start combat with " + Fighter.Name);
             State = AiState.FIGHTING;
         }
 
         public void CombatStop()
         {
-            Log.Succes("CombatStop", Obj.Name + " Stop combat ");
+            Log.Success("CombatStop", Obj.Name + " Stop combat ");
             State = AiState.STANDING;
             ClearTargets();
 

@@ -5,51 +5,56 @@ using System.Text;
 using System.Reflection;
 
 using Common;
-
 using FrameWork;
-using FrameWork.Logger;
-using FrameWork.Config;
-using FrameWork.Database;
 
 namespace AccountCacher
 {
     class Program
     {
         static public AccountMgr AcctMgr = null;
-        static public AccountConfigs Conf = null;
-        static public MySQLObjectDatabase AccountDatabase = null;
+        static public AccountConfigs Config = null;
+        static public RpcServer Server;
 
         [STAThread]
         static void Main(string[] args)
         {
-            Log.Info("AccountCacher", "Lancement");
-
-            Assembly.Load("Common");
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(onError);
 
-            if(!EasyServer.InitLog("AccountCacher","Configs/AccountCacher.log"))
-                return;
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ Warhammer", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
+            // Loading all configs files
             ConfigMgr.LoadConfigs();
-            Conf = ConfigMgr.GetConfig<AccountConfigs>();
+            Config = ConfigMgr.GetConfig<AccountConfigs>();
 
-            AccountDatabase = DBManager.Start(Conf.AccountDatabase.Total(), ConnectionType.DATABASE_MYSQL, "Accounts");
-            if (AccountDatabase == null)
-                return;
+            // Loading log level from file
+            if (!Log.InitLog(Config.LogLevel, "AccountCacher"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            if (!EasyServer.InitRpcServer("AccountCacher", Conf.RpcServer))
-                return;
+            AccountMgr.Database = DBManager.Start(Config.AccountDB.Total(), ConnectionType.DATABASE_MYSQL, "Accounts");
+            if (AccountMgr.Database == null)
+                ConsoleMgr.WaitAndExit(2000);
 
-            AcctMgr = new AccountMgr();
-            AccountMgr.Database = AccountDatabase;
+            Server = new RpcServer(Config.RpcInfo.RpcClientStartingPort, 1);
+            if (!Server.Start(Config.RpcInfo.RpcIp, Config.RpcInfo.RpcPort))
+                ConsoleMgr.WaitAndExit(2000);
+
+            AcctMgr = Server.GetLocalObject<AccountMgr>();
             AcctMgr.LoadRealms();
 
-            EasyServer.StartConsole();
+            ConsoleMgr.Start();
         }
 
         static void onError(object sender, UnhandledExceptionEventArgs e)
         {
-            Log.Error("onError", e.ExceptionObject.ToString());
+            Log.Error("OnError", e.ExceptionObject.ToString());
         }
     }
 }

@@ -150,7 +150,7 @@ namespace WorldServer
 
                 if (Loots.Count > 0 || Money > 0)
                 {
-                    Log.Succes("LootMgr", "Generate Loot : " + Loots.Count);
+                    Log.Success("LootMgr", "Generate Loot : " + Loots.Count);
                     Loot Lt = new Loot();
                     Lt.Money = Money;
                     Lt.Loots = Loots.ToArray();

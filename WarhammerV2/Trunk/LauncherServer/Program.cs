@@ -5,63 +5,89 @@ using System.Text;
 using System.IO;
 
 using Common;
-
 using FrameWork;
-using FrameWork.Logger;
 
 namespace LauncherServer
 {
     class Program
     {
-        static public AccountMgr AcctMgr = null;
-        static public int Version = 1;
-        static public string Message = "Invalide";
+        static public RpcClient Client = null;
+        static public LauncherConfig Config = null;
+        static public TCPServer Server = null;
+
+        static public int Version
+        {
+            get
+            {
+                return Config.Version;
+            }
+        }
+        static public string Message
+        {
+            get
+            {
+                return Config.Message;
+            }
+        }
+
         static public FileInfo Info;
         static public string StrInfo;
+
+        static public AccountMgr AcctMgr
+        {
+            get
+            {
+                return Client.GetServerObject<AccountMgr>();
+            }
+        }
 
         [STAThread]
         static void Main(string[] args)
         {
-            Log.Info("LauncherServer", "Lancement...");
-
-            AppDomain.CurrentDomain.Load("Common");
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(onError);
 
-            if (!EasyServer.InitLog("Launcher", "Configs/Launcher.log"))
-                return;
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ Warhammer", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
-            if (!EasyServer.InitConfig("Configs/Launcher.xml", "Launcher"))
-                return;
+            // Loading all configs files
+            ConfigMgr.LoadConfigs();
+            Config = ConfigMgr.GetConfig<LauncherConfig>();
 
-            if(!EasyServer.InitRpcClient("Launcher",
-                EasyServer.GetConfValue<string>("Launcher","AccountCacher","Key"),
-                EasyServer.GetConfValue<string>("Launcher","AccountCacher","Ip"),
-                EasyServer.GetConfValue<int>("Launcher","AccountCacher","Port")))
-                return;
+            // Loading log level from file
+            if (!Log.InitLog(Config.LogLevel, "LauncherServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            Version = EasyServer.GetConfValue<int>("Launcher", "LauncherServer", "Version");
-            Message = EasyServer.GetConfValue<string>("Launcher", "LauncherServer", "Message");
+            Client = new RpcClient("LauncherServer", Config.RpcInfo.RpcLocalIp, 1);
+            if (!Client.Start(Config.RpcInfo.RpcServerIp, Config.RpcInfo.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
+
             Info = new FileInfo("Configs/mythloginserviceconfig.xml");
             if (!Info.Exists)
             {
-                Log.Error("Configs/mythloginserviceconfig.xml", "Fichier de configuration introuvable");
-                return;
+                Log.Error("Configs/mythloginserviceconfig.xml", "Config file missing !");
+                ConsoleMgr.WaitAndExit(5000);
             }
+
             StrInfo = Info.OpenText().ReadToEnd();
 
-            if(!EasyServer.Listen<TCPServer>(
-                EasyServer.GetConfValue<int>("Launcher","LauncherServer","Port"),
-                "Launcher"))
-                return;
+            if (!TCPManager.Listen<TCPServer>(Config.LauncherServerPort, "LauncherServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            AcctMgr = new AccountMgr();
+            Server = TCPManager.GetTcp<TCPServer>("LauncherServer");
 
-            EasyServer.StartConsole();
+            ConsoleMgr.Start();
         }
 
         static void onError(object sender, UnhandledExceptionEventArgs e)
         {
-            Log.Error("onError", e.ExceptionObject.ToString());
+            Log.Error("OnError", e.ExceptionObject.ToString());
         }
     }
 }

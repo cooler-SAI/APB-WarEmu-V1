@@ -46,7 +46,7 @@ namespace WorldServer
                     return;
                 }
 
-                Log.Succes("OnCreate", "Création d'un nouveau personnage : " + Name);
+                Log.Success("OnCreate", "Création d'un nouveau personnage : " + Name);
 
                 Character Char = new Character();
                 Char.AccountId = cclient._Account.AccountId;

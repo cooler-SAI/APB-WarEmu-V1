@@ -57,18 +57,18 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(120, 28);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(43, 13);
+            this.label1.Size = new System.Drawing.Size(47, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Compte";
+            this.label1.Text = "Account";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(119, 52);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(71, 13);
+            this.label2.Size = new System.Drawing.Size(53, 13);
             this.label2.TabIndex = 3;
-            this.label2.Text = "Mot de passe";
+            this.label2.Text = "Password";
             // 
             // B_start
             // 
@@ -76,7 +76,7 @@
             this.B_start.Name = "B_start";
             this.B_start.Size = new System.Drawing.Size(75, 23);
             this.B_start.TabIndex = 4;
-            this.B_start.Text = "Start";
+            this.B_start.Text = "Connect";
             this.B_start.UseVisualStyleBackColor = true;
             this.B_start.Click += new System.EventHandler(this.B_start_Click);
             // 
@@ -113,9 +113,9 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(259, 28);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(49, 13);
+            this.label3.Size = new System.Drawing.Size(55, 13);
             this.label3.TabIndex = 7;
-            this.label3.Text = "Lanuage";
+            this.label3.Text = "Language";
             this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
             // Accueil

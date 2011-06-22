@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Config;
-using FrameWork.Database;
-using FrameWork.RpcV3;
+using FrameWork;
 
 namespace AccountCacher
 {
-    [ConfigAttributes("Configs/Account.xml")]
-    public class AccountConfigs : Config
+    [aConfigAttributes("Configs/Account.xml")]
+    public class AccountConfigs : aConfig
     {
-        public DatabaseInfo AccountDatabase = new DatabaseInfo();
-        public RpcServerInfo RpcServer = new RpcServerInfo("Pass", 2100);
+        public RpcServerConfig RpcInfo = new RpcServerConfig("127.0.0.1", 6800, 6000);
+        public DatabaseInfo AccountDB = new DatabaseInfo();
+        public LogInfo LogLevel = new LogInfo();
     }
 }

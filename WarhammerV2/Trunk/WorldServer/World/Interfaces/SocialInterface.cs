@@ -29,7 +29,7 @@ namespace WorldServer
                     Load(Social);
 
             base.Load();
-            Log.Succes("SocialInterface", "Chargement de " + _Socials.Count + " Socials pour " + Obj.Oid);
+            Log.Success("SocialInterface", "Chargement de " + _Socials.Count + " Socials pour " + Obj.Oid);
         }
         public EventInterface Load(Character_social Social)
         {
@@ -109,7 +109,7 @@ namespace WorldServer
 
         public void AddFriend(string Name)
         {
-            Log.Succes("AddFriend", "Name=" + Name);
+            Log.Success("AddFriend", "Name=" + Name);
             Player Plr = GetPlayer();
             if (Plr == null)
                 return;
@@ -163,7 +163,7 @@ namespace WorldServer
         }
         public void RemoveFriend(string Name)
         {
-            Log.Succes("RemoveFriend", "Name=" + Name);
+            Log.Success("RemoveFriend", "Name=" + Name);
             Player Plr = GetPlayer();
             if (Plr == null)
                 return;
@@ -202,7 +202,7 @@ namespace WorldServer
 
         public bool OnPlayerConnect(Object Sender, EventArgs Args)
         {
-            Log.Succes("OnPlayerConnect", "Name=" + Sender.Name);
+            Log.Success("OnPlayerConnect", "Name=" + Sender.Name);
 
             Player Plr = GetPlayer();
             if (Plr == null)
@@ -220,7 +220,7 @@ namespace WorldServer
         }
         public bool OnPlayerLeave(Object Sender, EventArgs Args)
         {
-            Log.Succes("OnPlayerLeave", "Name=" + Sender.Name);
+            Log.Success("OnPlayerLeave", "Name=" + Sender.Name);
 
             Player Plr = GetPlayer();
             if (Plr == null)

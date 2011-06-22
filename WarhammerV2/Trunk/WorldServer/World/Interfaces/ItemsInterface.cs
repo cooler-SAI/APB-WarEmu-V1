@@ -157,7 +157,7 @@ namespace WorldServer
         {
             foreach (Item Itm in DuplicatedSlot)
             {
-                Log.Succes("CheckDuplicated", "Item dupliqué : " + Itm.Info.Name);
+                Log.Success("CheckDuplicated", "Item dupliqué : " + Itm.Info.Name);
                 Itm.SlotId = GetFreeInventorySlot();
                 Items[Itm.SlotId] = Itm;
             }
@@ -225,7 +225,7 @@ namespace WorldServer
         {
             if (Itm == null || !Obj.IsPlayer())
                 return;
-            Log.Succes("EquipItem", "Itm=" + Itm.Info.Name);
+            Log.Success("EquipItem", "Itm=" + Itm.Info.Name);
 
             Player Plr = Obj.GetPlayer();
 
@@ -238,7 +238,7 @@ namespace WorldServer
         {
             if (Itm == null || !Obj.IsPlayer())
                 return;
-            Log.Succes("UnEquipItem", "Itm=" + Itm.Info.Name);
+            Log.Success("UnEquipItem", "Itm=" + Itm.Info.Name);
             Player Plr = Obj.GetPlayer();
 
             foreach (KeyValuePair<byte, UInt16> Stats in Itm.Info._Stats)
@@ -579,7 +579,7 @@ namespace WorldServer
             Item IFrom = GetItemInSlot(From);
             Item ITo = GetItemInSlot(To);
 
-            Log.Succes("MoveSlot", "From=" + From + ",To=" + To);
+            Log.Success("MoveSlot", "From=" + From + ",To=" + To);
 
             if (CanMove(ITo, From) && CanMove(IFrom, To))
             {
@@ -631,7 +631,7 @@ namespace WorldServer
             if (To == AUTO_EQUIP_SLOT)
                 To = GenerateAutoSlot(From);
 
-            Log.Succes("MoveSlot", "From=" + From + ",To=" + To +",Count="+Count);
+            Log.Success("MoveSlot", "From=" + From + ",To=" + To +",Count="+Count);
 
             if (To == 0)
                 return false;
@@ -752,12 +752,12 @@ namespace WorldServer
                     SlotId = IFrom.Info.SlotId;
             }
 
-            Log.Succes("Generate", "ItemSlot=" + IFrom.Info.SlotId + ",generated=" + SlotId);
+            Log.Success("Generate", "ItemSlot=" + IFrom.Info.SlotId + ",generated=" + SlotId);
             return SlotId;
         }
         public void DeleteItem(UInt16 SlotId,UInt16 Count,bool Delete)
         {
-            Log.Succes("DeleteItem", "SlotId=" + SlotId);
+            Log.Success("DeleteItem", "SlotId=" + SlotId);
             Item IFrom = GetItemInSlot(SlotId);
             if (IFrom != null)
             {
@@ -896,7 +896,7 @@ namespace WorldServer
                 return;
             }
 
-            Log.Succes("HandleTrade", "Status=" + Status + ",Oid=" + Oid);
+            Log.Success("HandleTrade", "Status=" + Status + ",Oid=" + Oid);
 
             Trading = Plr.Region.GetPlayer(Oid);
 
@@ -958,7 +958,7 @@ namespace WorldServer
         }
         public void Trade(ItemsInterface DistInter)
         {
-            Log.Succes("Trade", "TRADE !");
+            Log.Success("Trade", "TRADE !");
 
             Player Me = Obj.GetPlayer();
             Player Other = DistInter.Obj.GetPlayer();
@@ -1061,7 +1061,7 @@ namespace WorldServer
             UInt16 SlotId = (UInt16)(Menu.Num + (Menu.Page * 256));
             UInt16 Count = Menu.Count;
 
-            Log.Succes("SellItem", "Count=" + Count + ",SlotId=" + SlotId);
+            Log.Success("SellItem", "Count=" + Count + ",SlotId=" + SlotId);
 
             List<UInt16> ToSend = new List<ushort>();
             Item Itm = GetItemInSlot(SlotId);
@@ -1097,7 +1097,7 @@ namespace WorldServer
         {
             UInt16 SlotId = (ushort)(BuyBack.Count - 1 - (Menu.Num + (Menu.Page * 256)));
 
-            Log.Succes("BuyBackItem", "SlotId=" + SlotId);
+            Log.Success("BuyBackItem", "SlotId=" + SlotId);
 
             UInt16 FreeSlot = GetFreeInventorySlot();
             if (FreeSlot <= 0)

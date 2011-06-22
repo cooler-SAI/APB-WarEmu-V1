@@ -38,7 +38,6 @@ namespace Launcher
 
             SHA256Managed Sha = new SHA256Managed();
             string CP = Username + ":" + NCPass;
-            Print("Cp=" + CP);
             byte[] Result = Sha.ComputeHash(UTF8Encoding.UTF8.GetBytes(CP));
 
             PacketOut Out = new PacketOut((byte)Opcodes.CL_START);

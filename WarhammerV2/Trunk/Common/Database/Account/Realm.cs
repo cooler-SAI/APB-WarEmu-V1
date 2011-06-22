@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Database;
+using FrameWork;
 
 namespace Common
 {
-    [DataTable(PreCache = false, TableName = "Realms", DatabaseName = "Account")]
+    [DataTable(PreCache = false, TableName = "Realms", DatabaseName = "Accounts")]
     [Serializable]
     public class Realm : DataObject
     {
@@ -16,7 +16,7 @@ namespace Common
         private string _Language;
         private string _Adresse;
         private int _Port;
-        public int RpcId = 0;
+        public RpcClientInfo Info;
 
         private string _Allow_trials = "1";
         private string _Charfxeravailable;

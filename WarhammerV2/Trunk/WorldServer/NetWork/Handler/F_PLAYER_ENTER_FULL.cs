@@ -28,7 +28,7 @@ namespace WorldServer
             packet.Skip(4);
             characterSlot = packet.GetUint8();
 
-            Log.Succes("F_PLAYER_ENTER_FULL", "Entrer en jeu de : " + CharName + ",Slot=" + characterSlot);
+            Log.Success("F_PLAYER_ENTER_FULL", "Entrer en jeu de : " + CharName + ",Slot=" + characterSlot);
 
             if (Program.Rm.RealmId != serverID)
                 cclient.Disconnect();

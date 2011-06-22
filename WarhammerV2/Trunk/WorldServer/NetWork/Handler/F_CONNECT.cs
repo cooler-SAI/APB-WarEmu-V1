@@ -36,7 +36,7 @@ namespace WorldServer
                     cclient.Disconnect();
                 else
                 {
-                    Log.Succes("F_CONNECT", "MeId=" + cclient.Id);
+                    Log.Success("F_CONNECT", "MeId=" + cclient.Id);
 
                     GameClient Other = (cclient.Server as TCPServer).GetClientByAccount(cclient,cclient._Account.AccountId);
                     if (Other != null)

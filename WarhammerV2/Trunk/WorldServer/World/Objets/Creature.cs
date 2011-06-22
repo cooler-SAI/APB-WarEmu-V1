@@ -161,7 +161,7 @@ namespace WorldServer
         }
         public override void SendInteract(Player Plr, InteractMenu Menu)
         {
-            Log.Succes("SendInteract", "" + Name + " -> " + Plr.Name + ",Type="+InteractType);
+            Log.Success("SendInteract", "" + Name + " -> " + Plr.Name + ",Type="+InteractType);
 
             if (!IsDead)
             {
