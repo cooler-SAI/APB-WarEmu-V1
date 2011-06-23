@@ -77,7 +77,6 @@
     <Compile Include="Managers\GmCommand.cs" />
     <Compile Include="Managers\LoaderMgr.cs" />
     <Compile Include="Managers\LootsMgr.cs" />
-    <Compile Include="Managers\RandomMgr.cs" />
     <Compile Include="NetWork\Handler\AuthentificationHandlers.cs" />
     <Compile Include="NetWork\Handler\CharacterHandlers.cs" />
     <Compile Include="NetWork\Handler\CombatHandlers.cs" />
