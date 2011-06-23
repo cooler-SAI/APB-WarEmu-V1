@@ -8,6 +8,13 @@ namespace FrameWork
     static public class Log
     {
         static private LogConfig _config = new LogConfig();
+        static public LogConfig Config
+        {
+            get
+            {
+                return _config;
+            }
+        }
 
         static private FileInfo DumpFile = null;
         static private FileStream FSDump = null;

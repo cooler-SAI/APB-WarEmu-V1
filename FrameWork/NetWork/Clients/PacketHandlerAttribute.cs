@@ -24,6 +24,12 @@ namespace FrameWork
         // Client State level for handle this packet
         protected int m_statelevel;
 
+        public PacketHandlerAttribute(PacketHandlerType type, int opcode, string desc)
+            : this(type,opcode,0,desc)
+        {
+
+        }
+
         public PacketHandlerAttribute(PacketHandlerType type, int opcode,int statelevel, string desc)
         {
             m_type = type;

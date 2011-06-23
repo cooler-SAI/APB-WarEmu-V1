@@ -87,6 +87,7 @@
     <Compile Include="Remoting\RpcObject.cs" />
     <Compile Include="Remoting\RpcServer.cs" />
     <Compile Include="Remoting\ServerMgr.cs" />
+    <Compile Include="Utils\RandomMgr.cs" />
     <Compile Include="zlib\Adler32.cs" />
     <Compile Include="zlib\Deflate.cs" />
     <Compile Include="zlib\InfBlocks.cs" />
