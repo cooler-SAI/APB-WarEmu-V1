@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Common;
-
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace WorldServer
 {
@@ -141,7 +139,7 @@ namespace WorldServer
             if (Social != null)
             {
                 Social.Friend = 1;
-                Program.CharacterDatabase.SaveObject(Social);
+                CharMgr.Database.SaveObject(Social);
 
                 Event = EventInterface.GetEventInterface((uint)Social.DistCharacterId);
             }
@@ -153,7 +151,7 @@ namespace WorldServer
                 Social.DistCharacterId = Char.CharacterId;
                 Social.Friend = 1;
                 Social.Ignore = 0;
-                Program.CharacterDatabase.AddObject(Social);
+                CharMgr.Database.AddObject(Social);
 
                 Event = Load(Social);
             }
@@ -193,7 +191,7 @@ namespace WorldServer
             Plr.SendLocalizeString(Social.DistName, GameData.Localized_text.TEXT_SN_FRIEND_REMOVE);
 
             _Socials.Remove(Social);
-            Program.CharacterDatabase.DeleteObject(Social);
+            CharMgr.Database.DeleteObject(Social);
         }
 
         #endregion

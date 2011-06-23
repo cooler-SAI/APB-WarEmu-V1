@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Common;
-
-using FrameWork.Logger;
+using FrameWork;
 
 namespace WorldServer
 {

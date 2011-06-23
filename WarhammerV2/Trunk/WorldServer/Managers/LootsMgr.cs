@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
-
 using Common;
+using FrameWork;
 
 namespace WorldServer
 {
@@ -119,26 +117,26 @@ namespace WorldServer
                 List<LootInfo> Loots = new List<LootInfo>();
                 foreach (Creature_loot Loot in CreatureLoots)
                 {
-                    float Pct = Loot.Pct * Program.Conf.GlobalLootRate;
+                    float Pct = Loot.Pct * Program.Config.GlobalLootRate;
                     if (Pct <= 0)
                         Pct = 0.01f;
 
                     switch ((SystemData.ItemRarity)Loot.Info.Rarity)
                     {
                         case SystemData.ItemRarity.ITEMRARITY_COMMON:
-                            Pct *= Program.Conf.CommonLootRate;
+                            Pct *= Program.Config.CommonLootRate;
                             break;
                         case SystemData.ItemRarity.ITEMRARITY_UNCOMMON:
-                            Pct *= Program.Conf.UncommonLootRate;
+                            Pct *= Program.Config.UncommonLootRate;
                             break;
                         case SystemData.ItemRarity.ITEMRARITY_RARE:
-                            Pct *= Program.Conf.RareLootRate;
+                            Pct *= Program.Config.RareLootRate;
                             break;
                         case SystemData.ItemRarity.ITEMRARITY_VERY_RARE:
-                            Pct *= Program.Conf.VeryRareLootRate;
+                            Pct *= Program.Config.VeryRareLootRate;
                             break;
                         case SystemData.ItemRarity.ITEMRARITY_ARTIFACT:
-                            Pct *= Program.Conf.ArtifactLootRate;
+                            Pct *= Program.Config.ArtifactLootRate;
                             break;
                     };
 

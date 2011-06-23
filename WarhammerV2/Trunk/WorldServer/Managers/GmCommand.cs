@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-
 using Common;
+using FrameWork;
 
 namespace WorldServer
 {
@@ -331,7 +330,7 @@ namespace WorldServer
             Plr.SendMessage(Plr, "Saved [" + Info.Name + "] to '" + Plr.X + "','" + Plr.Y + "'", SystemData.ChatLogFilters.CHATLOGFILTERS_SAY);
 
             Info.Dirty = true;
-            Program.WorldDatabase.SaveObject(Info);
+            WorldMgr.Database.SaveObject(Info);
 
             return true;
         }
@@ -349,7 +348,7 @@ namespace WorldServer
 
             Chapter.TokExploreEntry = (UInt32)TokExplore;
             Chapter.Dirty = true;
-            Program.WorldDatabase.SaveObject(Chapter);
+            WorldMgr.Database.SaveObject(Chapter);
 
             return true;
         }
@@ -367,7 +366,7 @@ namespace WorldServer
 
             Chapter.TokEntry = (UInt32)TokEntry;
             Chapter.Dirty = true;
-            Program.WorldDatabase.SaveObject(Chapter);
+            WorldMgr.Database.SaveObject(Chapter);
 
             return true;
         }

@@ -6,58 +6,66 @@ using System.Threading;
 using System.Reflection;
 
 using Common;
-
 using FrameWork;
-using FrameWork.Logger;
-using FrameWork;
-using FrameWork.Config;
 
 namespace WorldServer
 {
     class Program
     {
-        static public WorldConfigs Conf = null;
-        static public AccountMgr AcctMgr = null;
-        static public MySQLObjectDatabase WorldDatabase = null;
-        static public MySQLObjectDatabase CharacterDatabase = null;
-
+        static public WorldConfigs Config = null;
+        static public RpcClient Client = null;
+        static public AccountMgr AcctMgr
+        {
+            get
+            {
+                return Client.GetServerObject<AccountMgr>();
+            }
+        }
+        static public TCPServer Server;
         static public Realm Rm;
 
         [STAThread]
         static void Main(string[] args)
         {
-            Log.Info("WorldServer", "Lancement...");
-
-            Assembly.Load("Common");
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(onError);
             Console.CancelKeyPress += new ConsoleCancelEventHandler(OnClose);
 
-            if (!EasyServer.InitLog("WorldServer", "Configs/WorldServer.log"))
-                return;
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ Warhammer", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
+            // Loading all configs files
             ConfigMgr.LoadConfigs();
-            Conf = ConfigMgr.GetConfig<WorldConfigs>();
+            Config = ConfigMgr.GetConfig<WorldConfigs>();
+
+            // Loading log level from file
+            if (!Log.InitLog(Config.LogLevel, "WorldServer"))
+                ConsoleMgr.WaitAndExit(2000);
+
+            CharMgr.Database = DBManager.Start(Config.CharacterDatabase.Total(), ConnectionType.DATABASE_MYSQL, "Characters");
+            if (CharMgr.Database == null)
+                ConsoleMgr.WaitAndExit(2000);
+
+            WorldMgr.Database = DBManager.Start(Config.WorldDatabase.Total(), ConnectionType.DATABASE_MYSQL, "World");
+            if (WorldMgr.Database == null)
+                ConsoleMgr.WaitAndExit(2000);
+
+            Client = new RpcClient("WorldServer-" + Config.RealmId, Config.AccountCacherInfo.RpcLocalIp, 1);
+            if (!Client.Start(Config.AccountCacherInfo.RpcServerIp, Config.AccountCacherInfo.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
             
 
-            if (!EasyServer.InitRpcClient("WorldAccount",Conf.RpcAccountClient))
-                return;
-
-            CharacterDatabase = DBManager.Start(Conf.CharacterDatabase.Total(), ConnectionType.DATABASE_MYSQL, "Characters");
-            if (CharacterDatabase == null)
-                return;
-            CharMgr.Database = CharacterDatabase;
-
-            WorldDatabase = DBManager.Start(Conf.WorldDatabase.Total(), ConnectionType.DATABASE_MYSQL, "World");
-            if (WorldDatabase == null)
-                return;
-
-            AcctMgr = new AccountMgr();
-
-            Rm = Program.AcctMgr.GetRealm(Conf.RealmId);
+            Rm = Program.AcctMgr.GetRealm(Config.RealmId);
 
             if (Rm == null)
             {
-                Log.Error("WorldServer", "Royaume (" + Conf.RealmId + ") introuvable");
+                Log.Error("WorldServer", "Realm (" + Config.RealmId + ") not found");
                 return;
             }
 
@@ -88,16 +96,19 @@ namespace WorldServer
 
             LoaderMgr.Wait();
             WorldMgr.LoadRelation();
+
             int End = Environment.TickCount;
 
-            Log.Info("Loader", "Chargement de la database en : " + (End - Start) + "ms");
+            Log.Info("Loader", "Database loaded in : " + (End - Start) + "ms");
 
-            if (!EasyServer.Listen<TCPServer>(Rm.Port,"World"))
-                return;
+            if (!TCPManager.Listen<TCPServer>(Rm.Port, "World"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            Program.AcctMgr.UpdateRealm(EasyServer.GetRpcClientId("WorldAccount"), Rm.RealmId);
+            Server = TCPManager.GetTcp<TCPServer>("World");
 
-            EasyServer.StartConsole();
+            AcctMgr.UpdateRealm(Client.Info, Rm.RealmId);
+
+            ConsoleMgr.Start();
         }
 
         static void onError(object sender, UnhandledExceptionEventArgs e)

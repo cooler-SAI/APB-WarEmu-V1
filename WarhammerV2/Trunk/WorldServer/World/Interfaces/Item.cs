@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Common;
-
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace WorldServer
 {
@@ -132,7 +130,7 @@ namespace WorldServer
             if (CharItem != null)
             {
                 CharItem.CharacterId = CharacterId;
-                Program.CharacterDatabase.SaveObject(CharItem);
+                CharMgr.Database.SaveObject(CharItem);
             }
             else 
                 Create(CharacterId);

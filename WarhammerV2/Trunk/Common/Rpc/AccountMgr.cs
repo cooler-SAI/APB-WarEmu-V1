@@ -207,7 +207,7 @@ namespace Common
 
             if (Rm != null)
             {
-                Log.Success("Realm", "Realm (" + Info.RpcID + ") online");
+                Log.Success("Realm", "Realm (" + Rm.Name + ") online at " + Info.Ip+":"+Info.Port);
                 Rm.Info = Info;
             }
             else

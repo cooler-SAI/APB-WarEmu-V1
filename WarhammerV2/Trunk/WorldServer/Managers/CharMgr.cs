@@ -4,10 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Common;
-
 using FrameWork;
-using FrameWork.Logger;
-using FrameWork.NetWork;
 
 namespace WorldServer
 {
@@ -85,19 +82,19 @@ namespace WorldServer
 
         static public void LoadCharacterInfo()
         {
-            IList<CharacterInfo> Chars = Program.WorldDatabase.SelectAllObjects<CharacterInfo>();
+            IList<CharacterInfo> Chars = WorldMgr.Database.SelectAllObjects<CharacterInfo>();
             foreach (CharacterInfo Info in Chars)
                 if (!_Infos.ContainsKey(Info.Career))
                     _Infos.Add(Info.Career, Info);
 
-            _RandomNames = Program.WorldDatabase.SelectAllObjects<Random_name>().ToList<Random_name>();
+            _RandomNames = WorldMgr.Database.SelectAllObjects<Random_name>().ToList<Random_name>();
 
             Log.Success("CharacterMgr", "Chargement de " + Chars.Count + " CharacterInfo");
         }
 
         static public void LoadCharacterInfoItems()
         {
-            IList<CharacterInfo_item> Chars = Program.WorldDatabase.SelectAllObjects<CharacterInfo_item>();
+            IList<CharacterInfo_item> Chars = WorldMgr.Database.SelectAllObjects<CharacterInfo_item>();
             
             if(Chars != null)
             foreach (CharacterInfo_item Info in Chars)
@@ -114,7 +111,7 @@ namespace WorldServer
 
         static public void LoadCharacterInfoStats()
         {
-            IList<CharacterInfo_stats> Chars = Program.WorldDatabase.SelectAllObjects<CharacterInfo_stats>();
+            IList<CharacterInfo_stats> Chars = WorldMgr.Database.SelectAllObjects<CharacterInfo_stats>();
             foreach (CharacterInfo_stats Info in Chars)
                 if (!_InfoStats.ContainsKey(Info.CareerLine))
                 {
@@ -186,7 +183,7 @@ namespace WorldServer
 
                 if (Id >= MAX_CHARACTERS || Id <= 0)
                 {
-                    Log.Error("CreateChar", "CharacterMax Atteind !!");
+                    Log.Error("CreateChar", "Maximum number of characters reaches !");
                     return false;
                 }
 
@@ -230,7 +227,7 @@ namespace WorldServer
             foreach (Character Char in Chars)
                 AddChar(Char);
 
-            Log.Success("LoadCharacters","Chargement de " + Chars.Length + " Personnages");
+            Log.Success("LoadCharacters",Chars.Length + "  : Character(s) loaded");
         }
         static public bool NameIsUsed(string Name)
         {
@@ -238,7 +235,6 @@ namespace WorldServer
             {
                 if (_Chars[i] != null)
                 {
-                    Log.Debug("Check", "Name=" + _Chars[i].Name);
                     if (_Chars[i].Name.ToLower() == Name.ToLower())
                         return true;
                 }
@@ -285,7 +281,6 @@ namespace WorldServer
                     for (UInt16 SlotId = 14; SlotId < 30; ++SlotId)
                     {
                         Item = Items.Find(item => item != null && item.SlotId == SlotId);
-                        Log.Debug("Envoi", "Item =" + Item);
                         if (Item == null)
                             Out.WriteUInt32(0);
                         else
@@ -305,7 +300,6 @@ namespace WorldServer
                     for (UInt16 SlotId = 10; SlotId < 13; ++SlotId)
                     {
                         Item = Items.Find(item => item != null && item.SlotId == SlotId);
-                        Log.Debug("Envoi", "Item =" + Item);
                         Out.WriteUInt16(0);
                         if (Item == null)
                             Out.WriteUInt16(0);
@@ -373,7 +367,7 @@ namespace WorldServer
                     foreach (Character_items Itm in Items)
                         LoadItem(Itm);
 
-            Log.Success("LoadItems", "Chargement de " + Items.Count + " Items");
+            Log.Success("LoadItems",Items.Count + " : Characters items loaded");
         }
         static public void LoadItem(Character_items CharItem)
         {
@@ -399,7 +393,7 @@ namespace WorldServer
                 _Items[Itm.Guid] = null;
             }
 
-            Program.CharacterDatabase.DeleteObject(Itm);
+            CharMgr.Database.DeleteObject(Itm);
         }
 
         static public List<Character_items> GetItemChar(int CharacterId)
@@ -426,7 +420,7 @@ namespace WorldServer
                     }
 
 
-            Log.Error("CreateItem", "Nombre maximum d'item atteind !");
+            Log.Error("CreateItem", "Maximum number of items reaches !");
             return false;
         }
         static public void RemoveItemsChar(int CharacterId)
@@ -436,7 +430,7 @@ namespace WorldServer
                 for (int i = 0; i < _Items.Length; ++i)
                     if (_Items[i] != null && _Items[i].CharacterId == CharacterId)
                     {
-                        Program.CharacterDatabase.DeleteObject(_Items[i]);
+                        CharMgr.Database.DeleteObject(_Items[i]);
                         _Items[i] = null;
                     }
 

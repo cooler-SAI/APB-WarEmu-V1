@@ -5,9 +5,7 @@ using System.Linq;
 using System.Text;
 
 using Common;
-
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace WorldServer
 {
@@ -724,7 +722,7 @@ namespace WorldServer
         {
             ItmInterface.Save();
             CalcWorldPositions();
-            Program.CharacterDatabase.SaveObject(_Value);
+            CharMgr.Database.SaveObject(_Value);
         }
 
         #endregion

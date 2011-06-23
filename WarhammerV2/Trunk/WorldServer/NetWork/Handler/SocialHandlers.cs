@@ -4,19 +4,18 @@ using System.Linq;
 using System.Text;
 
 using Common;
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace WorldServer
 {
-    [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_SOCIAL_NETWORK, "onSocialNetWork")]
-    public class F_SOCIAL_NETWORK : IPacketHandler
+    public class SocialHandlers : IPacketHandler
     {
-        public void HandlePacket(BaseClient client, PacketIn packet)
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_SOCIAL_NETWORK, "onSocialNetWork")]
+        static public void F_SOCIAL_NETWORK(BaseClient client, PacketIn packet)
         {
             GameClient cclient = client as GameClient;
 
-            if (!cclient.IsPlaying()|| !cclient.Plr.IsInWorld())
+            if (!cclient.IsPlaying() || !cclient.Plr.IsInWorld())
                 return;
 
             Player Plr = cclient.Plr;
@@ -36,21 +35,6 @@ namespace WorldServer
                     break;
                 case 8:
                     {
-                        /*
-                         * 
-                         * 08
-                         * 00 // NameSize
-                         * 00 // Skip
-                         * 00 // G Size
-                         * 00 // Skip
-                         * 00 // Skip
-                         * 0000 // Career
-                         * 00 // Skip
-                         * FFFFFF FF02A200  ................
-                         * 0000A800 0000FFFF FFFF0128 0000366E  ...........(..6n
-                         * 
-                         */
-                        Log.Dump("SOCIAL", packet.ToArray(), 0, packet.ToArray().Length);
                         packet.Skip(1);
                         byte NameSize = packet.GetUint8();
                         packet.Skip(1);
@@ -73,9 +57,9 @@ namespace WorldServer
                         byte MinLevel = packet.GetUint8();
                         byte MaxLevel = packet.GetUint8();
 
-                        Plr.SocInterface.SendPlayers(Player.GetPlayers(Name,GuildName,Career,ZoneId,MinLevel,MaxLevel));
+                        Plr.SocInterface.SendPlayers(Player.GetPlayers(Name, GuildName, Career, ZoneId, MinLevel, MaxLevel));
 
-                    }break;
+                    } break;
 
             }
         }

@@ -5,9 +5,7 @@ using System.Text;
 using System.IO;
 
 using Common;
-
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 public enum eClientState
 {
@@ -66,8 +64,9 @@ namespace WorldServer
         public byte Unk2;
         public PacketIn packet = null;
 
-        protected override void OnReceive(PacketIn _Packet)
+        protected override void OnReceive(byte[] bytes)
         {
+            PacketIn _Packet = new PacketIn(bytes, 0, bytes.Length);
             packet = _Packet;
 
             lock (this)
