@@ -63,6 +63,12 @@ namespace Common
 
         private void LoadCache()
         {
+            bool Debug = Log.Config.Info.Debug;
+            bool Error = Log.Config.Info.Error;
+
+            Log.Config.Info.Error = false;
+            Log.Config.Info.Debug = false;
+
             Datas = new Dictionary<uint, CacheData>();
             Templates = new Dictionary<uint, CacheTemplate>();
             TextInfos = new Dictionary<long, TextInfo>();
@@ -86,6 +92,9 @@ namespace Common
                 Tm.Field40 = GetText(Tm.TextID);
                 Templates.Add(Tm.CacheID, Tm);
             }
+
+            Log.Config.Info.Error = Error;
+            Log.Config.Info.Debug = Debug;
 
             Log.Success("LoadCache", "Loaded : " + Datas.Count + Templates.Count + " Caches");
         }

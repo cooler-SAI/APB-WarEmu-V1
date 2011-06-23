@@ -51,6 +51,8 @@
     <Compile Include="Database\Accounts\Account_Banned.cs" />
     <Compile Include="Database\Accounts\Realm.cs" />
     <Compile Include="Database\Characters\Character.cs" />
+    <Compile Include="Database\Characters\RandomName.cs" />
+    <Compile Include="Database\RiftConstant.cs" />
     <Compile Include="Database\World\CacheData.cs" />
     <Compile Include="Database\World\CacheTemplate.cs" />
     <Compile Include="Database\World\TextInfo.cs" />

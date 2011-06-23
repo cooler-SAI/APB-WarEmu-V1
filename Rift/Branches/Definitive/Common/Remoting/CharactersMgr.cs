@@ -12,6 +12,11 @@ namespace Common
     {
         static public MySQLObjectDatabase CharactersDB;
 
+        public void Load()
+        {
+            LoadRandomNames();
+        }
+
         #region Realm
 
         static public Realm MyRealm;
@@ -38,6 +43,11 @@ namespace Common
             return CharactersDB.GetObjectCount<Character>("AccountId=" + AccountId);
         }
 
+        public Character GetCharacter(string Name)
+        {
+            return CharactersDB.SelectObject<Character>("Name='" + CharactersDB.Escape(Name) + "'");
+        }
+
         public LobbyCharacterListResponse GetCharactersList(long AccountId)
         {
             Character[] Chars = GetCharacters(AccountId);
@@ -61,6 +71,34 @@ namespace Common
 
             return Caches;
 
+        }
+
+        #endregion
+
+        #region Creation
+
+        public List<RandomName> RandomNames;
+
+        public void LoadRandomNames()
+        {
+            RandomNames = new List<RandomName>();
+
+            RandomNames.AddRange(CharactersDB.SelectAllObjects<RandomName>());
+
+            Log.Success("LoadRandomNames", "" + RandomNames.Count + " : Random Names loaded");
+        }
+
+        public string GetRandomName()
+        {
+            if (RandomNames != null && RandomNames.Count > 0)
+                for (int TryCount = 0; TryCount < 10; ++TryCount)
+                {
+                    int ID = RandomMgr.Next(0, RandomNames.Count - 1);
+                    if (GetCharacter(RandomNames[ID].Name) == null)
+                        return RandomNames[ID].Name;
+                }
+
+            return "RandomName";
         }
 
         #endregion

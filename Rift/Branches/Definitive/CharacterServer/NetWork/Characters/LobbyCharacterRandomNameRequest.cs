@@ -12,20 +12,31 @@ namespace CharacterServer
     public class LobbyCharacterRandomNameRequest : ISerializablePacket
     {
         [Unsigned7Bit(0)]
-        public long Field0;
+        public long Race;
+
+        [BoolBit(0)]
+        public bool Sex;
 
         [Unsigned7Bit(2)]
-        public long Field2;
+        public long Faction;
 
         [Unsigned7Bit(3)]
         public long Field3;
 
         [Unsigned7Bit(4)]
-        public long Field4;
+        public long Class;
 
         public override void OnRead(RiftClient From)
         {
-            Log.Success("RandomName", "0=" + Field0 + ",2=" + Field2 + ",3=" + Field3 + ",4=" + Field4);
+            if(From.Acct == null || From.Rm == null)
+                return;
+
+            string Name = From.Rm.GetObject<CharactersMgr>().GetRandomName();
+
+            ISerializablePacket Packet = new ISerializablePacket();
+            Packet.Opcode = (int)Opcodes.LobbyCharacterRandomNameResponse;
+            Packet.AddField(1, EPacketFieldType.ByteArray, Name);
+            From.SendSerialized(Packet);
         }
     }
 }

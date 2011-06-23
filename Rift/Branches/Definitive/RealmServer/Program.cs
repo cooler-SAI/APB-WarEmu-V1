@@ -64,6 +64,7 @@ namespace RealmServer
             // 2 : Loading CharactersMgr
             CharactersMgr.Client = Client;
             CharactersMgr.MyRealm = Config.RealmInfo;
+            Characters.Load();
 
             // 3 : Loading AccountsMgr
             Accounts.RegisterRealm(Config.RealmInfo, Client.Info);
