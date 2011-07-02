@@ -51,13 +51,15 @@
     <Compile Include="Database\Accounts\Account_Banned.cs" />
     <Compile Include="Database\Accounts\Realm.cs" />
     <Compile Include="Database\Characters\Character.cs" />
+    <Compile Include="Database\Characters\CharacterInfo.cs" />
     <Compile Include="Database\Characters\RandomName.cs" />
     <Compile Include="Database\RiftConstant.cs" />
     <Compile Include="Database\World\CacheData.cs" />
     <Compile Include="Database\World\CacheTemplate.cs" />
     <Compile Include="Database\World\TextInfo.cs" />
+    <Compile Include="NetWork\Handlers\Characters\LobbyCharacterCreateRequest.cs" />
+    <Compile Include="NetWork\Handlers\Characters\LobbyCharacterCustom.cs" />
     <Compile Include="NetWork\Handlers\World\CacheUpdate.cs" />
-    <Compile Include="NetWork\Handlers\Characters\LobbyCharacterEntry.cs" />
     <Compile Include="NetWork\Handlers\Characters\LobbyCharacterListResponse.cs" />
     <Compile Include="NetWork\Handlers\Crypto\HandshakeClientKey.cs" />
     <Compile Include="NetWork\Handlers\Crypto\HandshakeCompression.cs" />
@@ -85,6 +87,8 @@
     <Compile Include="Remoting\AccountMgr.cs" />
     <Compile Include="Remoting\ChannelMgr.cs" />
     <Compile Include="Remoting\CharactersMgr.cs" />
+    <Compile Include="Remoting\MapMgr.cs" />
+    <Compile Include="Remoting\Maps\MapServerInfo.cs" />
     <Compile Include="Remoting\WorldMgr.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -27,7 +27,7 @@ namespace CharacterServer
                 Entry.Population = 0;
                 Entry.RP = Rm.RP == 1;
                 Entry.Version = Rm.ClientVersion;
-                Entry.CharactersCount = 0;
+                Entry.CharactersCount = Rm.GetObject<CharactersMgr>().GetCharactersCount(From.Acct.Id);
                 Entry.Language = Rm.Language;
                 if (Rm.Online > 0)
                     Entry.AddField(16, EPacketFieldType.True, (bool)true);

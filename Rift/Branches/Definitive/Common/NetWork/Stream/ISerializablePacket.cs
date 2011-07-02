@@ -11,7 +11,8 @@ namespace Common
     [Serializable]
     public class ISerializablePacket : DataObject
     {
-        public ISerializablePacket()
+        public ISerializablePacket() 
+            : base()
         {
             ISerializableAttribute[] Attr = GetType().GetCustomAttributes(typeof(ISerializableAttribute), true) as ISerializableAttribute[];
             if (Attr == null || Attr.Length <= 0)

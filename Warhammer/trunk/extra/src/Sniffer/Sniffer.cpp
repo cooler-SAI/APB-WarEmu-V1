@@ -538,18 +538,9 @@ int main()
 	else printf("-> Echouer ...\n");
 	printf("Fin du Chargement ...\n");
 
-    char sessionKey[RC4_KEY_LENGTH] = {'\0'};
-    if(!readSessionKey(sessionKey))
-	{
-		printf("La cle RC4 n'a pu etre lu pour divers raisons.");
-		while(1){}
-        return 1;
-	}
-	int oldsize=0;
-
 	unsigned long WindowsPID;
 
-	HWND WindowsHandle = FindWindow(0,L"Warhammer: Age of Reckoning, Copyright 2001-2010 Electronic Arts, Inc.");
+	HWND WindowsHandle = FindWindow(0,L"Warhammer: Age of Reckoning, Version 1.4.3, Copyright 2001-2011 Electronic Arts, Inc.");
 	GetWindowThreadProcessId(WindowsHandle, &WindowsPID);
 	printf( "\n  Process ID        = %d \n", WindowsPID );
 
@@ -587,8 +578,10 @@ int main()
 		ReadProcessMemory(warh_process_handle, (LPCVOID)(CheckAdresse), Checksum, int(2), &number_of_read_bytes3);
 		int checksum = (unsigned char)Checksum[0]*256 + (unsigned char)Checksum[1];
 
-		int pktlen = (unsigned char)opcode[0] * 256 + (unsigned char)opcode[1];
+		int pktlen = 512;
 		int opcodeId = (unsigned char)opcode[9];
+
+		printf("pktlen = %i && OpcodeId=%i\n",pktlen,opcodeId);
 
 		if(filter && !m_okop[opcodeId])
 			continue;

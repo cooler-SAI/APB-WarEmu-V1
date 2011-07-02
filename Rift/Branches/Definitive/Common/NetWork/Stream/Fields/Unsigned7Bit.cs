@@ -33,7 +33,7 @@ namespace Common
             if (val == null || val.ToString() == "0")
                 return false;
 
-            Data.WriteEncoded7Bit((long)val);
+            Data.WriteEncoded7Bit((long)(Convert.ChangeType(val,typeof(long))));
             return true;
         }
 

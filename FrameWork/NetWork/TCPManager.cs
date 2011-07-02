@@ -164,6 +164,11 @@ namespace FrameWork
             return (int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds;
         }
 
+        static public long GetTimeStampMS()
+        {
+            return (long)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
+        }
+
         private bool InitSocket(int port)
         {
             try

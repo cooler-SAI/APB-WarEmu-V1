@@ -12,9 +12,13 @@ namespace Common
     {
         static public MySQLObjectDatabase CharactersDB;
 
+        public int StartingLevel = 1;
+        public long MaxCharacterId = 10;
+
         public void Load()
         {
             LoadRandomNames();
+            LoadMaxCharacterId();
         }
 
         #region Realm
@@ -28,10 +32,26 @@ namespace Common
                 Client.GetServerObject<AccountMgr>().RegisterRealm(MyRealm, Client.Info);
         }
 
+        public Realm GetRealm()
+        {
+            return MyRealm;
+        }
+
+        public AccountMgr GetAccounts()
+        {
+            return Client.GetServerObject<AccountMgr>();
+        }
 
         #endregion
 
         #region Characters
+
+        public void LoadMaxCharacterId()
+        {
+            Character Char = CharactersDB.SelectObject<Character>("1=1 ORDER BY `CharacterId` DESC LIMIT 0, 1");
+            if (Char != null)
+                MaxCharacterId = Char.CharacterId;
+        }
 
         public Character[] GetCharacters(long AccountId)
         {
@@ -43,9 +63,19 @@ namespace Common
             return CharactersDB.GetObjectCount<Character>("AccountId=" + AccountId);
         }
 
+        public bool CharacterExist(string Name)
+        {
+            return CharactersDB.GetObjectCount<Character>("CharacterName='" + CharactersDB.Escape(Name) + "'") > 0;
+        }
+
         public Character GetCharacter(string Name)
         {
-            return CharactersDB.SelectObject<Character>("Name='" + CharactersDB.Escape(Name) + "'");
+            return CharactersDB.SelectObject<Character>("CharacterName='" + CharactersDB.Escape(Name) + "'");
+        }
+
+        public Character GetCharacter(long CharacterId)
+        {
+            return CharactersDB.SelectObject<Character>("CharacterId=" + CharacterId);
         }
 
         public LobbyCharacterListResponse GetCharactersList(long AccountId)
@@ -53,15 +83,7 @@ namespace Common
             Character[] Chars = GetCharacters(AccountId);
 
             LobbyCharacterListResponse Rp = new LobbyCharacterListResponse();
-            foreach (Character Char in Chars)
-            {
-                LobbyCharacterEntry Entry = new LobbyCharacterEntry();
-                Entry.AccountId = Char.AccountId;
-                Entry.CharacterId = Char.Id;
-                Entry.CharacterName = Char.Name;
-                Rp.Characters.Add(Entry);
-            }
-
+            Rp.Characters.AddRange(Chars);
             return Rp;
         }
 
@@ -71,6 +93,19 @@ namespace Common
 
             return Caches;
 
+        }
+
+        public void AddCharacter(Character Char)
+        {
+            long CharacterId = System.Threading.Interlocked.Increment(ref MaxCharacterId);
+
+            Log.Success("AddCharacter", "Creating New Character : " + CharacterId + ", Name = " + Char.CharacterName);
+
+            Char.CharacterId = CharacterId;
+            Char.Info.CharacterId = CharacterId;
+
+            CharactersDB.AddObject(Char);
+            CharactersDB.AddObject(Char.Info);
         }
 
         #endregion

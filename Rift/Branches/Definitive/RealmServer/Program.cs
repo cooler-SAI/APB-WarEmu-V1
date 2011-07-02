@@ -13,6 +13,7 @@ namespace RealmServer
     {
         static public RealmConfig Config;
         static public RpcClient Client;
+        static public RpcServer Server;
 
         static public AccountMgr Accounts;
         static public CharactersMgr Characters;
@@ -50,8 +51,13 @@ namespace RealmServer
             PacketProcessor.RegisterDefinitions();
 
             // Starting Remote Client
-            Client = new RpcClient("Realm-" + Config.RealmInfo.RealmId, Config.LocalRpcIP, 1);
-            if (!Client.Start(Config.RpcServerIp, Config.RpcServerPort))
+            Client = new RpcClient("Realm-" + Config.RealmInfo.RealmId, Config.RpcCharacter.RpcLocalIp, 1);
+            if (!Client.Start(Config.RpcCharacter.RpcServerIp, Config.RpcCharacter.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
+
+
+            Server = new RpcServer(Config.RpcMapServer.RpcClientStartingPort, 2);
+            if (!Server.Start(Config.RpcMapServer.RpcIp, Config.RpcMapServer.RpcPort))
                 ConsoleMgr.WaitAndExit(2000);
 
             World = Client.GetLocalObject<WorldMgr>();
@@ -64,6 +70,7 @@ namespace RealmServer
             // 2 : Loading CharactersMgr
             CharactersMgr.Client = Client;
             CharactersMgr.MyRealm = Config.RealmInfo;
+            CharactersMgr.MyRealm.RpcInfo = Client.Info;
             Characters.Load();
 
             // 3 : Loading AccountsMgr

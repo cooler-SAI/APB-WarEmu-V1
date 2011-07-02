@@ -24,14 +24,19 @@ namespace Common
             return AccountDB.SelectObject<Account>("SessionKey='" + AccountDB.Escape(SessionKey) + "'");
         }
 
+        public Account GetAccountByUsername(string Username)
+        {
+            return AccountDB.SelectObject<Account>("Username = '" + AccountDB.Escape(Username) + "'");
+        }
+
+        public Account GetAccountByEmail(string Email)
+        {
+            return AccountDB.SelectObject<Account>("Email='" + AccountDB.Escape(Email) + "'");
+        }
+
         public Account GetAccount(string Username, string Sha_Password)
         {
             return AccountDB.SelectObject<Account>("Username = '" + AccountDB.Escape(Username) + "' AND Sha_Password='" + AccountDB.Escape(Sha_Password) + "'");
-        }
-
-        public Account GetAccountByUsername(string Username)
-        {
-            return AccountDB.SelectObject<Account>("Username='" + AccountDB.Escape(Username) + "'");
         }
 
         #endregion
@@ -84,8 +89,10 @@ namespace Common
             AccountDB.SaveObject(Rm);
             Realms.Add(Rm);
 
-            if(Info != null)
+            if (Info != null)
+            {
                 Log.Success("AccountMgr", "Realm Online : " + Rm.Name);
+            }
             else
                 Log.Success("AccountMgr", "Realm loaded : " + Rm.Name);
 

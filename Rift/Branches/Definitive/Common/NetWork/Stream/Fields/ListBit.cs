@@ -54,6 +54,10 @@ namespace Common
             if (val == null)
                 return false;
 
+            bool HasElementPacket = false;
+            if(val.GetType().HasElementType && val.GetType().GetElementType().IsSubclassOf(typeof(ISerializablePacket)))
+                Log.Success("HasElementType","ElementType = " + val.GetType().GetElementType());
+
             if (val is List<ISerializablePacket>)
             {
                 List<ISerializablePacket> Packets = val as List<ISerializablePacket>;

@@ -28,6 +28,7 @@ namespace Common
     {
         public long ClientVersion;
         public Account Acct;
+        public Character Character;
         public Realm Rm;
 
         public RiftClient(TCPManager Server)

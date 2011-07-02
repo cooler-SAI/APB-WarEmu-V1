@@ -12,6 +12,8 @@ namespace Common
     {
         static public MySQLObjectDatabase WorldDB;
 
+        #region Database
+
         static public Dictionary<uint, CacheData> Datas;
         static public Dictionary<uint, CacheTemplate> Templates;
         static public Dictionary<long, TextInfo> TextInfos;
@@ -107,5 +109,56 @@ namespace Common
             Data.CacheDatas = new List<ISerializablePacket>() { Packet };
             return Data;
         }
+
+        #endregion
+
+        #region Maps
+
+        public List<MapServerInfo> MapsInfo = new List<MapServerInfo>();
+
+        public MapServerInfo GetMapInfo(string Address)
+        {
+            return MapsInfo.Find(info => info.MapAdress == Address);
+        }
+
+        public MapServerInfo GetMapInfo()
+        {
+            int MinPlayers = int.MaxValue;
+            MapServerInfo MapInfo=null;
+
+            foreach (MapServerInfo Info in MapsInfo)
+                if (Info.PlayerCount < MinPlayers)
+                {
+                    MapInfo = Info;
+                    MinPlayers = Info.PlayerCount;
+                }
+
+            return MapInfo;
+        }
+
+        public void RegisterMaps(MapServerInfo MapInfo, RpcClientInfo RpcInfo)
+        {
+            MapServerInfo Info = GetMapInfo(MapInfo.MapAdress);
+
+            if (Info == null)
+                MapsInfo.Add(MapInfo);
+            else
+                Info.RpcInfo = RpcInfo;
+
+            MapInfo.RpcInfo = RpcInfo;
+            Log.Success("MapMgr", "Map online : " + MapInfo.MapAdress);
+        }
+
+        public override void OnClientDisconnected(RpcClientInfo Info)
+        {
+            foreach(MapServerInfo MapInfo in MapsInfo.ToArray())
+                if (MapInfo.RpcInfo.RpcID == Info.RpcID)
+                {
+                    Log.Error("MapMgr", "MapServer disconnected : " + MapInfo.MapAdress);
+                    MapsInfo.Remove(MapInfo);
+                }
+        }
+
+        #endregion
     }
 }

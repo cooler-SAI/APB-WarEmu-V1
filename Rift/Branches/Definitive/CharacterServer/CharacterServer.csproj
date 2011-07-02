@@ -51,6 +51,7 @@
     <Compile Include="NetWork\Characters\LobbyCharacterCreationCacheRequest.cs" />
     <Compile Include="NetWork\Characters\LobbyCharacterListRequest.cs" />
     <Compile Include="NetWork\Characters\LobbyCharacterRandomNameRequest.cs" />
+    <Compile Include="NetWork\Characters\LobbyCharacterSelectRequest.cs" />
     <Compile Include="NetWork\Realms\LobbyWorldEntry.cs" />
     <Compile Include="NetWork\Realms\LobbyWorldListRequest.cs" />
     <Compile Include="NetWork\Realms\LobbyWorldListResponse.cs" />

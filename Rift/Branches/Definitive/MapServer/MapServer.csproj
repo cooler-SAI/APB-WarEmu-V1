@@ -43,6 +43,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configs\MapConfig.cs" />
+    <Compile Include="NetWork\Handlers\WorldAuthenticationRequest.cs" />
+    <Compile Include="NetWork\Senders\WorldEntityUpdate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

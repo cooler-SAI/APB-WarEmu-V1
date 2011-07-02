@@ -5,40 +5,43 @@ using System.Text;
 
 using FrameWork;
 
-[DataTable(DatabaseName = "Characters", TableName = "Characters", PreCache = true)]
-[Serializable]
-public class Character : DataObject
+namespace Common
 {
-    [PrimaryKey(AutoIncrement = true, IncrementValue = 3)]
-    public int Id;
+    [Serializable]
+    [DataTable(DatabaseName = "Characters", TableName = "Characters", PreCache = false)]
+    [ISerializableAttribute((long)Opcodes.LobbyCharacterEntry)]
+    public class Character : ISerializablePacket
+    {
+        [DataElement()]
+        [Unsigned7Bit(0)]
+        public long AccountId;
 
-    [DataElement]
-    public long AccountId;
+        [DataElement()]
+        [ArrayBit(1)]
+        public string Email;
 
-    [DataElement]
-    public byte RealmId;
+        [DataElement()]
+        [Raw8Bit(2)]
+        public long CharacterId;
 
-    [DataElement(Varchar = 19)]
-    public string Name;
+        [DataElement()]
+        [ArrayBit(3)]
+        public string CharacterName;
 
-    [DataElement()]
-    public long Level;
+        [DataElement()]
+        [Unsigned7Bit(4)]
+        public long Field4 = 2;
 
-    [DataElement()]
-    public long Race;
+        [Relation(LocalField = "CharacterId", RemoteField = "CharacterId", AutoDelete = true, AutoLoad = true)]
+        [PacketBit(5)]
+        public CharacterInfo Info;
 
-    [DataElement()]
-    public long Class;
+        [DataElement()]
+        [BoolBit(6)]
+        public bool Field6 = true;
 
-    [DataElement()]
-    public long Sex;
-
-    [DataElement]
-    public long HeadModelID;
-
-    [DataElement()]
-    public long HairModelID;
-
-    [DataElement()]
-    public string Data;
+        [DataElement()]
+        [Raw8Bit(7)]
+        public long Field7 = 129483019433300000;
+    }
 }

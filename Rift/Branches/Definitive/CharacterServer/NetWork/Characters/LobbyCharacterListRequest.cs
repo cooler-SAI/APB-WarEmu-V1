@@ -18,12 +18,13 @@ namespace CharacterServer
             if (From.Acct == null || From.Rm == null)
                 return;
 
-            LobbyCharacterListResponse ListRp = From.Rm.GetObject<CharactersMgr>().GetCharactersList(From.Acct.Id);
-
-            foreach (LobbyCharacterEntry Entry in ListRp.Characters)
-                Entry.Email = From.Acct.Email;
-
+            LobbyCharacterListResponse ListRp = new LobbyCharacterListResponse();
+            Character[] Chars = From.Rm.GetObject<CharactersMgr>().GetCharacters(From.Acct.Id);
+            foreach (Character Char in Chars)
+                ListRp.Characters.Add(Char);
             From.SendSerialized(ListRp);
+
+            Log.Success("Characters","Count = " + ListRp.Characters.Count);
         }
     }
 }
