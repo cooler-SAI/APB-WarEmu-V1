@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 using Common;
 using FrameWork;
@@ -218,17 +219,28 @@ namespace MapServer
             // Send Inventory
             /////////////////////////////////////////////////////////////////////
 
-            WorldEntityUpdate Inventory = new WorldEntityUpdate();
-            Inventory.BuildInventory(From, From.Character);
-            From.SendSerialized(Inventory);
+            CacheTemplate[] Tmps = Program.World.GetTemplates();
+            foreach (CacheTemplate Tmp in Tmps)
+                From.SendSerialized(WorldMgr.BuildCache(Tmp.CacheID, Tmp.CacheType, Tmp));
 
-            /*WorldEntityUpdate Item = new WorldEntityUpdate();
-            Item.BuildItem(From, From.Character);
-            From.SendSerialized(Item);
+            CacheData[] Dts = Program.World.GetDatas();
+            foreach (CacheData Tmp in Dts)
+                From.SendSerialized(WorldMgr.BuildCache(Tmp.CacheID, Tmp.CacheType, Tmp));
+
+            PacketInStream Stream = new PacketInStream(Program.BuildPlayer, Program.BuildPlayer.Length);
+            Log.Config.Info.Debug = false;
+            Log.Config.Info.Error = false;
+
+            WorldEntityUpdate Update = new WorldEntityUpdate();
+            Update.AddField(6, EPacketFieldType.Raw8Bytes, (long)Char);
+            From.SendSerialized(Update);
+            /*ISerializablePacket Packet = PacketProcessor.ReadPacket(ref Stream);
+            Packet.AddField(6, EPacketFieldType.Raw8Bytes, (long)Char);
+            From.SendSerialized(Packet);*/
 
             //////////////////////////////////////////////////////////////////////
 
-            */
+            
             ISerializablePacket Packet1 = new ISerializablePacket();
             Packet1.Opcode = 0x03F6;
             Packet1.AddField(0, EPacketFieldType.Raw4Bytes, new byte[4] { 0x20, 0xB1, 0x59, 0x41 });

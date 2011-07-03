@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 using FrameWork;
 using Common;
@@ -45,6 +46,8 @@ namespace MapServer
             }
         }
 
+        static public byte[] BuildPlayer;
+
         static void Main(string[] args)
         {
             Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
@@ -64,6 +67,11 @@ namespace MapServer
             // Loading log level from file
             if (!Log.InitLog(Config.LogLevel, "Map"))
                 ConsoleMgr.WaitAndExit(2000);
+
+
+            FileStream Str = File.Open("player.cache", FileMode.Open);
+            BuildPlayer = new byte[Str.Length];
+            Str.Read(BuildPlayer, 0, BuildPlayer.Length);
 
             // Starting Remote Client
             Client = new RpcClient("Map-" + Config.ServerInfo.MapAdress, Config.ClientInfo.RpcLocalIp, 2);

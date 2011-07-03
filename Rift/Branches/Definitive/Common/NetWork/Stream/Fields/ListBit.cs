@@ -54,10 +54,6 @@ namespace Common
             if (val == null)
                 return false;
 
-            bool HasElementPacket = false;
-            if(val.GetType().HasElementType && val.GetType().GetElementType().IsSubclassOf(typeof(ISerializablePacket)))
-                Log.Success("HasElementType","ElementType = " + val.GetType().GetElementType());
-
             if (val is List<ISerializablePacket>)
             {
                 List<ISerializablePacket> Packets = val as List<ISerializablePacket>;
@@ -207,7 +203,7 @@ namespace Common
             {
                 List<float> floats = new List<float>();
                 foreach (ISerializableField Value in (List<ISerializableField>)val)
-                    floats.Add((float)Value.val);
+                    floats.Add(Value.GetFloat());
 
                 Info.SetValue(Packet, floats);
             }

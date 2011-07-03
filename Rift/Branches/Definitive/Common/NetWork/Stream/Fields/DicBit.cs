@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
+using FrameWork;
+
 namespace Common
 {
     public class DicBitAttribute : ISerializableFieldAttribute
@@ -32,9 +34,13 @@ namespace Common
             int Count;
             PacketInStream.Decode3Parameters(DicData, out KeyType, out ValueType, out Count);
             Dictionary<ISerializableField, ISerializableField> Dic = new Dictionary<ISerializableField, ISerializableField>();
+
+
+            Log.Debug("DicBitField", "KeyType = " + KeyType + ",ValueType=" + ValueType + ",Count=" + Count);
+
             for (int i = 0; i < Count; ++i)
             {
-                ISerializableField Key = PacketProcessor.ReadField(ref Data,i,ValueType);
+                ISerializableField Key = PacketProcessor.ReadField(ref Data,i,KeyType);
                 ISerializableField Value = PacketProcessor.ReadField(ref Data, i, ValueType);
 
                 if (Key != null && Value != null)
