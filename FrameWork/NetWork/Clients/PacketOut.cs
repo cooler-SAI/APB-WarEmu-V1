@@ -268,7 +268,7 @@ namespace FrameWork
                 return;
             }
 
-            byte[] bytes = UTF8Encoding.UTF8.GetBytes(str);
+            byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(str);
             WriteByte((byte)bytes.Length);
             Write(bytes, 0, bytes.Length);
         }
@@ -283,7 +283,7 @@ namespace FrameWork
             if (str.Length <= 0)
                 return;
 
-            byte[] bytes = UTF8Encoding.UTF8.GetBytes(str);
+            byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(str);
             Write(bytes, 0, bytes.Length);
         }
         public virtual void WriteString(string str, int maxlen)
@@ -291,7 +291,7 @@ namespace FrameWork
             if (str.Length <= 0)
                 return;
 
-            byte[] bytes = Encoding.Default.GetBytes(str);
+            byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(str);
             Write(bytes, 0, bytes.Length < maxlen ? bytes.Length : maxlen);
         }
         public virtual void WriteUnicodeString(string str)
@@ -336,9 +336,30 @@ namespace FrameWork
                 return;
             }
 
-            byte[] bytes = UTF8Encoding.UTF8.GetBytes(str);
+            byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(str);
             Write(bytes, 0, len > bytes.Length ? bytes.Length : len);
             Position = pos + len;
+        }
+
+        public virtual void WriteVector2(Vector2 Vector)
+        {
+            WriteFloat(Vector.X);
+            WriteFloat(Vector.Y);
+        }
+
+        public virtual void WriteVector3(Vector3 Vector)
+        {
+            WriteFloat(Vector.X);
+            WriteFloat(Vector.Y);
+            WriteFloat(Vector.Z);
+        }
+
+        public virtual void WriteQuaternion(Quaternion Quat)
+        {
+            WriteFloat(Quat.X);
+            WriteFloat(Quat.Y);
+            WriteFloat(Quat.Z);
+            WriteFloat(Quat.W);
         }
 
         public override string ToString()

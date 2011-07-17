@@ -15,9 +15,9 @@ namespace FrameWork
 			for (int i = 0; i < cstyle.Length; i++)
 			{
                 if (cstyle[i] == 0)
-                    return UTF8Encoding.UTF8.GetString(cstyle, 0, i);
+                    return Encoding.GetEncoding("iso-8859-1").GetString(cstyle, 0, i);
 			}
-            return UTF8Encoding.UTF8.GetString(cstyle);
+            return Encoding.GetEncoding("iso-8859-1").GetString(cstyle);
 		}
 
 		public static int ConvertToInt32(byte[] val)

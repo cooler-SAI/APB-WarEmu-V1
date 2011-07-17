@@ -48,7 +48,7 @@ namespace FrameWork
 
                 return (MySQLObjectDatabase)_database;
             }
-            catch (Exception e)
+            catch
             {
                 return null;
             }

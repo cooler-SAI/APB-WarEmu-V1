@@ -97,8 +97,7 @@ namespace FrameWork
             }
             catch (Exception)
             {
-                lock (Console.Out)
-                    Console.WriteLine("Log : Log file already in use.");
+                Console.WriteLine("Log : Log file already in use.");
 
                 if (Config != null)
                     Config.Info.Dump = false;
@@ -111,13 +110,11 @@ namespace FrameWork
             {
                 string Texte = "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + name + " : " + message;
 
-                lock (Console.Out)
-                {
-                    Console.BufferHeight = Console.WindowWidth - 20;
-                    Console.ForegroundColor = Color;
-                    Console.WriteLine(Texte);
-                    Console.ForegroundColor = ConsoleColor.White;
-                }
+
+                Console.BufferHeight = Console.WindowWidth - 20;
+                Console.ForegroundColor = Color;
+                Console.WriteLine(Texte);
+                Console.ForegroundColor = ConsoleColor.White;
 
                 if (DumpFile != null && FSDump != null)
                 {
@@ -133,10 +130,7 @@ namespace FrameWork
         {
             lock (_config)
             {
-                lock (Console.Out)
-                {
-                    Console.WriteLine("");
-                }
+                Console.WriteLine("");
             }
         }
 

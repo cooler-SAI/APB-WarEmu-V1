@@ -89,7 +89,7 @@ namespace FrameWork
                 ServerChannel = null;
                 Mgr = null;
             }
-            catch (Exception e)
+            catch
             {
 
             }
@@ -171,7 +171,7 @@ namespace FrameWork
                         else
                             Connect();
                     }
-                    catch (Exception e)
+                    catch
                     {
                         foreach (Type t in RegisteredTypes[1])
                             RpcServer.GetObject(t, Info.Ip, Info.Port).OnServerDisconnected();

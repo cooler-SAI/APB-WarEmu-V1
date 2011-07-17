@@ -194,6 +194,19 @@ namespace FrameWork
             return value;
         }
 
+        public virtual Vector2 GetVector2()
+        {
+            return new Vector2(GetFloat(), GetFloat());
+        }
+        public virtual Vector3 GetVector3()
+        {
+            return new Vector3(GetFloat(), GetFloat(), GetFloat());
+        }
+        public virtual Quaternion GetQuaternion()
+        {
+            return new Quaternion(GetFloat(), GetFloat(), GetFloat(), GetFloat());
+        }
+
         public override string ToString()
         {
             return GetType().Name;
