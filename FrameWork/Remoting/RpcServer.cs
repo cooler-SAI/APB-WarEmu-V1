@@ -124,19 +124,19 @@ namespace FrameWork
                     }
 
                     if (Disconnected.Count > 0)
-                        foreach (RpcClientInfo Info in Mgr.GetClients())
+                    {
+                        foreach (RpcClientInfo ToDisconnect in Disconnected)
                         {
-                            try
+                            foreach (Type type in RegisteredTypes[0])
+                                GetLocalObject(type).OnClientDisconnected(ToDisconnect);
+
+                            foreach (RpcClientInfo Info in Mgr.GetClients())
                             {
-                                foreach (RpcClientInfo ToDisconnect in Disconnected)
-                                    foreach (Type type in RegisteredTypes[1])
-                                        RpcServer.GetObject(type, Info.Ip, Info.Port).OnClientDisconnected(ToDisconnect);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.Error("RpcServer", e.ToString());
+                                foreach (Type type in RegisteredTypes[1])
+                                    RpcServer.GetObject(type, Info.Ip, Info.Port).OnClientDisconnected(ToDisconnect);
                             }
                         }
+                    }
                 }
 
                 int Diff = Environment.TickCount - Start;
@@ -161,6 +161,12 @@ namespace FrameWork
         {
             return RpcServer.GetObject(typeof(T),LocalIp,LocalPort) as T;
         }
+
+        public RpcObject GetLocalObject(Type type)
+        {
+            return RpcServer.GetObject(type, LocalIp, LocalPort);
+        }
+
 
         static public T GetObject<T>(RpcClientInfo Info) where T : RpcObject
         {

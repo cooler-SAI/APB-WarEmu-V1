@@ -67,6 +67,9 @@ namespace FrameWork
 
             Log.Success("ServerMgr", Info.Description() + " | Connected");
 
+            foreach (Type type in Server.RegisteredTypes[0])
+                Server.GetLocalObject(type).OnClientConnected(Info);
+
             foreach (RpcClientInfo ConnectedClient in GetClients())
             {
                 if (Info.RpcID == ConnectedClient.RpcID)
