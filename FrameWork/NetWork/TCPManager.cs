@@ -496,8 +496,6 @@ namespace FrameWork
                     foreach (MethodInfo m in type.GetMethods())
                         foreach (object at in m.GetCustomAttributes(typeof(PacketHandlerAttribute), false))
                         {
-                            Log.Debug("TCPManager", "Delegate :" + m.Name);
-
                             PacketHandlerAttribute attr = at as PacketHandlerAttribute;
                             PacketFunction handler = (PacketFunction)Delegate.CreateDelegate(typeof(PacketFunction), m);
 
@@ -553,8 +551,6 @@ namespace FrameWork
 
         public void HandlePacket(BaseClient client, PacketIn Packet)
         {
-            Log.Debug("TCPManager", "Handling packet " + Packet.Opcode + "(" + Packet.Opcode.ToString("X8") + ")");
-
             if (client == null || Packet == null)
             {
                 Log.Error("TCPManager", "Packet || Client == null");

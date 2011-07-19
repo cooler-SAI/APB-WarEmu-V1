@@ -479,25 +479,9 @@ namespace FrameWork
 		private static int CombinePackets(byte[] buf, Queue<byte[]> q, int length, BaseClient client)
 		{
 			int i = 0;
-			do
-			{
-				var pak = q.Peek();
-				if (i + pak.Length > buf.Length)
-				{
-					if (i == 0)
-					{
-						q.Dequeue();
-						continue;
-					}
-					break;
-				}
-
-				Buffer.BlockCopy(pak, 0, buf, i, pak.Length);
-				i += pak.Length;
-
-				q.Dequeue();
-			} while (q.Count > 0);
-
+			byte[] pak = q.Dequeue();
+			Buffer.BlockCopy(pak, 0, buf, i, pak.Length);
+			i += pak.Length;
 			return i;
 		}
 

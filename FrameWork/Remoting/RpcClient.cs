@@ -134,7 +134,7 @@ namespace FrameWork
 
                 Mgr.Connected(Info.RpcID);
 
-                Log.Success("RpcClient", "Client/Server started : " + Ip + ":" + Port);
+                Log.Success("RpcClient", "Connected to : " + ServerIp + ":" + RpcServerPort + ", Listen on : " + Info.Ip + ":" + Info.Port);
 
                 foreach (Type t in RegisteredTypes[1])
                     RpcServer.GetObject(t, Info.Ip, Info.Port).OnServerConnected();
