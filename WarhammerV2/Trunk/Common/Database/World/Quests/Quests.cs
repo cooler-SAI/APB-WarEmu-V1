@@ -49,6 +49,6 @@ namespace Common
         public UInt16 PrevQuest;
 
         public List<Quest_Objectives> Objectives = new List<Quest_Objectives>();
-        public Dictionary<Item_Infos, uint> Rewards = new Dictionary<Item_Infos, uint>();
+        public Dictionary<Item_Info, uint> Rewards = new Dictionary<Item_Info, uint>();
     }
 }

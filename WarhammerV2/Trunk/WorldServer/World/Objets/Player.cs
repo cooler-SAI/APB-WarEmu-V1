@@ -610,7 +610,7 @@ namespace WorldServer
                 int LastPos = Text.IndexOf(" ",Pos)-1;
                 string Value = Text.Substring(Pos, LastPos-Pos);
                 uint ItemId = uint.Parse(Value);
-                Item_Infos Info = WorldMgr.GetItem_Infos(ItemId);
+                Item_Info Info = WorldMgr.GetItem_Info(ItemId);
                 if (Info != null)
                 {
 

@@ -8,7 +8,7 @@ using FrameWork;
 namespace Common
 {
     // Valeur Changante d'un character
-    [DataTable(PreCache = false, TableName = "Character_value", DatabaseName = "Characters")]
+    [DataTable(PreCache = false, TableName = "Characters_value", DatabaseName = "Characters")]
     [Serializable]
     public class Character_value : DataObject
     {

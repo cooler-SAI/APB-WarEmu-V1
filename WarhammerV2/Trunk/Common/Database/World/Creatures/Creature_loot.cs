@@ -21,6 +21,6 @@ namespace Common
         [DataElement()]
         public float Pct;
 
-        public Item_Infos Info;
+        public Item_Info Info;
     }
 }

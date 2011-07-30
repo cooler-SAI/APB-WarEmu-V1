@@ -70,13 +70,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Database\Account\Account.cs" />
-    <Compile Include="Database\Character\Character.cs" />
-    <Compile Include="Database\Character\Character_info.cs" />
-    <Compile Include="Database\Character\Character_items.cs" />
+    <Compile Include="Database\Character\Characters.cs" />
+    <Compile Include="Database\Character\Characters_info.cs" />
+    <Compile Include="Database\Character\Characters_items.cs" />
     <Compile Include="Database\Account\Realm.cs" />
-    <Compile Include="Database\Character\Character_quests.cs" />
-    <Compile Include="Database\Character\Character_socials.cs" />
-    <Compile Include="Database\Character\Character_tok.cs" />
+    <Compile Include="Database\Character\Characters_quests.cs" />
+    <Compile Include="Database\Character\Characters_socials.cs" />
+    <Compile Include="Database\Character\Characters_tok.cs" />
     <Compile Include="Database\GameData.cs" />
     <Compile Include="Database\SystemData.cs" />
     <Compile Include="Database\World\Chapters\Chapter_Info.cs" />

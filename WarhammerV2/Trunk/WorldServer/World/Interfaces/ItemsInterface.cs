@@ -482,7 +482,7 @@ namespace WorldServer
 
             return false;
         }
-        static public bool CanUse(Item_Infos Info, Player Plr, bool IgnoreLevel, bool IgnoreSkills, bool IgnoreRace,bool IgnoreCareer)
+        static public bool CanUse(Item_Info Info, Player Plr, bool IgnoreLevel, bool IgnoreSkills, bool IgnoreRace,bool IgnoreCareer)
         {
             if (!IgnoreSkills)
             {
@@ -777,11 +777,11 @@ namespace WorldServer
         }
         public ItemError CreateItem(UInt32 ItemId, UInt16 Count)
         {
-            Item_Infos Info = WorldMgr.GetItem_Infos(ItemId);
+            Item_Info Info = WorldMgr.GetItem_Info(ItemId);
 
             return CreateItem(Info, Count);
         }
-        public ItemError CreateItem(Item_Infos Info, UInt16 Count)
+        public ItemError CreateItem(Item_Info Info, UInt16 Count)
         {
             if(Info == null)
                 return ItemError.RESULT_ITEMID_INVALID;

@@ -111,28 +111,28 @@ namespace WorldServer
       
         #endregion
 
-        #region Item_Infos
+        #region Item_Info
 
-        static public Dictionary<uint, Item_Infos> _Item_Infos;
+        static public Dictionary<uint, Item_Info> _Item_Info;
 
-        static public void LoadItem_Infos()
+        static public void LoadItem_Info()
         {
-            Log.Info("WorldMgr", "Loading Item_Infos...");
+            Log.Info("WorldMgr", "Loading Item_Info...");
 
-            _Item_Infos = new Dictionary<uint, Item_Infos>(100000);
-            Item_Infos[] Infos = Database.SelectAllObjects<Item_Infos>().ToArray();
+            _Item_Info = new Dictionary<uint, Item_Info>(100000);
+            Item_Info[] Infos = Database.SelectAllObjects<Item_Info>().ToArray();
 
-            foreach (Item_Infos Info in Infos)
-                if (!_Item_Infos.ContainsKey(Info.Entry))
-                    _Item_Infos.Add(Info.Entry, Info);
+            foreach (Item_Info Info in Infos)
+                if (!_Item_Info.ContainsKey(Info.Entry))
+                    _Item_Info.Add(Info.Entry, Info);
 
-            Log.Success("LoadItem_Infos", "Loaded " + _Item_Infos.Count + " Item_Infos");
+            Log.Success("LoadItem_Info", "Loaded " + _Item_Info.Count + " Item_Info");
         }
 
-        static public Item_Infos GetItem_Infos(uint Entry)
+        static public Item_Info GetItem_Info(uint Entry)
         {
-            if (_Item_Infos.ContainsKey(Entry))
-                return _Item_Infos[Entry];
+            if (_Item_Info.ContainsKey(Entry))
+                return _Item_Info[Entry];
             return null;
         }
 
@@ -352,7 +352,7 @@ namespace WorldServer
 
                 foreach (Creature_loot Loot in _Creature_loots[Entry].ToArray())
                 {
-                    Loot.Info = GetItem_Infos(Loot.ItemId);
+                    Loot.Info = GetItem_Info(Loot.ItemId);
 
                     if (Loot.Info == null)
                     {
@@ -389,29 +389,26 @@ namespace WorldServer
 
         static public int MAX_ITEM_PAGE = 30;
 
-        static public Dictionary<uint, List<Creature_vendor>> _Vendors;
+        static public Dictionary<uint, List<Creature_vendor>> _Vendors = new Dictionary<uint, List<Creature_vendor>>();
         static public List<Creature_vendor> GetVendorItems(uint Entry)
         {
             if (!_Vendors.ContainsKey(Entry))
-                return new List<Creature_vendor>();
-            else
-                return _Vendors[Entry];
-        }
-        static public void LoadCreatureVendors()
-        {
-            Log.Info("WorldMgr", "Loading Vendors...");
+            {
+                Log.Info("WorldMgr", "Loading Vendors of " + Entry +" ...");
 
-            _Vendors =  new Dictionary<uint, List<Creature_vendor>>();
-            IList<Creature_vendor> Vendors = Database.SelectAllObjects<Creature_vendor>();
+                IList<Creature_vendor> Vendors = Database.SelectObjects<Creature_vendor>("Entry="+Entry);
 
-            if(Vendors != null)
-                foreach(Creature_vendor Vendor in Vendors)
-                    if(!_Vendors.ContainsKey(Vendor.Entry))
-                        _Vendors.Add(Vendor.Entry,new List<Creature_vendor>() { Vendor });
-                    else
-                        _Vendors[Vendor.Entry].Add(Vendor);
+                _Vendors.Add(Entry, new List<Creature_vendor>());
 
-            Log.Success("LoadCreatureVendors", "Loaded " + Vendors.Count + " Vendors");
+                if (Vendors != null)
+                    foreach (Creature_vendor Vendor in Vendors)
+                        if(GetItem_Info(Vendor.ItemId) != null)
+                            _Vendors[Vendor.Entry].Add(Vendor);
+
+                Log.Success("LoadCreatureVendors", "Loaded " + Vendors.Count + " Vendors of " + Entry);
+            }
+
+            return _Vendors[Entry];
         }
 
         static public void SendVendor(Player Plr, uint Entry)
@@ -637,7 +634,6 @@ namespace WorldServer
             Log.Success("LoadRelation", "Loading Relations");
 
             LoadRegionSpawns();
-            LoadVendorsItem();
             LoadChapters();
             LoadQuestsRelation();
         }
@@ -684,35 +680,6 @@ namespace WorldServer
 
             foreach (KeyValuePair<string, int> Counts in RegionCount)
                 Log.Success("Region", "[" + Counts.Key + "] : " + Counts.Value);
-        }
-        static public void LoadVendorsItem()
-        {
-            Log.Success("LoadVendorsItem", "Loading Item Info From Vendors");
-
-            long InvalidCreatures = 0;
-            long InvalidItems = 0;
-            foreach (List<Creature_vendor> Vendors in _Vendors.Values)
-            {
-                List<Creature_vendor> Invalides = Vendors.FindAll(info => info != null && ( (info.Info = GetItem_Infos(info.ItemId)) == null || GetCreatureProto(info.Entry) == null));
-                foreach (Creature_vendor Vendor in Invalides)
-                {
-                    if (Vendor.Info == null)
-                    {
-                        ++InvalidItems;
-                        Log.Debug("LoadVendorsItem", "[" + Vendor.Entry + "] ItemId : " + Vendor.ItemId + " Invalid");
-                    }
-                    else
-                    {
-                        ++InvalidCreatures;
-                    }
-                }
-            }
-
-            if(InvalidCreatures > 0)
-                Log.Error("LoadVendorsItem","["+InvalidCreatures+"] Invalid Creature Proto");
-
-            if (InvalidItems > 0)
-                Log.Error("LoadVendorsItem", "[" + InvalidItems + "] Invalid Item Info");
         }
         static public void LoadChapters()
         {
@@ -769,7 +736,7 @@ namespace WorldServer
                             break;
 
                         case (byte)Objective_Type.QUEST_GET_ITEM:
-                            Item_Infos Info = GetItem_Infos(uint.Parse(Obj.ObjID));
+                            Item_Info Info = GetItem_Info(uint.Parse(Obj.ObjID));
                             if (Info == null)
                                 continue;
 
@@ -805,7 +772,7 @@ namespace WorldServer
                     uint ItemID = uint.Parse(sItemID);
                     uint Count = uint.Parse(sCount);
 
-                    Item_Infos Info = GetItem_Infos(ItemID);
+                    Item_Info Info = GetItem_Info(ItemID);
                     if (Info == null)
                         continue;
 

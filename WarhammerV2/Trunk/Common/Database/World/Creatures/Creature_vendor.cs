@@ -12,7 +12,7 @@ namespace Common
     [Serializable]
     public class Creature_vendor : DataObject
     {
-        public Item_Infos Info;
+        public Item_Info Info;
         private uint _Entry;
         private uint _ItemId;
         private uint _Price;

@@ -5,6 +5,7 @@ using System.Text;
 
 using Common;
 using FrameWork;
+using GameData;
 
 namespace WorldServer
 {
@@ -141,6 +142,10 @@ namespace WorldServer
 
             foreach (Character_quest Quest in Quests)
             {
+                Quest.Quest = WorldMgr.GetQuest(Quest.QuestID);
+                if (Quest.Quest == null)
+                    continue;
+
                 foreach (Character_Objectives Obj in Quest._Objectives)
                     Obj.Objective = WorldMgr.GetQuestObjective(Obj.ObjectiveID);
 
@@ -211,6 +216,10 @@ namespace WorldServer
             return true;
         }
 
+        public void AcceptQuest(UInt16 QuestID)
+        {
+            AcceptQuest(WorldMgr.GetQuest(QuestID));
+        }
 
         public void AcceptQuest(Quest Quest)
         {
@@ -219,6 +228,26 @@ namespace WorldServer
 
             if (!CanStartQuest(Quest))
                 return;
+
+            Character_quest CQuest = new Character_quest();
+            CQuest.QuestID = Quest.Entry;
+            CQuest.Done = false;
+            CQuest.CharacterID = GetPlayer().CharacterId;
+            CQuest.Quest = Quest;
+
+            foreach(Quest_Objectives QObj in Quest.Objectives)
+            {
+                Character_Objectives CObj = new Character_Objectives();
+                CObj.Count = 0;
+                CObj.Objective = QObj;
+                CObj.ObjectiveID = QObj.Guid;
+                CQuest._Objectives.Add(CObj);
+            }
+
+            _Quests.Add(Quest.Entry, CQuest);
+            CharMgr.Database.AddObject(CQuest);
+
+            SendQuestState(Quest, QuestCompletion.QUESTCOMPLETION_OFFER);
         }
 
         public void DeclineQuest(Quest Quest)
@@ -241,36 +270,20 @@ namespace WorldServer
 
         #endregion
 
-        static public List<Item_Infos> GetChoice(Player Plr, Quest Q)
-        {
-            List<Item_Infos> Choices = new List<Item_Infos>();
-
-            foreach (Item_Infos Info in Q.Rewards.Keys)
-                if (ItemsInterface.CanUse(Info, Plr, true, false, false, false))
-                    Choices.Add(Info);
-
-            return Choices;
-        }
         static public void BuildQuestInfo(PacketOut Out,Player Plr, Quest Q)
         {
             BuildQuestHeader(Out, Q, true);
 
-            List<Item_Infos> Choices = GetChoice(Plr, Q);
+            Dictionary<Item_Info,uint> Choices = GenerateRewards(Q, Plr);
 
             Out.WriteByte(Q.ChoiceCount);
             Out.WriteByte(0);
             Out.WriteByte((byte)Choices.Count);
 
-            foreach (Item_Infos Info in Choices)
-                Item.BuildItem(ref Out, null, Info, 0, 1);
+            foreach (KeyValuePair<Item_Info, uint> Kp in Choices)
+                Item.BuildItem(ref Out, null, Kp.Key, 0, (ushort)Kp.Value);
 
-            Out.WriteByte((byte)Q.Objectives.Count);
-
-            foreach (Quest_Objectives Objective in Q.Objectives)
-            {
-                Out.WriteByte((byte)Objective.ObjCount);
-                Out.WritePascalString(Objective.Description);
-            }
+            BuildObjectives(Out, Q.Objectives);
 
             Out.WriteByte(0);
         }
@@ -316,6 +329,108 @@ namespace WorldServer
             Out.WriteByte(0);
 
             
+        }
+
+        static public void BuildObjectives(PacketOut Out, List<Quest_Objectives> Objs)
+        {
+            Out.WriteByte((byte)Objs.Count);
+
+            foreach (Quest_Objectives Objective in Objs)
+            {
+                Out.WriteByte((byte)Objective.ObjCount);
+                Out.WritePascalString(Objective.Description);
+            }
+        }
+
+        static public void BuildObjectives(PacketOut Out, List<Character_Objectives> Objs)
+        {
+            Out.WriteByte((byte)Objs.Count);
+
+            foreach (Character_Objectives Objective in Objs)
+            {
+                Out.WriteByte((byte)Objective.Count);
+                Out.WriteByte((byte)Objective.Objective.ObjCount);
+                Out.WriteUInt16(0);
+                Out.WritePascalString(Objective.Objective.Description);
+            }
+        }
+
+        public void SendQuest(ushort QuestID)
+        {
+            Character_quest CQuest = GetQuest(QuestID);
+            SendQuest(CQuest);
+        }
+
+        public void SendQuest(Character_quest CQuest)
+        {
+            if (CQuest == null)
+            {
+                Log.Error("QuestsInterface", "SendQuest CQuest == null");
+                return;
+            }
+
+            PacketOut Packet = new PacketOut((byte)Opcodes.F_QUEST_INFO);
+            Packet.WriteUInt16(CQuest.QuestID);
+            Packet.WriteByte(0);
+            BuildQuestHeader(Packet, CQuest.Quest, true);
+
+            Dictionary<Item_Info, uint> Rewards = GenerateRewards(CQuest.Quest, GetPlayer());
+
+            Packet.WriteByte(CQuest.Quest.ChoiceCount);
+            Packet.WriteByte(0);
+            Packet.WriteByte((byte)Rewards.Count);
+
+            foreach (KeyValuePair<Item_Info, uint> Kp in Rewards)
+            {
+                Item.BuildItem(ref Packet, null, Kp.Key, 0, (ushort)Kp.Value);
+            }
+
+            Packet.WriteByte(0);
+
+            BuildObjectives(Packet, CQuest._Objectives);
+
+            Packet.WriteByte(1);
+
+            Packet.WritePascalString(CQuest.Quest.Name);
+            Packet.WritePascalString("Return to your giver");
+
+            Packet.WriteUInt16(0x006A);
+            Packet.WriteUInt16(0x046D);
+            Packet.WriteUInt16(0x4D9E);
+            Packet.WriteUInt16(0xCB65);
+
+            Packet.Fill(0, 18);
+
+            GetPlayer().SendPacket(Packet);
+        }
+
+        public void SendQuestState(Quest Quest,QuestCompletion State)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_QUEST_LIST_UPDATE);
+            Out.WriteUInt16(Quest.Entry);
+
+            if (State == QuestCompletion.QUESTCOMPLETION_ABANDONED || State == QuestCompletion.QUESTCOMPLETION_DONE)
+                Out.WriteByte(0);
+            else
+                Out.WriteByte(1);
+
+            Out.WriteByte((byte)(State == QuestCompletion.QUESTCOMPLETION_DONE ? 1 : 0));
+
+            Out.WriteUInt32(0x0000FFFF);
+            Out.WritePascalString(Quest.Name);
+            Out.WriteByte(0);
+            GetPlayer().SendPacket(Out);
+        }
+
+        static public Dictionary<Item_Info,uint> GenerateRewards(Quest Q, Player Plr)
+        {
+            Dictionary<Item_Info,uint> Rewards = new Dictionary<Item_Info,uint>();
+
+            foreach (KeyValuePair<Item_Info, uint> Kp in Q.Rewards)
+                if (ItemsInterface.CanUse(Kp.Key, Plr, true, false, false, false))
+                    Rewards.Add(Kp.Key, Kp.Value);
+
+            return Rewards;
         }
     }
 }

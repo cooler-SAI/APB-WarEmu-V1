@@ -10,7 +10,7 @@ namespace Common
     // Valeur Fixe d'un character
     [DataTable(PreCache = false, TableName = "Item_Infos", DatabaseName = "World")]
     [Serializable]
-    public class Item_Infos : DataObject
+    public class Item_Info : DataObject
     {
         static public int MAX_STATS = 12;
 

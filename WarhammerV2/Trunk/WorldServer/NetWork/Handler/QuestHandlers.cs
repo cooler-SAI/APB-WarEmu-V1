@@ -27,6 +27,7 @@ namespace WorldServer
             {
                 case 1: // Show Quest
                     {
+                        Log.Info("F_QUEST", "Show Quest : " + QuestID);
                         Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
                         if (Crea != null)
                             Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr);
@@ -35,7 +36,8 @@ namespace WorldServer
 
                 case 2: // Accept Quest
                     {
-                        Log.Info("Quest", "Accept Quest : " + QuestID);
+                        Log.Info("F_QUEST", "Accept Quest : " + QuestID);
+                        cclient.Plr.QtsInterface.AcceptQuest(QuestID);
                     }break;
 
                 case 3: // Quest Done
@@ -68,8 +70,10 @@ namespace WorldServer
 
             switch (State)
             {
-                case 0: // Accept Quest
+                case 0: // Show Quest
                     {
+                        Log.Info("F_REQUEST_QUEST", "Show Quest : " + QuestID);
+                        cclient.Plr.QtsInterface.SendQuest(QuestID);
 
                     } break;
 

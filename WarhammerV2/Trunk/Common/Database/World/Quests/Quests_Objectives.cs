@@ -43,7 +43,7 @@ namespace Common
 
         public byte num;
         public Quest Quest;
-        public Item_Infos Item = null;
+        public Item_Info Item = null;
         public Creature_proto Creature = null;
     }
 }

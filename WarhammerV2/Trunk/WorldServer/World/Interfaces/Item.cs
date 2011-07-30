@@ -48,7 +48,7 @@ namespace WorldServer
         public UInt32 _EffectId;
 
         // Player Uniquement
-        public Item_Infos Info;
+        public Item_Info Info;
         public Character_items CharItem = null;
 
         public Item(Object Owner)
@@ -68,7 +68,7 @@ namespace WorldServer
             if (Item == null)
                 return false;
 
-            Info = WorldMgr.GetItem_Infos(Item.Entry);
+            Info = WorldMgr.GetItem_Info(Item.Entry);
             if (Info == null)
             {
                 Log.Error("ItemInterface", "Load : Info==null,Entry=" + Item.Entry);
@@ -80,7 +80,7 @@ namespace WorldServer
         }
         public bool Load(uint Entry, UInt16 SlotId, UInt16 Count)
         {
-            Info = WorldMgr.GetItem_Infos(Entry);
+            Info = WorldMgr.GetItem_Info(Entry);
             if (Info == null)
                 return false;
 
@@ -92,7 +92,7 @@ namespace WorldServer
             _Count = Count;
             return true;
         }
-        public bool Load(Item_Infos Info, UInt16 SlotId, UInt16 Count)
+        public bool Load(Item_Info Info, UInt16 SlotId, UInt16 Count)
         {
             this.Info = Info;
             if (Info == null)
@@ -138,7 +138,7 @@ namespace WorldServer
             return CharItem;
         }
 
-        static public void BuildItem(ref PacketOut Out,Item Itm,Item_Infos Info,ushort SlotId,ushort Count)
+        static public void BuildItem(ref PacketOut Out,Item Itm,Item_Info Info,ushort SlotId,ushort Count)
         {
             SlotId = SlotId == 0 ? (Itm == null ? SlotId : Itm.SlotId ) : SlotId;
             Count = Count == 0 ? (Itm == null ? Count : Itm.Count) : Count;

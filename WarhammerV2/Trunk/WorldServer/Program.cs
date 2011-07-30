@@ -71,12 +71,11 @@ namespace WorldServer
 
             int Start = Environment.TickCount;
 
-            LoaderMgr.InitLoad(WorldMgr.LoadItem_Infos);
+            LoaderMgr.InitLoad(WorldMgr.LoadItem_Info);
 
             LoaderMgr.InitLoad(WorldMgr.LoadCreatureProto);
             LoaderMgr.InitLoad(WorldMgr.LoadCreatureSpawns);
             LoaderMgr.InitLoad(WorldMgr.LoadCreatureItems);
-            LoaderMgr.InitLoad(WorldMgr.LoadCreatureVendors);
 
             LoaderMgr.InitLoad(WorldMgr.LoadZone_Info);
             LoaderMgr.InitLoad(WorldMgr.LoadXp_Info);

@@ -23,7 +23,7 @@ namespace Common
     }
 
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "Character_quests", DatabaseName = "Characters")]
+    [DataTable(PreCache = false, TableName = "Characters_quests", DatabaseName = "Characters")]
     [Serializable]
     public class Character_quest : DataObject
     {
@@ -75,5 +75,7 @@ namespace Common
         }
 
         public List<Character_Objectives> _Objectives = new List<Character_Objectives>();
+
+        public Quest Quest;
     }
 }

@@ -10,12 +10,12 @@ namespace WorldServer
 {
     public class LootInfo
     {
-        public LootInfo(Item_Infos Item)
+        public LootInfo(Item_Info Item)
         {
             this.Item = Item;
         }
 
-        public Item_Infos Item;
+        public Item_Info Item;
     }
 
     public class Loot
