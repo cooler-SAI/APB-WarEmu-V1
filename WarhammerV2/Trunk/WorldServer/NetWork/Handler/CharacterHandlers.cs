@@ -220,7 +220,7 @@ namespace WorldServer
         {
             GameClient cclient = client as GameClient;
 
-            cclient.State = eClientState.CharScreen;
+            cclient.State = (int)eClientState.CharScreen;
 
             UInt16 Operation = packet.GetUint16();
 

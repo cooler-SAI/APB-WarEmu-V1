@@ -77,7 +77,6 @@ namespace WorldServer
             LoaderMgr.InitLoad(WorldMgr.LoadCreatureSpawns);
             LoaderMgr.InitLoad(WorldMgr.LoadCreatureItems);
             LoaderMgr.InitLoad(WorldMgr.LoadCreatureVendors);
-            LoaderMgr.InitLoad(WorldMgr.LoadCreatureLoots);
 
             LoaderMgr.InitLoad(WorldMgr.LoadZone_Info);
             LoaderMgr.InitLoad(WorldMgr.LoadXp_Info);

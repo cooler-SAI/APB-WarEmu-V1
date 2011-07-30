@@ -191,7 +191,7 @@ namespace Launcher
 
                     _Socket.BeginSend(m_tcpSendBuffer, 0, buf.Length, SocketFlags.None, m_asyncTcpCallback, null);
                 }
-                catch (Exception e)
+                catch
                 {
                     Close();
                 }
@@ -297,7 +297,7 @@ namespace Launcher
                     Close();
                 }
             }
-            catch (Exception e)
+            catch
             {
 
             }

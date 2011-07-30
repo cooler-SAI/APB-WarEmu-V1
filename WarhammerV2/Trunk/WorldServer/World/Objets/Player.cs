@@ -146,7 +146,7 @@ namespace WorldServer
         }
         public override void OnLoad()
         {
-            _Client.State = eClientState.WorldEnter;
+            _Client.State = (int)eClientState.WorldEnter;
 
             if (!_Inited)
             {
@@ -195,7 +195,7 @@ namespace WorldServer
         public void StartInit()
         {
             RemovePlayer(this);
-            Client.State = eClientState.WorldEnter;
+            Client.State = (int)eClientState.WorldEnter;
             SendMoney();
             SendStats();
             SendSpeed();
@@ -744,9 +744,9 @@ namespace WorldServer
 
         public override void SetPosition(ushort WorldX, ushort WorldY, ushort WorldZ, ushort Head)
         {
-            if (_Client.State != eClientState.Playing)
+            if (_Client.State != (int)eClientState.Playing)
             {
-                _Client.State = eClientState.Playing;
+                _Client.State = (int)eClientState.Playing;
                 AddPlayer(this);
                 EvtInterface.Notify("Playing", this, null);
             }

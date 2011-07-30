@@ -33,6 +33,26 @@ namespace WorldServer
 
                     } break;
 
+                case 2: // Accept Quest
+                    {
+                        Log.Info("Quest", "Accept Quest : " + QuestID);
+                    }break;
+
+                case 3: // Quest Done
+                    {
+
+                    }break;
+
+                case 4: // Quest Done Info
+                    {
+
+                    } break;
+
+                case 5: // Select Quest Reward
+                    {
+
+                    } break;
+
             };
         }
 

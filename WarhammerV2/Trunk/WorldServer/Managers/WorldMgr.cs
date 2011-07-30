@@ -18,6 +18,8 @@ namespace WorldServer
 
         static public void LoadZone_Info()
         {
+            Log.Info("WorldMgr", "Loading Zone_Info...");
+
             _Zone_Info = new List<Zone_Info>();
             IList<Zone_Info> Infos = Database.SelectAllObjects<Zone_Info>();
             if (Infos != null)
@@ -43,6 +45,8 @@ namespace WorldServer
 
         static public void LoadChapter_Infos()
         {
+            Log.Info("WorldMgr", "Loading Chapter_Infos...");
+
             _Chapters = new Dictionary<uint, Chapter_Info>();
 
             IList<Chapter_Info> IChapters = Database.SelectAllObjects<Chapter_Info>();
@@ -82,6 +86,8 @@ namespace WorldServer
 
         static public void LoadTok_Infos()
         {
+            Log.Info("WorldMgr", "Loading LoadTok_Infos...");
+
             _Toks = new Dictionary<uint, Tok_Info>();
 
             IList<Tok_Info> IToks = Database.SelectAllObjects<Tok_Info>();
@@ -111,6 +117,8 @@ namespace WorldServer
 
         static public void LoadItem_Infos()
         {
+            Log.Info("WorldMgr", "Loading Item_Infos...");
+
             _Item_Infos = new Dictionary<uint, Item_Infos>(100000);
             Item_Infos[] Infos = Database.SelectAllObjects<Item_Infos>().ToArray();
 
@@ -165,6 +173,8 @@ namespace WorldServer
         static private Dictionary<byte, Xp_Info> _Xp_Infos;
         static public void LoadXp_Info()
         {
+            Log.Info("WorldMgr", "Loading Xp_Infos...");
+
             _Xp_Infos = new Dictionary<byte, Xp_Info>();
             IList<Xp_Info> Infos = Database.SelectAllObjects<Xp_Info>();
             foreach (Xp_Info Info in Infos)
@@ -208,6 +218,8 @@ namespace WorldServer
         static private Dictionary<byte, Renown_Info> _Renown_Infos;
         static public void LoadRenown_Info()
         {
+            Log.Info("WorldMgr", "Loading Renown_Info...");
+
             _Renown_Infos = new Dictionary<byte, Renown_Info>();
             Renown_Info[] Infos = Database.SelectAllObjects<Renown_Info>().ToArray();
             foreach (Renown_Info Info in Infos)
@@ -230,6 +242,8 @@ namespace WorldServer
         static public Dictionary<uint, Creature_proto> _Protos;
         static public void LoadCreatureProto()
         {
+            Log.Info("WorldMgr", "Loading Creature_Protos...");
+
             _Protos = new Dictionary<uint, Creature_proto>();
            IList<Creature_proto> Protos = Database.SelectObjects<Creature_proto>("Model1 != '0' AND Model2 != '0'");
 
@@ -238,7 +252,7 @@ namespace WorldServer
                    if(Proto != null)
                         _Protos.Add(Proto.Entry, Proto);
 
-           Log.Success("LoadCreatureProto", "Loaded " + _Protos.Count + " CreatureProtos");
+           Log.Success("LoadCreatureProto", "Loaded " + _Protos.Count + " Creature_Protos");
         }
         static public Creature_proto GetCreatureProto(uint Entry)
         {
@@ -255,6 +269,8 @@ namespace WorldServer
 
         static public void LoadCreatureSpawns()
         {
+            Log.Info("WorldMgr", "Loading Creature_Spawns...");
+
             _Spawns = new Dictionary<uint, Creature_spawn>();
             IList<Creature_spawn> Spawns = Database.SelectAllObjects<Creature_spawn>();
 
@@ -263,7 +279,7 @@ namespace WorldServer
                     _Spawns.Add(Spawn.Guid,Spawn);
 
 
-            Log.Success("LoadCreatureSpawns","Loaded " + _Spawns.Count + " Creature Spawns");
+            Log.Success("LoadCreatureSpawns","Loaded " + _Spawns.Count + " Creature_Spawns");
         }
 
         #endregion
@@ -273,6 +289,8 @@ namespace WorldServer
         static public Dictionary<uint, List<Creature_item>> _CreatureItems;
         static public void LoadCreatureItems()
         {
+            Log.Info("WorldMgr", "Loading Creature_Items...");
+
             _CreatureItems = new Dictionary<uint, List<Creature_item>>();
             IList<Creature_item> Items = Database.SelectAllObjects<Creature_item>();
 
@@ -285,7 +303,7 @@ namespace WorldServer
                     _CreatureItems[Item.Entry].Add(Item);
                 }
 
-            Log.Success("LoadCreatureItems", "Loaded " + (Items != null ? Items.Count : 0) + " Creature items");
+            Log.Success("LoadCreatureItems", "Loaded " + (Items != null ? Items.Count : 0) + " Creature_Items");
         }
         static public List<Creature_item> GetCreatureItems(uint Entry)
         {
@@ -308,25 +326,55 @@ namespace WorldServer
 
         #region CreatureLoots
 
-        static public Dictionary<uint, List<Creature_loot>> _Creature_loots;
-        static public void LoadCreatureLoots()
+        static public Dictionary<uint, List<Creature_loot>> _Creature_loots = new Dictionary<uint,List<Creature_loot>>();
+        static private void LoadLoots(uint Entry)
         {
-            _Creature_loots = new Dictionary<uint,List<Creature_loot>>();
+            if (!_Creature_loots.ContainsKey(Entry))
+            {
+                Log.Info("WorldMgr", "Loading Loots of " + Entry + " ...");
 
-            IList<Creature_loot> Loots = Database.SelectAllObjects<Creature_loot>();
-            if(Loots != null)
-                foreach(Creature_loot Loot in Loots)
+                List<Creature_loot> Loots = new List<Creature_loot>();
+                IList<Creature_loot> ILoots = Database.SelectObjects<Creature_loot>("Entry=" + Entry);
+                foreach (Creature_loot Loot in ILoots)
+                    Loots.Add(Loot);
+
+                _Creature_loots.Add(Entry, Loots);
+
+                long MissingCreature = 0;
+                long MissingItemProto = 0;
+
+                if (GetCreatureProto(Entry) == null)
                 {
-                    if(!_Creature_loots.ContainsKey(Loot.Entry))
-                        _Creature_loots.Add(Loot.Entry,new List<Creature_loot>());
-
-                    _Creature_loots[Loot.Entry].Add(Loot);
+                    Log.Debug("LoadLoots", "[" + Entry + "] Invalid Creature Proto");
+                    _Creature_loots.Remove(Entry);
+                    ++MissingCreature;
                 }
 
-            Log.Success("LoadCreatureLoots","Loaded " + Loots.Count + " loots");
+                foreach (Creature_loot Loot in _Creature_loots[Entry].ToArray())
+                {
+                    Loot.Info = GetItem_Infos(Loot.ItemId);
+
+                    if (Loot.Info == null)
+                    {
+                        Log.Debug("LoadLoots", "[" + Loot.ItemId + "] Invalid Item Info");
+                        _Creature_loots[Entry].Remove(Loot);
+                        ++MissingItemProto;
+                    }
+                }
+
+                if (MissingItemProto > 0)
+                    Log.Error("LoadLoots", "[" + MissingItemProto + "] Missing Item Info");
+
+                if (MissingCreature > 0)
+                    Log.Error("LoadLoots", "[" + MissingCreature + "] Misssing Creature proto");
+
+                Log.Success("LoadCreatureLoots", "Loaded " + _Creature_loots[Entry].Count + " loots of : " + Entry);
+            }
         }
         static public List<Creature_loot> GetLoots(uint Entry)
         {
+            LoadLoots(Entry);
+
             List<Creature_loot> Loots;
 
             if (!_Creature_loots.TryGetValue(Entry,out Loots))
@@ -351,6 +399,8 @@ namespace WorldServer
         }
         static public void LoadCreatureVendors()
         {
+            Log.Info("WorldMgr", "Loading Vendors...");
+
             _Vendors =  new Dictionary<uint, List<Creature_vendor>>();
             IList<Creature_vendor> Vendors = Database.SelectAllObjects<Creature_vendor>();
 
@@ -588,7 +638,6 @@ namespace WorldServer
 
             LoadRegionSpawns();
             LoadVendorsItem();
-            LoadLoots();
             LoadChapters();
             LoadQuestsRelation();
         }
@@ -655,7 +704,6 @@ namespace WorldServer
                     else
                     {
                         ++InvalidCreatures;
-                        Log.Debug("LoadVendorsItem", "[" + Vendor.Entry + "] Invalid Creature Proto");
                     }
                 }
             }
@@ -665,41 +713,6 @@ namespace WorldServer
 
             if (InvalidItems > 0)
                 Log.Error("LoadVendorsItem", "[" + InvalidItems + "] Invalid Item Info");
-        }
-        static public void LoadLoots()
-        {
-            Log.Success("LoadLoots", "Loading Creature Proto from Loots");
-            long MissingCreature = 0;
-            long MissingItemProto =0;
-
-            foreach(uint Entry in _Creature_loots.Keys.ToArray())
-                if(GetCreatureProto(Entry) == null)
-                {
-                    Log.Debug("LoadLoots", "[" + Entry + "] Invalid Creature Proto");
-                    _Creature_loots.Remove(Entry);
-                    ++MissingCreature;
-                }
-
-            foreach(List<Creature_loot> Loots in _Creature_loots.Values)
-            {
-                foreach(Creature_loot Loot in Loots.ToArray())
-                {
-                    Loot.Info = GetItem_Infos(Loot.ItemId);
-
-                    if(Loot.Info == null)
-                    {
-                        Log.Debug("LoadLoots", "[" + Loot.ItemId + "] Invalid Item Info");
-                        Loots.Remove(Loot);
-                        ++MissingItemProto;
-                    }
-                }
-            }
-
-            if (MissingItemProto > 0)
-                Log.Error("LoadLoots", "[" + MissingItemProto + "] Missing Item Info");
-
-            if (MissingCreature > 0)
-                Log.Error("LoadLoots", "[" + MissingCreature + "] Misssing Creature proto");
         }
         static public void LoadChapters()
         {
@@ -764,7 +777,7 @@ namespace WorldServer
                             break;
                     };
                 }
-                catch (Exception e)
+                catch
                 {
                     continue;
                 }

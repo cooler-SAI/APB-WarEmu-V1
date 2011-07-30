@@ -23,7 +23,6 @@ namespace WorldServer
     public class GameClient : BaseClient
     {
         public Account _Account = null;
-        public eClientState State = eClientState.NotConnected;
         public Player Plr = null;
 
         public GameClient(TCPManager srv)
@@ -35,7 +34,7 @@ namespace WorldServer
         public override void OnConnect()
         {
             Log.Debug("GameClient", "Connexion " + GetIp);
-            State = eClientState.Connecting;
+            State = (int)eClientState.Connecting;
         }
         public override void OnDisconnect()
         {
@@ -46,7 +45,7 @@ namespace WorldServer
 
         public bool IsPlaying()
         {
-            return State == eClientState.Playing;
+            return State == (int)eClientState.Playing;
         }
         public bool HasPlayer()
         {

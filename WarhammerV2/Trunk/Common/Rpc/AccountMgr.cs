@@ -285,7 +285,7 @@ namespace Common
 
                 return Out.ToArray();
             }
-            catch (Exception e)
+            catch
             {
                 return new byte[0];
             }
