@@ -396,14 +396,15 @@ namespace WorldServer
             {
                 Log.Info("WorldMgr", "Loading Vendors of " + Entry +" ...");
 
-                IList<Creature_vendor> Vendors = Database.SelectObjects<Creature_vendor>("Entry="+Entry);
+                IList<Creature_vendor> IVendors = Database.SelectObjects<Creature_vendor>("Entry="+Entry);
+                List<Creature_vendor> Vendors = new List<Creature_vendor>();
+                Vendors.AddRange(IVendors);
 
-                _Vendors.Add(Entry, new List<Creature_vendor>());
+                _Vendors.Add(Entry, Vendors);
 
-                if (Vendors != null)
-                    foreach (Creature_vendor Vendor in Vendors)
-                        if(GetItem_Info(Vendor.ItemId) != null)
-                            _Vendors[Vendor.Entry].Add(Vendor);
+                foreach (Creature_vendor Info in Vendors.ToArray())
+                    if ((Info.Info = GetItem_Info(Info.ItemId)) == null)
+                        Vendors.Remove(Info);
 
                 Log.Success("LoadCreatureVendors", "Loaded " + Vendors.Count + " Vendors of " + Entry);
             }
