@@ -534,6 +534,44 @@ namespace WorldServer
 
             Log.Success("LoadQuestsObjectives", "Loaded " + _Objectives.Count + " Quests Objectives");
         }
+
+        static public void GenerateObjectif(Quest_Objectives Obj, Quest Q)
+        {
+            switch ((Objective_Type)Obj.ObjType)
+            {
+                case Objective_Type.QUEST_KILL_PLAYERS:
+                    {
+                        if(Obj.Description.Length < 1)
+                            Obj.Description = "Enemy Players";
+                    }break;
+
+                case Objective_Type.QUEST_SPEACK_TO:
+                    goto case Objective_Type.QUEST_KILL_MOB;
+
+                case Objective_Type.QUEST_KILL_MOB:
+                    {
+                        uint ObjID = 0;
+                        uint.TryParse(Obj.ObjID, out ObjID);
+
+                        if(ObjID != 0)
+                            Obj.Creature = GetCreatureProto(ObjID);
+
+                        if (Obj.Description.Length < 1 && Obj.Creature != null)
+                            Obj.Description = Obj.Creature.Name;
+                    } break;
+
+                case Objective_Type.QUEST_GET_ITEM:
+                    {
+                        uint ObjID = 0;
+                        uint.TryParse(Obj.ObjID, out ObjID);
+
+                        if (ObjID != 0)
+                            Obj.Item = GetItem_Info(ObjID);
+                    }
+                    break;
+            };
+        }
+
         static public Quest_Objectives GetQuestObjective(int Guid)
         {
             Quest_Objectives Obj;
@@ -719,36 +757,7 @@ namespace WorldServer
                 if (Q == null)
                     continue;
 
-                try
-                {
-                    switch (Obj.ObjType)
-                    {
-                        case (byte)Objective_Type.QUEST_KILL_PLAYERS:
-                            Obj.Description = "Enemy Players";
-                            break;
-
-                        case (byte)Objective_Type.QUEST_KILL_MOB:
-                            Creature_proto Proto = GetCreatureProto(uint.Parse(Obj.ObjID));
-                            if (Proto == null)
-                                continue;
-
-                            Obj.Creature = Proto;
-                            Obj.Description = Proto.Name;
-                            break;
-
-                        case (byte)Objective_Type.QUEST_GET_ITEM:
-                            Item_Info Info = GetItem_Info(uint.Parse(Obj.ObjID));
-                            if (Info == null)
-                                continue;
-
-                            Obj.Item = Info;
-                            break;
-                    };
-                }
-                catch
-                {
-                    continue;
-                }
+                GenerateObjectif(Obj, Q);
 
                 Obj.num = (byte)Q.Objectives.Count;
                 Obj.Quest = Q;

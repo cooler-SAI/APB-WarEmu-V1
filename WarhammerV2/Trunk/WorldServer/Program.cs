@@ -69,7 +69,7 @@ namespace WorldServer
                 return;
             }
 
-            int Start = Environment.TickCount;
+            long Start = TCPManager.GetTimeStampMS();
 
             LoaderMgr.InitLoad(WorldMgr.LoadItem_Info);
 
@@ -95,7 +95,7 @@ namespace WorldServer
             LoaderMgr.Wait();
             WorldMgr.LoadRelation();
 
-            int End = Environment.TickCount;
+            long End = TCPManager.GetTimeStampMS();
 
             Log.Info("Loader", "Database loaded in : " + (End - Start) + "ms");
 

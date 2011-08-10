@@ -789,10 +789,9 @@ namespace WorldServer
             List<UInt16> Stacked = new List<ushort>(); // List des Objets stackable
             List<UInt16> ToSend = new List<ushort>(); // List des Objets mis a jours
             UInt16 CanStack = 0; // Nombre d'objet qui peuvent être stacker
-            UInt16 ToCreate =  (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack)); // Nombre d'objet qui doit être créé Count/MaxStack
+            UInt16 ToCreate =  (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack)+1); // Nombre d'objet qui doit être créé Count/MaxStack
 
-
-            if (Info.MaxStack > 1) // Si l'objet a créer et stackable on recherche les objets déja dans l'inventaire
+            if (Info.MaxStack > 1) // Si l'objet a créer est stackable on recherche les objets déja dans l'inventaire
             {
                 Stacked = GetStackItem(Info.Entry);
                 CanStack = GetStackableCount(Stacked);
@@ -805,11 +804,14 @@ namespace WorldServer
                 else
                 {
                     Count -= CanStack;
-                    ToCreate = (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack)); // On supprime le nombre stackable et on recalcul le nombre de slot necessaire
+                    ToCreate = (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack)+1); // On supprime le nombre stackable et on recalcul le nombre de slot necessaire
                 }
             }
 
             UInt16 TotalFreeSlot = GetTotalFreeInventorySlot(); // Nombre de slots total dont je dispose
+
+            Log.Info("ItemsInterface", "Count=" + Count + ",FreeSlot=" + TotalFreeSlot + ",ToCreate=" + ToCreate+",CanStack="+CanStack);
+
 
             if(TotalFreeSlot < ToCreate) // Je n'ai pas assez de slots disponible pour créer ces objets
                 return ItemError.RESULT_MAX_BAG;
@@ -823,6 +825,8 @@ namespace WorldServer
 
                 UInt16 ToAdd = (UInt16)Math.Min(Itm.Info.MaxStack-Itm.Count,CanStack);
 
+                Log.Info("ItemsInterface", "StackableSlot Add : " + ToAdd);
+
                 Itm.Count += ToAdd;
                 CanStack -= ToAdd;
                 Count -= ToAdd;
@@ -833,7 +837,7 @@ namespace WorldServer
                     break;
             }
 
-            while (Count > 0)
+            for (int i = 0; i < ToCreate && Count > 0; ++i)
             {
                 UInt16 FreeSlot = GetFreeInventorySlot();
                 if (FreeSlot == 0)
@@ -846,6 +850,7 @@ namespace WorldServer
                 if (!Itm.Load(Info, FreeSlot, ToAdd))
                     return ItemError.RESULT_ITEMID_INVALID;
 
+                Log.Info("ItemsInterface", "New Item ToAdd : " + ToAdd + ",Count="+Count);
                 Items[FreeSlot] = Itm;
                 ToSend.Add(FreeSlot);
             }

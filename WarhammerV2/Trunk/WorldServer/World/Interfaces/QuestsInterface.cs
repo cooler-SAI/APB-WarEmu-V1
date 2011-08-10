@@ -361,6 +361,22 @@ namespace WorldServer
             SendQuest(CQuest);
         }
 
+        public void SendQuests()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_QUEST_LIST);
+            Out.WriteByte((byte)_Quests.Count);
+            foreach (Character_quest Quest in _Quests.Values)
+            {
+                Out.WriteUInt16(Quest.QuestID);
+                Out.WriteByte(0);
+                Out.WritePascalString(Quest.Quest.Name);
+                Out.WriteByte(0);
+            }
+
+            Log.Info("QuestInterface", "Sended Quest : " + _Quests.Count);
+            GetPlayer().SendPacket(Out);
+        }
+
         public void SendQuest(Character_quest CQuest)
         {
             if (CQuest == null)

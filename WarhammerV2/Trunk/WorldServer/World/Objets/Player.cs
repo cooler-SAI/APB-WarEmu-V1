@@ -154,12 +154,11 @@ namespace WorldServer
 
                 ItmInterface.Load(CharMgr.GetItemChar(_Info.CharacterId));
                 StsInterface.Load(CharMgr.GetCharacterInfoStats(_Info.CareerLine, _Value.Level));
-                
-                
-                StsInterface.ApplyStats();
-
+                QtsInterface.Load(this._Info.Quests);
                 TokInterface.Load(_Info.Toks);
                 SocInterface.Load(_Info.Socials);
+
+                StsInterface.ApplyStats();
 
                 SetLevel(_Value.Level);
                 SetRenownLevel(_Value.RenownRank);
@@ -215,6 +214,8 @@ namespace WorldServer
             Out.WriteUInt16(8159);
             Out.WriteByte(1);
             SendPacket(Out);
+
+            QtsInterface.SendQuests();
 
             SendInitComplete();
             SocInterface.SendFriends();
