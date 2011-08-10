@@ -127,6 +127,18 @@ namespace FrameWork
             return value;
         }
 
+        public Int64 GetInt64()
+        {
+            Int64 value = (GetInt32() << 24) + (GetInt32());
+            return value;
+        }
+
+        public Int64 GetInt64R()
+        {
+            Int64 value = (GetInt32()) + (GetInt32() << 24);
+            return value;
+        }
+
         public float GetFloat()
         {
             byte[] b = new byte[4];

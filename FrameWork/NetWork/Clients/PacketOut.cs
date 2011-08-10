@@ -188,15 +188,16 @@ namespace FrameWork
         {
             byte[] b = BitConverter.GetBytes(val);
 
-            for (int i = b.Length; i > 0; --i)
-                WriteByte(b[i - 1]);
+            for (int i = 0; i < b.Length; ++i)
+                WriteByte(b[i]);
         }
-        public virtual void WriteInt32R(Int32 val)
+
+        public virtual void WriteInt32Reverse(Int32 val)
         {
             byte[] b = BitConverter.GetBytes(val);
 
-            for (int i = 0; i < b.Length; ++i)
-                WriteByte(b[i]);
+            for (int i = b.Length; i > 0; --i)
+                WriteByte(b[i - 1]);
         }
 
         public virtual void WriteUInt64(ulong val)
