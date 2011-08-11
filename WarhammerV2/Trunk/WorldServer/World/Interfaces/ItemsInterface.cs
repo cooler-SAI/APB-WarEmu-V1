@@ -262,6 +262,21 @@ namespace WorldServer
 
             return Count;
         }
+        public UInt16 GetItemCount(uint Entry)
+        {
+            UInt16 Count = 0;
+            foreach (Item Itm in Items)
+            {
+                if (Itm != null && Itm.Info != null && Itm.Info.Entry == Entry)
+                    Count += Itm.Count;
+            }
+            return Count;
+        }
+
+        public bool HasItemCount(uint Entry, UInt16 Count)
+        {
+            return GetItemCount(Entry) >= Count;
+        }
 
         public bool HasMaxBag()
         {
@@ -685,6 +700,10 @@ namespace WorldServer
             Item ITo = Items[Slot];
             Items[Slot] = null;
             return ITo;
+        }
+        public List<UInt16> RemoveItem(uint Entry, UInt16 Count)
+        {
+
         }
         public UInt16 GenerateAutoSlot(UInt16 From)
         {

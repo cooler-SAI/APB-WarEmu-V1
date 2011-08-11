@@ -192,7 +192,7 @@ namespace FrameWork
                 WriteByte(b[i]);
         }
 
-        public virtual void WriteInt32Reverse(Int32 val)
+        public virtual void WriteInt32R(Int32 val)
         {
             byte[] b = BitConverter.GetBytes(val);
 

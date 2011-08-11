@@ -403,8 +403,20 @@ namespace WorldServer
                 _Vendors.Add(Entry, Vendors);
 
                 foreach (Creature_vendor Info in Vendors.ToArray())
+                {
                     if ((Info.Info = GetItem_Info(Info.ItemId)) == null)
+                    {
                         Vendors.Remove(Info);
+                        continue;
+                    }
+
+                    foreach (KeyValuePair<uint, UInt16> Kp in Info.ItemsReq)
+                    {
+                        Item_Info Req = GetItem_Info(Kp.Key);
+                        if (Req != null)
+                            Info.ItemsReqInfo.Add(Kp.Value, Req);
+                    }
+                }
 
                 Log.Success("LoadCreatureVendors", "Loaded " + Vendors.Count + " Vendors of " + Entry);
             }
@@ -456,7 +468,16 @@ namespace WorldServer
                 Out.WriteByte(3);
                 Out.WriteUInt32(Vendors[i].Price);
                 Item.BuildItem(ref Out, null, Vendors[i].Info, 0, 1);
-                Out.WriteByte(0); // ReqItemSize
+
+                Out.WriteByte((byte)Vendors[i].ItemsReqInfo.Count); // ReqItemSize
+                foreach (KeyValuePair<UInt16, Item_Info> Kp in Vendors[i].ItemsReqInfo)
+                {
+                    Out.WriteUInt32(Kp.Value.Entry);
+                    Out.WriteUInt16((UInt16)Kp.Value.ModelId);
+                    Out.WritePascalString(Kp.Value.Name);
+                    Out.WriteUInt16(Kp.Key);
+                    Out.Fill(0, 18);
+                }
             }
 
             Out.WriteByte(0);
@@ -480,6 +501,15 @@ namespace WorldServer
             {
                 Plr.SendLocalizeString("", GameData.Localized_text.TEXT_MERCHANT_INSUFFICIENT_MONEY_TO_BUY);
                 return;
+            }
+
+            foreach (KeyValuePair<UInt16, Item_Info> Kp in Vendors[Num].ItemsReqInfo)
+            {
+                if (!Plr.ItmInterface.HasItemCount(Kp.Value.Entry, Kp.Key))
+                {
+                    Plr.SendLocalizeString("", GameData.Localized_text.TEXT_MERCHANT_FAIL_PURCHASE_REQUIREMENT);
+                    return;
+                }
             }
 
             ItemError Error = Plr.ItmInterface.CreateItem(Vendors[Num].Info, Count);

@@ -69,5 +69,6 @@ namespace Common
         }
 
         public Dictionary<uint, UInt16> ItemsReq = new Dictionary<uint, ushort>();
+        public Dictionary<UInt16, Item_Info> ItemsReqInfo = new Dictionary<UInt16, Item_Info>();
     }
 }
