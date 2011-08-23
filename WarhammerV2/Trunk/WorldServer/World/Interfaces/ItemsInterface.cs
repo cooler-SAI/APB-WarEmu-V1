@@ -703,7 +703,9 @@ namespace WorldServer
         }
         public List<UInt16> RemoveItem(uint Entry, UInt16 Count)
         {
+            List<UInt16> Removed = new List<UInt16>();
 
+            return Removed;
         }
         public UInt16 GenerateAutoSlot(UInt16 From)
         {
