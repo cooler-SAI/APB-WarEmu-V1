@@ -701,11 +701,42 @@ namespace WorldServer
             Items[Slot] = null;
             return ITo;
         }
-        public List<UInt16> RemoveItem(uint Entry, UInt16 Count)
+        public bool RemoveItem(uint Entry, UInt16 Count)
         {
-            List<UInt16> Removed = new List<UInt16>();
+            List<UInt16> Removed = new List<ushort>();
+            bool Result = RemoveItem(Entry, Count, ref Removed);
+            SendItems(GetPlayer(), Removed.ToArray());
+            return Result;
+        }
+        public bool RemoveItem(uint Entry, UInt16 Count,ref List<UInt16> Removed)
+        {
+            if (GetItemCount(Entry) < Count)
+                return false;
 
-            return Removed;
+            for (UInt16 Slot = MAX_EQUIPED_SLOT; Slot < GetMaxInventorySlot() && Count > 0; ++Slot)
+            {
+                if (Items[Slot] != null && Items[Slot].Info.Entry == Entry)
+                {
+                    if (Items[Slot].Count > Count)
+                    {
+                        Removed.Add(Slot);
+
+                        Items[Slot].Count -= Count;
+                        Count = 0;
+                    }
+                    else
+                    {
+                        Removed.Add(Slot);
+
+                        Count -= Items[Slot].Count;
+                        Items[Slot].Count = 0;
+                        Items[Slot].Delete();
+                        Items[Slot] = null;
+                    }
+                }
+            }
+
+            return true;
         }
         public UInt16 GenerateAutoSlot(UInt16 From)
         {

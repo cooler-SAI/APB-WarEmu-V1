@@ -516,6 +516,8 @@ namespace WorldServer
             if (Error == ItemError.RESULT_OK)
             {
                 Plr.RemoveMoney((Vendors[Num].Price) * Count);
+                foreach (KeyValuePair<UInt16, Item_Info> Kp in Vendors[Num].ItemsReqInfo)
+                    Plr.ItmInterface.RemoveItem(Kp.Value.Entry, Kp.Key);
             }
             else if (Error == ItemError.RESULT_MAX_BAG)
             {
