@@ -158,8 +158,8 @@ namespace FrameWork
             Col.B = float.Parse(Bytes[2]);
             Col.A = float.Parse(Bytes[3]);
             return Col;
-        }
 
+        }
         public static String AssemblyVersion
         {
             get
