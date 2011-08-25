@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
 namespace FrameWork
 {
@@ -24,6 +25,14 @@ namespace FrameWork
                 Result += (string)Convert.ChangeType(val, typeof(string)) + " ";
 
             return Result;
+        }
+
+        public static String AssemblyVersion
+        {
+            get
+            {
+                return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            }
         }
     }
 }
