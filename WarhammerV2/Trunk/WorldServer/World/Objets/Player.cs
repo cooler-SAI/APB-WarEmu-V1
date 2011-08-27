@@ -740,10 +740,12 @@ namespace WorldServer
 
             _Value.WorldX = (int)((int)XZone + ((int)((int)x) & 0x00000FFF));
             _Value.WorldY = (int)((int)YZone + ((int)((int)y) & 0x00000FFF));
-            _Value.WorldZ = (int)(((int)((int)Z/2) & 0x00000FFF));
+            _Value.WorldZ = Z / 2;
+            if (Zone.ZoneId == 161)
+                _Value.WorldZ = (32768+Z)/2;
         }
 
-        public override void SetPosition(ushort WorldX, ushort WorldY, ushort WorldZ, ushort Head)
+        public override void SetPosition(ushort PinX, ushort PinY, ushort PinZ, ushort Head)
         {
             if (_Client.State != (int)eClientState.Playing)
             {
@@ -754,7 +756,7 @@ namespace WorldServer
 
             _Value.WorldO = Head;
 
-            base.SetPosition(WorldX, WorldY, WorldZ, Head);
+            base.SetPosition(PinX, PinY, PinZ, Head);
         }
 
         #endregion

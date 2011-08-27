@@ -122,7 +122,8 @@ namespace WorldServer
                 X = Plr.Zone.CalculPin(X, Plr.XOffset, true);
                 Y = Plr.Zone.CalculPin(Y, Plr.YOffset, false);
             }
-            cclient.Plr.SetPosition(X, Y, Z, Heading);
+
+            Plr.SetPosition(X, Y, Z, Heading);
         }
 
         [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_DUMP_STATICS, "onDumpStatics")]
