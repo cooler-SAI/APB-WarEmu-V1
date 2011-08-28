@@ -13,6 +13,7 @@ namespace WorldServer
     {
         UInt16 X,Y,RegionId;
         public List<Creature_spawn> CreatureSpawns = new List<Creature_spawn>();
+        public List<GameObject_spawn> GameObjectSpawns = new List<GameObject_spawn>();
         public List<Chapter_Info> ChapterSpawns = new List<Chapter_Info>();
 
         public CellSpawns(UInt16 RegionId,UInt16 X,UInt16 Y)
@@ -26,6 +27,12 @@ namespace WorldServer
         {
             CreatureSpawns.Add(Spawn);
         }
+
+        public void AddSpawn(GameObject_spawn Spawn)
+        {
+            GameObjectSpawns.Add(Spawn);
+        }
+
         public void AddChapter(Chapter_Info Chapter)
         {
             Chapter.OffX = X;
@@ -310,7 +317,8 @@ namespace WorldServer
         }
         public bool RemoveObject(Object Obj)
         {
-            Log.Success("RemoveObject", Obj.Name);
+            if(Obj.IsPlayer())
+                Log.Success("RemoveObject", Obj.Name);
 
             if (Obj.IsInWorld())
                 Obj.Zone.RemoveObject(Obj);
@@ -419,6 +427,12 @@ namespace WorldServer
             Creature Crea = new Creature(Spawn);
             AddObject((Object)Crea,Spawn.ZoneId);
             return Crea;
+        }
+        public GameObject CreateGameObject(GameObject_spawn Spawn)
+        {
+            GameObject Obj = new GameObject(Spawn);
+            AddObject(Obj, Spawn.ZoneId);
+            return Obj;
         }
         public ChapterObject CreateChapter(Chapter_Info Chapter)
         {

@@ -97,7 +97,7 @@ namespace FrameWork
                      Log.Notice("DataConnecion","Connection time : " + (Environment.TickCount - start1) + "ms");
                 }
 
-                Log.Info("DataConnection", "New DB Connection");
+                Log.Debug("DataConnection", "New DB Connection");
             }
 
             return conn;

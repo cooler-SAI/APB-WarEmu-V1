@@ -88,6 +88,8 @@
     <Compile Include="Database\World\Creatures\Creature_proto.cs" />
     <Compile Include="Database\World\Creatures\Creature_spawn.cs" />
     <Compile Include="Database\World\Creatures\Creature_vendor.cs" />
+    <Compile Include="Database\World\GameObjects\GameObject_proto.cs" />
+    <Compile Include="Database\World\GameObjects\GameObject_spawn.cs" />
     <Compile Include="Database\World\Items\Item_Info.cs" />
     <Compile Include="Database\World\Characters\Random_names.cs" />
     <Compile Include="Database\World\Levels\Renown_Info.cs" />

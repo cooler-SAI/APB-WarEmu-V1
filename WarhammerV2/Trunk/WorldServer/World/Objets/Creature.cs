@@ -10,7 +10,6 @@ namespace WorldServer
 {
     public class Creature : Unit
     {
-        public MovementInterface MvtInterface;
         public Creature_spawn Spawn;
         public uint Entry
         {
@@ -23,13 +22,9 @@ namespace WorldServer
             }
         }
 
-        public Point3D SpawnPoint = new Point3D(0, 0, 0);
-        public UInt16 SpawnHeading = 0;
-
         public Creature()
             : base()
         {
-            MvtInterface = new MovementInterface(this);
         }
 
         public Creature(Creature_spawn Spawn) : this()
@@ -40,7 +35,6 @@ namespace WorldServer
 
         public override void Update()
         {
-            MvtInterface.Update(Environment.TickCount);
             base.Update();
         }
 
@@ -78,11 +72,6 @@ namespace WorldServer
             Heading = (ushort)Spawn.WorldO;
             SetOffset((ushort)(Spawn.WorldX >> 12), (ushort)(Spawn.WorldY >> 12));
             Region.UpdateRange(this);
-
-            SpawnPoint.X = X;
-            SpawnPoint.Y = Y;
-            SpawnPoint.Z = Z;
-            SpawnHeading = Heading;
                 
             base.OnLoad();
         }
@@ -131,7 +120,7 @@ namespace WorldServer
 
             Out.WriteByte(0);
 
-            Out.WriteStringBytes(Spawn.Proto.Name);
+            Out.WriteStringBytes(Name);
 
             Out.WriteByte(0); // ?
             Out.WriteByte(1); // ?
@@ -163,6 +152,8 @@ namespace WorldServer
 
             if (!IsDead)
             {
+                Plr.QtsInterface.HandleEvent(Objective_Type.QUEST_SPEACK_TO, Spawn.Entry, 1);
+
                 string Text = WorldMgr.GetCreatureText(Spawn.Entry, Spawn.Title);
 
                 switch (InteractType)
@@ -199,6 +190,12 @@ namespace WorldServer
             }
 
             base.SendInteract(Plr, Menu);
+        }
+
+        public override void SetDeath(Unit Killer)
+        {
+            Killer.QtsInterface.HandleEvent(Objective_Type.QUEST_KILL_MOB, Spawn.Entry,1);
+            base.SetDeath(Killer);
         }
     }
 }

@@ -268,6 +268,43 @@ namespace WorldServer
                 return;
         }
 
+        public void HandleEvent(Objective_Type Type, uint Entry, int Count)
+        {
+            foreach (Character_quest Quest in _Quests.Values)
+            {
+                foreach (Character_Objectives Objective in Quest._Objectives)
+                {
+                    if (Objective.Objective.ObjType == (uint)Type && !Objective.IsDone())
+                    {
+                        bool CanAdd = false;
+
+                        if (Type == Objective_Type.QUEST_SPEACK_TO || Type == Objective_Type.QUEST_KILL_MOB || Type == Objective_Type.QUEST_PROTECT_UNIT)
+                        {
+                            if (Entry == Objective.Objective.Creature.Entry)
+                                CanAdd = true;
+                        }
+                        else if (Type == Objective_Type.QUEST_GET_ITEM)
+                        {
+                            if (Entry == Objective.Objective.Item.Entry)
+                                CanAdd = true;
+                        }
+                        else if (Type == Objective_Type.QUEST_USE_GO)
+                        {
+                            CanAdd = true;
+                        }
+
+                        if (CanAdd)
+                        {
+                            Objective.Count += Count;
+                            SendQuestUpdate(Quest, Objective);
+                            Quest.Dirty = true;
+                            CharMgr.Database.SaveObject(Quest);
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         static public void BuildQuestInfo(PacketOut Out,Player Plr, Quest Q)
@@ -435,6 +472,20 @@ namespace WorldServer
             Out.WriteUInt32(0x0000FFFF);
             Out.WritePascalString(Quest.Name);
             Out.WriteByte(0);
+            GetPlayer().SendPacket(Out);
+        }
+
+        public void SendQuestUpdate(Character_quest Quest, Character_Objectives Obj)
+        {
+            if (GetPlayer() == null)
+                return;
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_QUEST_UPDATE);
+            Out.WriteUInt16(Quest.QuestID);
+            Out.WriteByte(Convert.ToByte(Quest.IsDone()));
+            Out.WriteByte(Obj.Objective.num);
+            Out.WriteByte((byte)Obj.Count);
+            Out.WriteUInt16(0);
             GetPlayer().SendPacket(Out);
         }
 

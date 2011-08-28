@@ -71,12 +71,27 @@ namespace WorldServer
         public List<byte> States = new List<byte>();
         public GameData.InteractType InteractType = GameData.InteractType.INTERACTTYPE_IDLE_CHAT;
 
-        public Unit() : base()
+        public Point3D SpawnPoint = new Point3D(0, 0, 0);
+        public UInt16 SpawnHeading = 0;
+
+        public Unit()
+            : base()
         {
             ItmInterface = new ItemsInterface(this);
             CbtInterface = new CombatInterface(this);
             StsInterface = new StatsInterface(this);
             QtsInterface = new QuestsInterface(this);
+            MvtInterface = new MovementInterface(this);
+        }
+
+        public override void OnLoad()
+        {
+            SpawnPoint.X = X;
+            SpawnPoint.Y = Y;
+            SpawnPoint.Z = Z;
+            SpawnHeading = Heading;
+
+            base.OnLoad();
         }
 
         public override void Dispose()
@@ -95,6 +110,7 @@ namespace WorldServer
             ItmInterface.Update(Tick);
             CbtInterface.Update(Tick);
             StsInterface.Update(Tick);
+            MvtInterface.Update(Tick);
 
             if (NextSend < Tick)
             {
@@ -139,6 +155,7 @@ namespace WorldServer
 
         #region Interfaces
 
+        public MovementInterface MvtInterface;
         public ItemsInterface ItmInterface;
         public CombatInterface CbtInterface;
         public StatsInterface StsInterface;

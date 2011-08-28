@@ -64,14 +64,13 @@ namespace WorldServer
 
             Log.Success("Load", "[" + X + "," + Y + "] Chargement ");
             foreach (Creature_spawn Spawn in Spawns.CreatureSpawns)
-            {
                 Region.CreateCreature(Spawn);
-            }
+
+            foreach (GameObject_spawn Spawn in Spawns.GameObjectSpawns)
+                Region.CreateGameObject(Spawn);
 
             foreach (Chapter_Info Spawn in Spawns.ChapterSpawns)
-            {
                 Region.CreateChapter(Spawn);
-            }
 
             _Loaded = true;
         }

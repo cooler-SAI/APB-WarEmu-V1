@@ -337,6 +337,8 @@ namespace WorldServer
 
         public override void SetDeath(Unit Killer)
         {
+            Killer.QtsInterface.HandleEvent(Objective_Type.QUEST_KILL_PLAYERS, 0, 1);
+
             base.SetDeath(Killer);
 
             EvtInterface.AddEvent(RezUnit, 20000, 1);

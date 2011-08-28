@@ -14,7 +14,16 @@ namespace FrameWork
             List<T> L = new List<T>();
             foreach (string Val in Values)
                 if (Val.Length > 0)
-                    L.Add((T)Convert.ChangeType(Val, typeof(T)));
+                {
+                    try
+                    {
+                        L.Add((T)Convert.ChangeType(Val, typeof(T)));
+                    }
+                    catch
+                    {
+                        L.Add((T)Convert.ChangeType("0",typeof(T)));
+                    }
+                }
 
             return L;
         }
