@@ -27,7 +27,7 @@ namespace WorldServer
                     Load(Social);
 
             base.Load();
-            Log.Success("SocialInterface", "Chargement de " + _Socials.Count + " Socials pour " + Obj.Oid);
+            Log.Success("SocialInterface", "Loaded " + _Socials.Count + " Socials of " + Obj.Oid);
         }
         public EventInterface Load(Character_social Social)
         {

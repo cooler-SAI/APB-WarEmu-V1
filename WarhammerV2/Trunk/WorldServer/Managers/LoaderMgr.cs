@@ -58,7 +58,7 @@ namespace WorldServer
             {
                 if (_Function != null)
                 {
-                    Log.Debug("Load", "Chargement de : " + _Function.Method.Name);
+                    Log.Debug("Load", "Loading : " + _Function.Method.Name);
                     _Function.Invoke();
                 }
             }
@@ -92,7 +92,7 @@ namespace WorldServer
             {
                 if (_MultiFunction != null)
                 {
-                    Log.Debug("Load", "Chargement de : " + _MultiFunction.Method.Name +", Id="+Id);
+                    Log.Debug("Load", "Loading : " + _MultiFunction.Method.Name +", Id="+Id);
                     _MultiFunction.Invoke(Count,Id);
                 }
             }

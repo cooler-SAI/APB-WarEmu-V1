@@ -62,7 +62,7 @@ namespace WorldServer
             if (_Loaded)
                 return;
 
-            Log.Success("Load", "[" + X + "," + Y + "] Chargement ");
+            Log.Success(ToString(), "Loading... ");
             foreach (Creature_spawn Spawn in Spawns.CreatureSpawns)
                 Region.CreateCreature(Spawn);
 
@@ -73,6 +73,11 @@ namespace WorldServer
                 Region.CreateChapter(Spawn);
 
             _Loaded = true;
+        }
+
+        public override string ToString()
+        {
+            return "CellMgr["+X+","+Y+"]";
         }
 
         #endregion

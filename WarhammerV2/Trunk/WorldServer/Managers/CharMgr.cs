@@ -90,7 +90,7 @@ namespace WorldServer
 
             _RandomNames = WorldMgr.Database.SelectAllObjects<Random_name>().ToList<Random_name>();
 
-            Log.Success("CharacterMgr", "Chargement de " + Chars.Count + " CharacterInfo");
+            Log.Success("CharacterMgr", "Loaded " + Chars.Count + " CharacterInfo");
         }
 
         static public void LoadCharacterInfoItems()
@@ -107,7 +107,7 @@ namespace WorldServer
                 }
                 else _InfoItems[Info.CareerLine].Add(Info);
 
-            Log.Success("CharacterMgr", "Chargement de " + _InfoItems.Count + " CharacterInfo_Item");
+            Log.Success("CharacterMgr", "Loaded " + _InfoItems.Count + " CharacterInfo_Item");
         }
 
         static public void LoadCharacterInfoStats()
@@ -122,7 +122,7 @@ namespace WorldServer
                 }
                 else _InfoStats[Info.CareerLine].Add(Info);
 
-            Log.Success("CharacterMgr", "Chargement de " + Chars.Count + " CharacterInfo_Stats");
+            Log.Success("CharacterMgr", "Loaded " + Chars.Count + " CharacterInfo_Stats");
         }
 
         static public CharacterInfo GetCharacterInfo(byte Career)
