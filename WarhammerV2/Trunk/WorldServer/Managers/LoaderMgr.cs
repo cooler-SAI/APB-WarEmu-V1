@@ -14,11 +14,17 @@ namespace WorldServer
         public delegate void LoadFunction();
         public delegate void MultiLoadFunction(int ThreadCount,int Id);
         static public int LoaderCount = 0;
+        static public int MaxThread = 2;
 
         static public void InitLoad(LoadFunction Func)
         {
-            new LoaderMgr(Func);
-            Thread.Sleep(50);
+            if (MaxThread == 0 || LoaderCount < MaxThread)
+            {
+                new LoaderMgr(Func);
+                Thread.Sleep(50);
+            }
+            else
+                Func.Invoke();
         }
         static public void InitMultiLoad(MultiLoadFunction Func,int Count)
         {

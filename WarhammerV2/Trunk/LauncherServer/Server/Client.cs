@@ -9,6 +9,8 @@ namespace LauncherServer
 {
     public class Client : BaseClient
     {
+        public long LastInfoRequest = 0;
+
         public Client(TCPManager srv)
             : base(srv)
         {

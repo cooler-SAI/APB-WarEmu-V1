@@ -73,7 +73,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\Client.cs" />
-    <Compile Include="Server\Handler\CL_START.cs" />
+    <Compile Include="Server\Handler\Packets.cs" />
     <Compile Include="Server\Opcodes.cs" />
     <Compile Include="Server\TCPServer.cs" />
   </ItemGroup>

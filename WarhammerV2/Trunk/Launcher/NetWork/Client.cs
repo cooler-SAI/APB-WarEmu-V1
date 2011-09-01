@@ -141,6 +141,12 @@ namespace Launcher
             }
         }
 
+        static public void UpdateRealms()
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.CL_INFO);
+            SendTCP(Out);
+        }
+
         #region Sender
 
         // Buffer en train d'être envoyé
@@ -404,6 +410,23 @@ namespace Launcher
                     }
 
                     break;
+
+                case Opcodes.LCR_INFO:
+                    {
+                        Accueil.Acc.ClearRealms();
+                        byte RealmsCount = packet.GetUint8();
+                        for (byte i = 0; i < RealmsCount; ++i)
+                        {
+                            bool Online = packet.GetUint8() > 0;
+                            string Name = packet.GetString();
+                            UInt32 OnlinePlayers = packet.GetUint32();
+                            UInt32 OrderCount = packet.GetUint32();
+                            UInt32 DestructionCount = packet.GetUint32();
+
+                            Accueil.Acc.AddRealm(Name, Online, OnlinePlayers, DestructionCount, DestructionCount);
+
+                        }
+                    }break;
             }
         }
 

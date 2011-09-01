@@ -173,5 +173,11 @@ namespace Common
             get { return _Status; }
             set { _Status = value; Dirty = true; }
         }
+
+        public uint OnlinePlayers;
+
+        public uint OrderCount;
+
+        public uint DestructionCount;
     }
 }

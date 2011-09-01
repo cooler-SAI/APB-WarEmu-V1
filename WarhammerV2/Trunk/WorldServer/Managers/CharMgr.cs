@@ -50,6 +50,7 @@ namespace WorldServer
             }
 
              _Realm = GameData.pRealm.REALM_NONE;
+
             for(byte i=0;i<_Chars.Length;++i)
                 if (_Chars[i] != null)
                 {

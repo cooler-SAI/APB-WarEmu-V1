@@ -104,7 +104,7 @@ namespace WorldServer
 
                         if (PacketLength > PacketSize + 2)
                         {
-                            Log.Error("OnReceive", "Le packet contient plusieur opcodes " + PacketLength + ">" + (PacketSize + 2));
+                            Log.Debug("OnReceive", "Packet contain multiple opcodes " + PacketLength + ">" + (PacketSize + 2));
                         }
                         ReadingData = true;
                     }

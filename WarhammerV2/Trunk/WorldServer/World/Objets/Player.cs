@@ -20,12 +20,31 @@ namespace WorldServer
         {
             lock (_Players)
                 if (!_Players.Contains(Plr))
+                {
                     _Players.Add(Plr);
+                    if (Plr._Info.Realm == (byte)GameData.pRealm.REALM_ORDER)
+                        ++Program.Rm.OrderCount;
+                    else
+                        ++Program.Rm.DestructionCount;
+
+                    Program.Rm.OnlinePlayers = (uint)_Players.Count;
+                    Program.AcctMgr.UpdateRealm(Program.Rm.RealmId, Program.Rm.OnlinePlayers, Program.Rm.OrderCount, Program.Rm.DestructionCount);
+                }
         }
         static public void RemovePlayer(Player Plr)
         {
             lock (_Players)
+            {
                 _Players.Remove(Plr);
+                if (Plr._Info.Realm == (byte)GameData.pRealm.REALM_ORDER)
+                    --Program.Rm.OrderCount;
+                else
+                    --Program.Rm.DestructionCount;
+
+                Program.Rm.OnlinePlayers = (uint)_Players.Count;
+                Program.AcctMgr.UpdateRealm(Program.Rm.RealmId, Program.Rm.OnlinePlayers, Program.Rm.OrderCount, Program.Rm.DestructionCount);
+ 
+            }
         }
         static public Player GetPlayer(string Name)
         {

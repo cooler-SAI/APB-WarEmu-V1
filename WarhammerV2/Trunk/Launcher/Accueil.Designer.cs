@@ -36,6 +36,15 @@
             this.T_Log = new System.Windows.Forms.TextBox();
             this.L_selection = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.Realms = new System.Windows.Forms.DataGridView();
+            this.label4 = new System.Windows.Forms.Label();
+            this.b_realms = new System.Windows.Forms.Button();
+            this.RealmName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Online = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Players = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Destruction = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Order = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            ((System.ComponentModel.ISupportInitialize)(this.Realms)).BeginInit();
             this.SuspendLayout();
             // 
             // T_username
@@ -82,11 +91,11 @@
             // 
             // T_Log
             // 
-            this.T_Log.Location = new System.Drawing.Point(12, 119);
+            this.T_Log.Location = new System.Drawing.Point(12, 254);
             this.T_Log.Multiline = true;
             this.T_Log.Name = "T_Log";
             this.T_Log.ReadOnly = true;
-            this.T_Log.Size = new System.Drawing.Size(430, 207);
+            this.T_Log.Size = new System.Drawing.Size(430, 72);
             this.T_Log.TabIndex = 5;
             // 
             // L_selection
@@ -118,11 +127,81 @@
             this.label3.Text = "Language";
             this.label3.Click += new System.EventHandler(this.label3_Click);
             // 
+            // Realms
+            // 
+            this.Realms.AllowUserToOrderColumns = true;
+            this.Realms.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.Realms.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.RealmName,
+            this.Online,
+            this.Players,
+            this.Destruction,
+            this.Order});
+            this.Realms.Location = new System.Drawing.Point(12, 157);
+            this.Realms.Name = "Realms";
+            this.Realms.Size = new System.Drawing.Size(429, 91);
+            this.Realms.TabIndex = 8;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(13, 138);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(48, 13);
+            this.label4.TabIndex = 9;
+            this.label4.Text = "Realms :";
+            // 
+            // b_realms
+            // 
+            this.b_realms.Location = new System.Drawing.Point(150, 128);
+            this.b_realms.Name = "b_realms";
+            this.b_realms.Size = new System.Drawing.Size(128, 23);
+            this.b_realms.TabIndex = 10;
+            this.b_realms.Text = "Update Realms";
+            this.b_realms.UseVisualStyleBackColor = true;
+            this.b_realms.Click += new System.EventHandler(this.b_realms_Click);
+            // 
+            // RealmName
+            // 
+            this.RealmName.HeaderText = "Realm Name";
+            this.RealmName.Name = "RealmName";
+            this.RealmName.ReadOnly = true;
+            // 
+            // Online
+            // 
+            this.Online.HeaderText = "Online";
+            this.Online.Name = "Online";
+            this.Online.ReadOnly = true;
+            // 
+            // Players
+            // 
+            this.Players.HeaderText = "Players";
+            this.Players.Name = "Players";
+            this.Players.ReadOnly = true;
+            this.Players.Width = 50;
+            // 
+            // Destruction
+            // 
+            this.Destruction.HeaderText = "Destruction";
+            this.Destruction.Name = "Destruction";
+            this.Destruction.ReadOnly = true;
+            this.Destruction.Width = 50;
+            // 
+            // Order
+            // 
+            this.Order.HeaderText = "Order";
+            this.Order.Name = "Order";
+            this.Order.ReadOnly = true;
+            this.Order.Width = 50;
+            // 
             // Accueil
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(454, 338);
+            this.Controls.Add(this.b_realms);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.Realms);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.L_selection);
             this.Controls.Add(this.T_Log);
@@ -135,6 +214,7 @@
             this.Text = "War Launcher";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Disconnect);
             this.Load += new System.EventHandler(this.Form1_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.Realms)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -150,6 +230,14 @@
         private System.Windows.Forms.TextBox T_Log;
         private System.Windows.Forms.ComboBox L_selection;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.DataGridView Realms;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button b_realms;
+        private System.Windows.Forms.DataGridViewTextBoxColumn RealmName;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Online;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Players;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Destruction;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Order;
     }
 }
 

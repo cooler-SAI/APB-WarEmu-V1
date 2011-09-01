@@ -10,6 +10,9 @@ public enum Opcodes : byte
 
     CL_CREATE   =   0x05,   // Le client demande de créer un compte (Username + Pass + IP);
     LCR_CREATE  =   0x06,   // Réponse du serveur a la demande du client( reponse en string du message + bool d'erreur)
+
+    CL_INFO = 0x07,   // Le client demande les informations sur les royaumes
+    LCR_INFO = 0x08,   // Réponse du serveur sur les royaumes
 };
 
 public enum CheckResult : byte

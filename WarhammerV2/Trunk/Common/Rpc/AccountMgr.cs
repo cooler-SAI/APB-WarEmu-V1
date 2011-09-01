@@ -192,14 +192,16 @@ namespace Common
 
             return null;
         }
+        public List<Realm> GetRealms()
+        {
+            List<Realm> Rms = new List<Realm>();
+            Rms.AddRange(_Realms.Values);
+            return Rms;
+        }
         public Realm GetRealmByRpc(int RpcId)
         {
             lock (_Realms)
-                foreach (Realm Rm in _Realms.Values)
-                    if (Rm != null && Rm.Info != null && Rm.Info.RpcID == RpcId)
-                        return Rm;
-
-            return null;
+                return _Realms.Values.ToList().Find(info => info.Info != null && info.Info.RpcID == RpcId);
         }
         public bool UpdateRealm(RpcClientInfo Info, byte RealmId)
         {
@@ -217,6 +219,17 @@ namespace Common
             }
 
             return true;
+        }
+        public void UpdateRealm(byte RealmId, uint OnlinePlayers, uint OrderCount, uint DestructionCount)
+        {
+            Realm Rm = GetRealm(RealmId);
+
+            if (Rm == null)
+                return;
+
+            Rm.OnlinePlayers = OnlinePlayers;
+            Rm.OrderCount = OrderCount;
+            Rm.DestructionCount = DestructionCount;
         }
         public byte[] BuildRealms(uint sequence)
         {
@@ -290,7 +303,7 @@ namespace Common
                 return new byte[0];
             }
         }
-        public override void OnClientConnected(RpcClientInfo Info)
+        public override void  OnClientDisconnected(RpcClientInfo Info)
         {
             Realm Rm = GetRealmByRpc(Info.RpcID);
             if (Rm != null && Rm.Info.RpcID == Info.RpcID)

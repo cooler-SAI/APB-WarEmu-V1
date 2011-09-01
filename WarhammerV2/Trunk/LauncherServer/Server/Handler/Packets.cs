@@ -35,14 +35,13 @@ namespace LauncherServer
             cclient.SendTCP(Out);
         }
 
-
         [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.CL_CHECK, 0, "OnCheck")]
-        static public void HandlePacket(BaseClient client, PacketIn packet)
+        static public void CL_CHECK(BaseClient client, PacketIn packet)
         {
             Client cclient = client as Client;
             uint Version = packet.GetUint32();
 
-            Log.Debug("CL_CHECK", "Vérification du launcher : " + Version);
+            Log.Debug("CL_CHECK", "Launcher Version : " + Version);
 
             PacketOut Out = new PacketOut((byte)Opcodes.LCR_CHECK);
 
@@ -71,6 +70,32 @@ namespace LauncherServer
                 Out.WriteByte((byte)CheckResult.LAUNCHER_OK);
 
             cclient.SendTCP(Out);
+        }
+
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.CL_INFO, 0, "OnInfo")]
+        static public void CL_INFO(BaseClient client, PacketIn packet)
+        {
+            Client cclient = client as Client;
+
+            if (cclient.LastInfoRequest == 0 || cclient.LastInfoRequest <= TCPServer.GetTimeStampMS()+10000)
+            {
+                cclient.LastInfoRequest = TCPServer.GetTimeStampMS();
+
+                List<Realm> Rms = Program.AcctMgr.GetRealms();
+
+                PacketOut Out = new PacketOut((byte)Opcodes.LCR_INFO);
+                Out.WriteByte((byte)Rms.Count);
+                foreach (Realm Rm in Rms)
+                {
+                    Out.WriteByte(Convert.ToByte(Rm.Info != null));
+                    Out.WriteString(Rm.Name);
+                    Out.WriteUInt32(Rm.OnlinePlayers);
+                    Out.WriteUInt32(Rm.OrderCount);
+                    Out.WriteUInt32(Rm.DestructionCount);
+                }
+
+                cclient.SendTCP(Out);
+            }
         }
     }
 }

@@ -70,5 +70,20 @@ namespace Launcher
         {
 
         }
+
+        private void b_realms_Click(object sender, EventArgs e)
+        {
+            Client.UpdateRealms();
+        }
+
+        public void ClearRealms()
+        {
+            Realms.Rows.Clear();
+        }
+
+        public void AddRealm(string Name, bool Online, uint Players, uint Destruction, uint Order)
+        {
+            Realms.Rows.Add(Name, Online ? "true" : "false", "" + Players, "" + Destruction, "" + Order);
+        }
     }
 }
