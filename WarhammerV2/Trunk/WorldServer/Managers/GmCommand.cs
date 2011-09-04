@@ -37,6 +37,7 @@ namespace WorldServer
         {
             new GmCommandHandler("level",ModifyLevel, null, 0, 1, "Change the level of selected Player"),
             new GmCommandHandler("speed",ModifySpeed, null, 0, 1, "Change the speed of selected Player"),
+            new GmCommandHandler("renown",ModifyRenown, null, 0, 1, "Change the speed of selected Player"),
         };
 
         static public List<GmCommandHandler> AddCommands = new List<GmCommandHandler>()
@@ -190,6 +191,14 @@ namespace WorldServer
             int Speed = GetInt(ref Values);
             Plr = GetTargetOrMe(Plr);
             Plr.Speed = (UInt16)Speed;
+            return true;
+        }
+
+        static public bool ModifyRenown(Player Plr, ref List<string> Values)
+        {
+            int RenownLevel = GetInt(ref Values);
+            Plr = GetTargetOrMe(Plr);
+            Plr.SetRenownLevel((byte)RenownLevel);
             return true;
         }
 

@@ -451,6 +451,9 @@ namespace WorldServer
         {
             CurrentRenown = WorldMgr.GetRenown_Info(Level);
             _Value.RenownRank = Level;
+
+            if(_Loaded)
+                SendRenown();
         }
         public void AddRenown(uint Renown)
         {
@@ -464,7 +467,12 @@ namespace WorldServer
         }
         public void RenownUp(uint Rest)
         {
+            CurrentRenown = WorldMgr.GetRenown_Info((byte)(_Value.RenownRank+1));
+            if (CurrentRenown == null)
+                return;
 
+            _Value.Renown = Rest;
+            SetRenownLevel((byte)(_Value.RenownRank + 1));
         }
 
         #endregion
