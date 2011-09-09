@@ -150,10 +150,10 @@ namespace WorldServer
         {
             Log.Success("SendInteract", "" + Name + " -> " + Plr.Name + ",Type="+InteractType);
 
+            Plr.QtsInterface.HandleEvent(Objective_Type.QUEST_SPEACK_TO, Spawn.Entry, 1);
+
             if (!IsDead)
             {
-                Plr.QtsInterface.HandleEvent(Objective_Type.QUEST_SPEACK_TO, Spawn.Entry, 1);
-
                 string Text = WorldMgr.GetCreatureText(Spawn.Entry, Spawn.Title);
 
                 switch (InteractType)

@@ -28,8 +28,10 @@ namespace WorldServer
                 case 1: // Show Quest
                     {
                         Log.Info("F_QUEST", "Show Quest : " + QuestID);
+
                         Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
-                        if (Crea != null)
+
+                        if (Crea != null && Crea.QtsInterface.HasQuestStarter(QuestID))
                             Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr);
 
                     } break;
@@ -37,21 +39,39 @@ namespace WorldServer
                 case 2: // Accept Quest
                     {
                         Log.Info("F_QUEST", "Accept Quest : " + QuestID);
-                        cclient.Plr.QtsInterface.AcceptQuest(QuestID);
+
+                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
+
+                        if (Crea != null && Crea.QtsInterface.HasQuestStarter(QuestID))
+                            cclient.Plr.QtsInterface.AcceptQuest(QuestID);
                     }break;
 
                 case 3: // Quest Done
                     {
+                        Log.Info("F_QUEST", "Done Quest : " + QuestID);
 
+                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
+
+                        if (Crea != null && Crea.QtsInterface.hasQuestFinisher(QuestID))
+                            cclient.Plr.QtsInterface.DoneQuest(QuestID);
                     }break;
 
                 case 4: // Quest Done Info
                     {
+                        Log.Info("F_QUEST", "Done Quest Info: " + QuestID);
+                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
 
+                        if (Crea != null && Crea.QtsInterface.hasQuestFinisher(QuestID))
+                            Crea.QtsInterface.SendQuestDoneInfo(cclient.Plr, QuestID);
                     } break;
 
                 case 5: // Select Quest Reward
                     {
+                        Log.Info("F_QUEST", "Select Quest Reward: " + QuestID);
+                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
+
+                        if (Crea != null && Crea.QtsInterface.hasQuestFinisher(QuestID))
+                            cclient.Plr.QtsInterface.SelectRewards(QuestID, Unk3);
 
                     } break;
 

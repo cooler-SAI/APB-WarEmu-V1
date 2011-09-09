@@ -77,5 +77,7 @@ namespace Common
         public List<Character_Objectives> _Objectives = new List<Character_Objectives>();
 
         public Quest Quest;
+
+        public List<byte> SelectedRewards = new List<byte>();
     }
 }

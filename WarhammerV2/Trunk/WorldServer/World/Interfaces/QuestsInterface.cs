@@ -33,6 +33,16 @@ namespace WorldServer
 
         #region Npc
 
+        public bool HasQuestStarter(UInt16 QuestID)
+        {
+            return WorldMgr.GetStartQuests(Entry).Find(info => info.Entry == QuestID) != null;
+        }
+
+        public bool hasQuestFinisher(UInt16 QuestID)
+        {
+            return WorldMgr.GetFinishersQuests(Entry).Find(info => info.Entry == QuestID) != null;
+        }
+
         public bool CreatureHasRunningQuest(Player Plr)
         {
             return false;
@@ -41,6 +51,7 @@ namespace WorldServer
         {
             return false;
         }
+
         public bool CreatureHasStartQuest(Player Plr)
         {
             if (Entry == 0)
@@ -161,6 +172,7 @@ namespace WorldServer
 
             return _Quests.ContainsKey(QuestID);
         }
+
         public bool HasFinishQuest(UInt16 QuestID)
         {
             if (QuestID == 0)
@@ -171,6 +183,7 @@ namespace WorldServer
 
             return GetQuest(QuestID).IsDone();
         }
+
         public bool HasDoneQuest(UInt16 QuestID)
         {
             if (QuestID == 0)
@@ -197,11 +210,12 @@ namespace WorldServer
             if (Quest == null)
                 return false;
 
-            if (HasQuest(Quest.Entry) || Quest.Level > GetPlayer().Level)
+            if (HasQuest(Quest.Entry) || Quest.Level > GetPlayer().Level || (Quest.PrevQuest != 0 && !HasQuest(Quest.PrevQuest)))
                 return false;
 
             return true;
         }
+
         public bool CanEndQuest(Quest Quest)
         {
             if (GetPlayer() == null)
@@ -210,7 +224,7 @@ namespace WorldServer
             if (Quest == null)
                 return false;
 
-            if (!HasQuest(Quest.Entry) || !HasFinishQuest(Quest.Entry))
+            if (!HasQuest(Quest.Entry) || !HasFinishQuest(Quest.Entry) || HasDoneQuest(Quest.Entry))
                 return false;
 
             return true;
@@ -259,6 +273,46 @@ namespace WorldServer
                 return;
         }
 
+        public void DoneQuest(UInt16 QuestID)
+        {
+            Character_quest Quest = GetQuest(QuestID);
+
+            if (Quest == null || !Quest.IsDone())
+                return;
+
+            Player Plr = GetPlayer();
+
+            Dictionary<Item_Info, uint> Choices = GenerateRewards(Quest.Quest, Plr);
+
+            UInt16 FreeSlots = Plr.ItmInterface.GetTotalFreeInventorySlot();
+            if (FreeSlots < Quest.SelectedRewards.Count)
+            {
+                Plr.SendLocalizeString("", Localized_text.TEXT_OVERAGE_CANT_SALVAGE);
+                return;
+            }
+
+            byte num = 0;
+            foreach (KeyValuePair<Item_Info, uint> Kp in Choices)
+            {
+                if (Quest.SelectedRewards.Contains(num))
+                {
+                    Plr.ItmInterface.CreateItem(Kp.Key, (ushort)Kp.Value);
+                }
+                ++num;
+            }
+
+            Plr.AddXp(Quest.Quest.Xp);
+            Plr.AddMoney(Quest.Quest.Gold);
+
+            Quest.Done = true;
+            Quest.Dirty = true;
+            Quest.SelectedRewards.Clear();
+
+            SendQuestState(Quest.Quest, QuestCompletion.QUESTCOMPLETION_DONE);
+
+            CharMgr.Database.SaveObject(Quest);
+        }
+
         public void FinishQuest(Quest Quest)
         {
             if (Quest == null)
@@ -280,12 +334,12 @@ namespace WorldServer
 
                         if (Type == Objective_Type.QUEST_SPEACK_TO || Type == Objective_Type.QUEST_KILL_MOB || Type == Objective_Type.QUEST_PROTECT_UNIT)
                         {
-                            if (Entry == Objective.Objective.Creature.Entry)
+                            if (Objective.Objective.Creature != null && Entry == Objective.Objective.Creature.Entry)
                                 CanAdd = true;
                         }
                         else if (Type == Objective_Type.QUEST_GET_ITEM)
                         {
-                            if (Entry == Objective.Objective.Item.Entry)
+                            if (Objective.Objective.Item != null && Entry == Objective.Objective.Item.Entry)
                                 CanAdd = true;
                         }
                         else if (Type == Objective_Type.QUEST_USE_GO)
@@ -296,13 +350,26 @@ namespace WorldServer
                         if (CanAdd)
                         {
                             Objective.Count += Count;
-                            SendQuestUpdate(Quest, Objective);
                             Quest.Dirty = true;
+                            SendQuestUpdate(Quest, Objective);
                             CharMgr.Database.SaveObject(Quest);
                         }
                     }
                 }
             }
+        }
+
+        public void SelectRewards(UInt16 QuestID, byte num)
+        {
+            Character_quest Quest = GetQuest(QuestID);
+            if (Quest == null || !Quest.IsDone())
+                return;
+
+            if (num > 0)
+                --num;
+
+            Log.Info("SelectRewards", "Selection de la recompence : " + num);
+            Quest.SelectedRewards.Add(num);
         }
 
         #endregion
@@ -311,14 +378,7 @@ namespace WorldServer
         {
             BuildQuestHeader(Out, Q, true);
 
-            Dictionary<Item_Info,uint> Choices = GenerateRewards(Q, Plr);
-
-            Out.WriteByte(Q.ChoiceCount);
-            Out.WriteByte(0);
-            Out.WriteByte((byte)Choices.Count);
-
-            foreach (KeyValuePair<Item_Info, uint> Kp in Choices)
-                Item.BuildItem(ref Out, null, Kp.Key, 0, (ushort)Kp.Value);
+            BuildQuestRewards(Out, Plr, Q);
 
             BuildObjectives(Out, Q.Objectives);
 
@@ -338,6 +398,28 @@ namespace WorldServer
             Out.WriteUInt32(Q.Gold);
             Out.WriteUInt32(Q.Xp);
         }
+        static public void BuildQuestRewards(PacketOut Out, Player Plr, Quest Q)
+        {
+            Dictionary<Item_Info, uint> Choices = GenerateRewards(Q, Plr);
+
+            Out.WriteByte(Math.Min(Q.ChoiceCount,(byte)Choices.Count));
+            Out.WriteByte(0);
+            Out.WriteByte((byte)Choices.Count);
+
+            foreach (KeyValuePair<Item_Info, uint> Kp in Choices)
+                Item.BuildItem(ref Out, null, Kp.Key, 0, (ushort)Kp.Value);
+        }
+        static public void BuildQuestInteract(PacketOut Out,UInt16 QuestID, UInt16 SenderOid, UInt16 ReceiverOid)
+        {
+            Out.WriteUInt16(QuestID);
+            Out.WriteUInt16(0);
+
+            Out.WriteUInt16(SenderOid);
+            Out.WriteUInt16(0);
+
+            Out.WriteUInt16(ReceiverOid);
+        }
+
         public void BuildQuest(UInt16 QuestID, Player Plr)
         {
             Quest Q = WorldMgr.GetQuest(QuestID);
@@ -347,13 +429,9 @@ namespace WorldServer
             PacketOut Out = new PacketOut((byte)Opcodes.F_INTERACT_RESPONSE);
             Out.WriteByte(1);
             Out.WriteByte(1);
-            Out.WriteUInt16(Q.Entry);
-            Out.WriteUInt16(0);
 
-            Out.WriteUInt16(Obj.Oid);
-            Out.WriteUInt16(0);
+            BuildQuestInteract(Out, Q.Entry, Obj.Oid, Plr.Oid);
 
-            Out.WriteUInt16(Plr.Oid);
             Out.WriteUInt16(0);
 
             BuildQuestInfo(Out, Plr, Q);
@@ -455,6 +533,26 @@ namespace WorldServer
             Packet.Fill(0, 18);
 
             GetPlayer().SendPacket(Packet);
+        }
+
+        public void SendQuestDoneInfo(Player Plr,UInt16 QuestID)
+        {
+            Character_quest Quest = Plr.QtsInterface.GetQuest(QuestID);
+
+            if (Quest == null)
+                return;
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_INTERACT_RESPONSE);
+            Out.WriteByte(3);
+            Out.WriteByte(0);
+
+            BuildQuestInteract(Out, Quest.QuestID, Obj.Oid, Plr.Oid);
+
+            BuildQuestHeader(Out, Quest.Quest, false);
+
+            BuildQuestRewards(Out, Plr, Quest.Quest);
+
+            Plr.SendPacket(Out);
         }
 
         public void SendQuestState(Quest Quest,QuestCompletion State)

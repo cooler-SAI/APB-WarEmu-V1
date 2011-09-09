@@ -88,7 +88,7 @@ namespace WorldServer
             if (Obj == null)
                 return;
 
-            if (Obj.GetDistanceTo(cclient.Plr) > 15)
+            if (Obj.GetDistanceTo(cclient.Plr) > 20)
                 return;
 
             Obj.SendInteract(cclient.Plr, Menu);
