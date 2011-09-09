@@ -43,13 +43,17 @@ namespace WorldServer
             return WorldMgr.GetFinishersQuests(Entry).Find(info => info.Entry == QuestID) != null;
         }
 
-        public bool CreatureHasRunningQuest(Player Plr)
+
+        public bool CreatureHasQuestToComplete(Player Plr)
         {
-            return false;
-        }
-        public bool CreatureHasFinisherQuest(Player Plr)
-        {
-            return false;
+            if (Entry == 0)
+                return false;
+
+            List<Quest> Finisher = WorldMgr.GetFinishersQuests(Entry);
+            if (Finisher == null)
+                return false;
+
+            return  Finisher.Find(q => Plr.QtsInterface.CanEndQuest(q)) != null;
         }
 
         public bool CreatureHasStartQuest(Player Plr)
@@ -57,18 +61,11 @@ namespace WorldServer
             if (Entry == 0)
                 return false;
 
-            List<Quest> Quests = WorldMgr.GetStartQuests(Entry);
-
-            if (Quests == null)
+            List<Quest> Starter = WorldMgr.GetStartQuests(Entry);
+            if (Starter == null)
                 return false;
 
-            return Quests.Find(Q =>
-                {
-                    return Q.Level <= Plr.Level 
-                        && Plr.QtsInterface.HasDoneQuest(Q.PrevQuest) 
-                        && !Plr.QtsInterface.HasQuest(Q.Entry)
-                        && !Plr.QtsInterface.HasDoneQuest(Q.Entry);
-                }) != null;
+            return Starter.Find(q => Plr.QtsInterface.CanStartQuest(q)) != null;
         }
 
         public void HandleInteract(Player Plr, InteractMenu Menu)

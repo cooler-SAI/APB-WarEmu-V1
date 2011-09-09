@@ -38,6 +38,7 @@ namespace WorldServer
             new GmCommandHandler("level",ModifyLevel, null, 0, 1, "Change the level of selected Player"),
             new GmCommandHandler("speed",ModifySpeed, null, 0, 1, "Change the speed of selected Player"),
             new GmCommandHandler("renown",ModifyRenown, null, 0, 1, "Change the speed of selected Player"),
+            new GmCommandHandler("faction",ModifyFaction, null, 0, 1, "Change the faction of selected Unit"),
         };
 
         static public List<GmCommandHandler> AddCommands = new List<GmCommandHandler>()
@@ -199,6 +200,16 @@ namespace WorldServer
             int RenownLevel = GetInt(ref Values);
             Plr = GetTargetOrMe(Plr);
             Plr.SetRenownLevel((byte)RenownLevel);
+            return true;
+        }
+
+        static public bool ModifyFaction(Player Plr, ref List<string> Values)
+        {
+            byte Faction = (byte)GetInt(ref Values);
+            Object Obj = GetObjectTarget(Plr);
+            Obj.GetUnit().Faction = Faction;
+            Obj.SendMeTo(Plr);
+
             return true;
         }
 

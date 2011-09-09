@@ -43,7 +43,16 @@ namespace WorldServer
                         Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
 
                         if (Crea != null && Crea.QtsInterface.HasQuestStarter(QuestID))
+                        {
                             cclient.Plr.QtsInterface.AcceptQuest(QuestID);
+
+                            if (!Crea.QtsInterface.CreatureHasStartQuest(cclient.Plr))
+                            {
+                                Crea.SendRemove(cclient.Plr);
+                                Crea.SendMeTo(cclient.Plr);
+                            }
+                        }
+
                     }break;
 
                 case 3: // Quest Done
@@ -53,7 +62,12 @@ namespace WorldServer
                         Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
 
                         if (Crea != null && Crea.QtsInterface.hasQuestFinisher(QuestID))
+                        {
                             cclient.Plr.QtsInterface.DoneQuest(QuestID);
+                            Crea.SendRemove(cclient.Plr);
+                            Crea.SendMeTo(cclient.Plr);
+                        }
+
                     }break;
 
                 case 4: // Quest Done Info

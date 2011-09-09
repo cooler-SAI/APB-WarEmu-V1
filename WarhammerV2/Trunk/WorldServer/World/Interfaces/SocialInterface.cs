@@ -323,7 +323,7 @@ namespace WorldServer
             Out.WriteByte((byte)Plrs.Count);
             foreach (Player Dist in Plrs)
             {
-                SocialInterface.BuildPlayerInfo(ref Out, Plr);
+                SocialInterface.BuildPlayerInfo(ref Out, Dist);
             }
             Out.WriteByte(1);
             Plr.SendPacket(Out);

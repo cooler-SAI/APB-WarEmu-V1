@@ -151,6 +151,7 @@ namespace WorldServer
             _Value = Info.Value[0];
 
             Name = Info.Name;
+            Faction = 0x46;
 
             EvtInterface = EventInterface.GetEventInterface((uint)_Info.CharacterId);
             EvtInterface.AddEventNotify("Playing", Save);
@@ -681,9 +682,9 @@ namespace WorldServer
             Out.WriteByte(0); // Level
 
             Out.WriteByte(0);
-            Out.WriteByte(0x46);
+            Out.WriteByte(Faction);
             Out.WriteByte(0);
-            Out.WriteByte(0x46);
+            Out.WriteByte(Faction);
 
             Out.Write(_Info.bTraits, 0, _Info.bTraits.Length);
             Out.Fill(0, 12);

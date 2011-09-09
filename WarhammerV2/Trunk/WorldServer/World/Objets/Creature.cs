@@ -79,12 +79,10 @@ namespace WorldServer
         {
             List<byte> TmpState = new List<byte>();
 
-            if (QtsInterface.CreatureHasFinisherQuest(Plr))
-                TmpState.Add(7);
-            else if(QtsInterface.CreatureHasStartQuest(Plr))
+            if (QtsInterface.CreatureHasStartQuest(Plr))
                 TmpState.Add(5);
-            else if(QtsInterface.CreatureHasRunningQuest(Plr))
-                TmpState.Add(4);
+            else if (QtsInterface.CreatureHasQuestToComplete(Plr))
+                TmpState.Add(7);
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_CREATE_MONSTER);
             Out.WriteUInt16(Oid);
@@ -99,7 +97,7 @@ namespace WorldServer
             Out.WriteUInt16(Spawn.Proto.Model1);
             Out.WriteByte((byte)Spawn.Proto.MinScale);
             Out.WriteByte(Spawn.Proto.MinLevel);
-            Out.WriteByte(Spawn.Proto.Faction);
+            Out.WriteByte(Faction);
 
             Out.Fill(0, 4);
             Out.WriteByte(Spawn.Emote);
@@ -196,6 +194,11 @@ namespace WorldServer
         {
             Killer.QtsInterface.HandleEvent(Objective_Type.QUEST_KILL_MOB, Spawn.Entry,1);
             base.SetDeath(Killer);
+        }
+
+        public override string ToString()
+        {
+            return "Name="+Name+",Level="+Level+",Faction="+Faction+",Emote="+Spawn.Emote+",Position :" +base.ToString();
         }
     }
 }
