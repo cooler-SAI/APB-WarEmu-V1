@@ -65,7 +65,6 @@ namespace WorldServer
         }
         public void RemoveObject(Object Obj)
         {
-            Log.Success("RemoveObjectZone", Obj.Name);
             lock (_Objects)
             {
                 _Objects.Remove(Obj);

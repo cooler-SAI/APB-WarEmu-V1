@@ -86,6 +86,8 @@
     <Compile Include="NetWork\Handler\SocialHandlers.cs" />
     <Compile Include="NetWork\Handler\TchatHandlers.cs" />
     <Compile Include="NetWork\Handler\F_UNK1.cs" />
+    <Compile Include="World\Ability\AbilityMgr.cs" />
+    <Compile Include="World\Ability\IAbilityTypeHandler.cs" />
     <Compile Include="World\Interfaces\BaseInterface.cs" />
     <Compile Include="World\Interfaces\CombatInterface.cs" />
     <Compile Include="World\Interfaces\EventInterface.cs" />

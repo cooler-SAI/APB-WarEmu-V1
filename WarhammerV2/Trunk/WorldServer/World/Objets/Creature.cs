@@ -198,7 +198,7 @@ namespace WorldServer
 
         public override string ToString()
         {
-            return "Name="+Name+",Level="+Level+",Faction="+Faction+",Emote="+Spawn.Emote+",Position :" +base.ToString();
+            return "SpawnId="+Spawn.Entry+",Entry="+Spawn.Entry+",Name="+Name+",Level="+Level+",Faction="+Faction+",Emote="+Spawn.Emote+",Position :" +base.ToString();
         }
     }
 }

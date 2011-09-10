@@ -100,7 +100,7 @@ namespace WorldServer
         }
         public bool HasTarget()
         {
-            if (Target== null)
+            if (Target == null)
                 return false;
 
             return true;
@@ -124,7 +124,9 @@ namespace WorldServer
         }
         public Unit GetUnitTarget()
         {
-            if (!HasTarget() || !GetObjectTarget().IsUnit())
+            Object Targ = GetObjectTarget();
+
+            if (Targ == null || !Targ.IsUnit())
                 return null;
 
             return GetObjectTarget().GetUnit();
@@ -132,6 +134,7 @@ namespace WorldServer
         public Player GetPlayerTarget()
         {
             Object Targ = GetObjectTarget();
+
             if (Targ == null || !Targ.IsPlayer())
                 return null;
 

@@ -121,5 +121,15 @@ namespace Common
                 return Btes.ToArray();
             }
         }
+
+        public void BuildFromProto(Creature_proto Proto)
+        {
+            this.Proto = Proto;
+            Entry = Proto.Entry;
+            Title = Proto.Title;
+            Emote = Proto.Emote;
+            Bytes = Proto.Bytes;
+            Icone = Proto.Icone;
+        }
     }
 }

@@ -56,6 +56,12 @@ namespace WorldServer
             new GmCommandHandler("tokentry",ChapterTok, null, 0, 2, "Set tok entry"),
         };
 
+        static public List<GmCommandHandler> NpcCommands = new List<GmCommandHandler>()
+        {
+            new GmCommandHandler("spawn",NpcSpawn, null, 0, 1, "Spawn an npc"),
+            new GmCommandHandler("remove",NpcRemove, null, 0, 1, "Delete the target (0=World,1=Database)"),
+        };
+
         static public List<GmCommandHandler> BaseCommand = new List<GmCommandHandler>()
         {
             new GmCommandHandler("modify",null, ModifyCommands, 3, 0, "All command for modify player info"),
@@ -66,6 +72,7 @@ namespace WorldServer
             new GmCommandHandler("kill",Kill, null, 3, 0, "Kill target"),
             new GmCommandHandler("move",Move, null, 3, 0, "move target to my position"),
             new GmCommandHandler("chapter",null, ChapterCommands, 3, 0, "All Chapter commands"),
+            new GmCommandHandler("npc",null, NpcCommands, 3, 0, "All Npc commands"),
         };
 
         static public bool HandleCommand(Player Plr, string Text)
@@ -387,6 +394,54 @@ namespace WorldServer
             Chapter.TokEntry = (UInt32)TokEntry;
             Chapter.Dirty = true;
             WorldMgr.Database.SaveObject(Chapter);
+
+            return true;
+        }
+
+        #endregion
+
+        #region Npc
+
+        static public bool NpcSpawn(Player Plr, ref List<string> Values)
+        {
+            int Entry = GetInt(ref Values);
+
+            Creature_proto Proto = WorldMgr.GetCreatureProto((uint)Entry);
+            if (Proto == null)
+            {
+                Plr.SendMessage(0, "Server", "Invalid npc entry(" + Entry + ")", SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+                return false;
+            }
+
+            Plr.CalcWorldPositions();
+
+            Creature_spawn Spawn = new Creature_spawn();
+            Spawn.BuildFromProto(Proto);
+            Spawn.WorldO = Plr._Value.WorldO;
+            Spawn.WorldY = Plr._Value.WorldY;
+            Spawn.WorldZ = Plr._Value.WorldZ;
+            Spawn.WorldX = Plr._Value.WorldX;
+            Spawn.ZoneId = Plr.Zone.ZoneId;
+
+            WorldMgr.Database.AddObject(Spawn);
+
+            Plr.Region.CreateCreature(Spawn);
+
+            return true;
+        }
+
+        static public bool NpcRemove(Player Plr, ref List<string> Values)
+        {
+            Object Obj = GetObjectTarget(Plr);
+            if (!Obj.IsCreature())
+                return false;
+
+            int Database = GetInt(ref Values);
+
+            Obj.RemoveFromWorld();
+
+            if (Database > 0)
+                WorldMgr.Database.DeleteObject(Obj.GetCreature().Spawn);
 
             return true;
         }
