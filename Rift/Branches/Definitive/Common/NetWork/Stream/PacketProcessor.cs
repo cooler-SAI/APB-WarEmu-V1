@@ -66,7 +66,7 @@ namespace Common
                         ISerializableAttribute PacketAttribute = PacketAttributes[0];
                         PacketHandlerDefinition PacketDef = new PacketHandlerDefinition(PacketAttribute.GetOpcode(), Class);
 
-                        Log.Success("RegisterDefinitions", "Registering Handler : " + PacketAttribute.GetOpcode().ToString("X8"));
+                        Log.Debug("RegisterDefinitions", "Registering Handler : " + PacketAttribute.GetOpcode().ToString("X8"));
                         if(!Definitions.ContainsKey(PacketAttribute.GetOpcode()))
                             Definitions.Add(PacketAttribute.GetOpcode(), PacketDef);
                         else

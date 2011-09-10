@@ -74,6 +74,8 @@ namespace Common
 
                 Mgr.AddCharacter(Char);
             }
+
+            From.SendSerialized(Response);
         }
     }
 }
