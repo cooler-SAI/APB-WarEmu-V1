@@ -82,6 +82,7 @@ namespace WorldServer
             StsInterface = new StatsInterface(this);
             QtsInterface = new QuestsInterface(this);
             MvtInterface = new MovementInterface(this);
+            AbtInterface = new AbilityInterface(this);
         }
 
         public override void OnLoad()
@@ -90,6 +91,8 @@ namespace WorldServer
             SpawnPoint.Y = Y;
             SpawnPoint.Z = Z;
             SpawnHeading = Heading;
+            if (EvtInterface == null)
+                EvtInterface = new EventInterface(this);
 
             base.OnLoad();
         }
@@ -99,6 +102,10 @@ namespace WorldServer
             ItmInterface.Stop();
             CbtInterface.Stop();
             StsInterface.Stop();
+            QtsInterface.Stop();
+            MvtInterface.Stop();
+            AbtInterface.Stop();
+            EvtInterface.Stop();
 
             base.Dispose();
         }
@@ -107,10 +114,13 @@ namespace WorldServer
             int Tick = Environment.TickCount;
 
             UpdateHealth(Tick);
-            ItmInterface.Update(Tick);
             CbtInterface.Update(Tick);
+            ItmInterface.Update(Tick);
             StsInterface.Update(Tick);
+            QtsInterface.Update(Tick);
             MvtInterface.Update(Tick);
+            AbtInterface.Update(Tick);
+            EvtInterface.Update(Tick);
 
             if (NextSend < Tick)
             {
@@ -160,6 +170,7 @@ namespace WorldServer
         public CombatInterface CbtInterface;
         public StatsInterface StsInterface;
         public QuestsInterface QtsInterface;
+        public AbilityInterface AbtInterface;
 
         #endregion
 

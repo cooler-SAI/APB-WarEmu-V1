@@ -17,6 +17,9 @@ namespace Common
         [DataElement()]
         public byte Level;
 
+        [DataElement()]
+        public byte CareerLine;
+
         [DataElement]
         public UInt16 AbilityType;
 

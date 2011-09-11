@@ -14,6 +14,7 @@ namespace WorldServer
         static public MySQLObjectDatabase Database;
 
         static public Dictionary<UInt16, IAbilityTypeHandler> _AbilityTypes = new Dictionary<ushort, IAbilityTypeHandler>();
+        static public Dictionary<byte, List<Ability_Info>> _CareerAbility = new Dictionary<byte, List<Ability_Info>>();
 
         static private void LoadAbilityType()
         {
@@ -51,6 +52,7 @@ namespace WorldServer
 
         static public Dictionary<UInt16, Ability_Info> _AbilityInfos = new Dictionary<ushort, Ability_Info>();
 
+        [LoadingFunction(true)]
         static public void LoadAbilityInfo()
         {
             LoadAbilityType();
@@ -72,12 +74,35 @@ namespace WorldServer
                 }
 
                 _AbilityInfos.Add(Info.Entry, Info);
+
+                if (Info.CareerLine != 0)
+                {
+                    if (!_CareerAbility.ContainsKey(Info.CareerLine))
+                        _CareerAbility.Add(Info.CareerLine, new List<Ability_Info>());
+
+                    _CareerAbility[Info.CareerLine].Add(Info);
+                }
             }
 
             if (Error > 0)
                 Log.Error("AbilityMgr", "[" + Error + "] Ability Error");
 
             Log.Success("AbilityMgr", "Loaded " + _AbilityInfos.Count + " Ability Info");
+        }
+
+        static public Ability_Info GetAbilityInfo(UInt16 AbilityEntry)
+        {
+            Ability_Info Info;
+            _AbilityInfos.TryGetValue(AbilityEntry, out Info);
+            return Info;
+        }
+
+        static public List<Ability_Info> GetCareerAbility(byte CareerLine, byte Level)
+        {
+            List<Ability_Info> Abilities = new List<Ability_Info>();
+            if (_CareerAbility.ContainsKey(CareerLine))
+                Abilities.AddRange(_CareerAbility[CareerLine].FindAll(info => info.Level <= Level));
+            return Abilities;
         }
 
         #endregion

@@ -12,6 +12,8 @@ namespace WorldServer
     {
         static public int RANGE_UPDATE_INTERVAL = 300; // Check des Ranged toutes les 300Ms
 
+        public EventInterface EvtInterface;
+
         public UInt16 _ObjectId;
         public UInt16 Oid 
         { 
@@ -98,12 +100,6 @@ namespace WorldServer
             if (IsPlayer())
                 GetPlayer().SendMessage(this, Msg, Filter);
         }
-
-        #endregion
-
-        #region Interface
-
-        public EventInterface EvtInterface;
 
         #endregion
 

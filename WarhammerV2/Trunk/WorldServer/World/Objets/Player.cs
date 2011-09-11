@@ -154,9 +154,6 @@ namespace WorldServer
             Faction = 0x46;
 
             EvtInterface = EventInterface.GetEventInterface((uint)_Info.CharacterId);
-            EvtInterface.AddEventNotify("Playing", Save);
-            EvtInterface.Start();
-
             SocInterface = new SocialInterface(this);
             TokInterface = new TokInterface(this);
         }
@@ -171,6 +168,8 @@ namespace WorldServer
             if (!_Inited)
             {
                 EvtInterface.Obj = this;
+                EvtInterface.AddEventNotify("Playing", Save);
+                EvtInterface.Start();
 
                 ItmInterface.Load(CharMgr.GetItemChar(_Info.CharacterId));
                 StsInterface.Load(CharMgr.GetCharacterInfoStats(_Info.CareerLine, _Value.Level));

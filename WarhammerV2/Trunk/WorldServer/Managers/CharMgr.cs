@@ -80,7 +80,7 @@ namespace WorldServer
         static public Dictionary<byte, List<CharacterInfo_stats>> _InfoStats = new Dictionary<byte, List<CharacterInfo_stats>>();
         static public List<Random_name> _RandomNames = new List<Random_name>();
 
-
+        [LoadingFunction(true)]
         static public void LoadCharacterInfo()
         {
             IList<CharacterInfo> Chars = WorldMgr.Database.SelectAllObjects<CharacterInfo>();
@@ -93,6 +93,7 @@ namespace WorldServer
             Log.Success("CharacterMgr", "Loaded " + Chars.Count + " CharacterInfo");
         }
 
+        [LoadingFunction(true)]
         static public void LoadCharacterInfoItems()
         {
             IList<CharacterInfo_item> Chars = WorldMgr.Database.SelectAllObjects<CharacterInfo_item>();
@@ -110,6 +111,7 @@ namespace WorldServer
             Log.Success("CharacterMgr", "Loaded " + _InfoItems.Count + " CharacterInfo_Item");
         }
 
+        [LoadingFunction(true)]
         static public void LoadCharacterInfoStats()
         {
             IList<CharacterInfo_stats> Chars = WorldMgr.Database.SelectAllObjects<CharacterInfo_stats>();
@@ -357,7 +359,7 @@ namespace WorldServer
         static public Character_items[] _Items;
         static public Dictionary<int,List<Character_items>> _CharItems = new Dictionary<int,List<Character_items>>();
 
-
+        [LoadingFunction(true)]
         static public void LoadItems()
         {
             _Items = new Character_items[MAX_ITEMS];
