@@ -25,5 +25,6 @@ namespace WorldServer
         public int ArtifactLootRate = 1;
         public int GoldRate = 1;
         public int XpRate = 1;
+        public int RenownRate = 1;
     }
 }

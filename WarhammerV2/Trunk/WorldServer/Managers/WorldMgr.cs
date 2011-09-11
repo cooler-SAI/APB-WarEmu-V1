@@ -243,6 +243,22 @@ namespace WorldServer
             else return null;
         }
 
+        static public void GenerateRenown(Player Killer, Player Victim)
+        {
+            if (Killer == null || Victim == null)
+                return;
+
+            UInt32 VRp = Victim._Value.RenownRank;
+            UInt32 VLvl = Victim.Level;
+
+            UInt32 RP = VRp * 50 + VLvl * 60;
+
+            if (Program.Config.RenownRate > 0)
+                RP *= (UInt32)Program.Config.RenownRate;
+
+            Killer.AddRenown(RP);
+        }
+
         #endregion
 
         #region CreatureProto

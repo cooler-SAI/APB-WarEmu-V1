@@ -47,6 +47,7 @@ namespace WorldServer
             new GmCommandHandler("item",AddItem, null, 0, 1, "Add item to player"),
             new GmCommandHandler("money",AddMoney, null, 0, 1, "Add money to player"),
             new GmCommandHandler("tok",AddTok, null, 0, 1, "Add tok to player"),
+            new GmCommandHandler("renown",AddRenown, null, 0, 1, "Add renown to player"),
         };
 
         static public List<GmCommandHandler> ChapterCommands = new List<GmCommandHandler>()
@@ -73,6 +74,7 @@ namespace WorldServer
             new GmCommandHandler("move",Move, null, 3, 0, "move target to my position"),
             new GmCommandHandler("chapter",null, ChapterCommands, 3, 0, "All Chapter commands"),
             new GmCommandHandler("npc",null, NpcCommands, 3, 0, "All Npc commands"),
+            new GmCommandHandler("revive",Revive, null, 3, 0, "Rez target Unit"),
         };
 
         static public bool HandleCommand(Player Plr, string Text)
@@ -232,6 +234,7 @@ namespace WorldServer
 
             return true;
         }
+
         static public bool AddMoney(Player Plr, ref List<string> Values)
         {
             int Money = GetInt(ref Values);
@@ -266,6 +269,15 @@ namespace WorldServer
             Plr.TokInterface.AddTok(Info.Entry);
 
             return false;
+        }
+
+        static public bool AddRenown(Player Plr, ref List<string> Values)
+        {
+            int Value = GetInt(ref Values);
+            Plr = GetTargetOrMe(Plr);
+            Plr.AddRenown((uint)Value);
+
+            return true;
         }
 
         #endregion
@@ -311,12 +323,23 @@ namespace WorldServer
 
         #endregion
 
-        #region Kill
+        #region DeathKill
+
+        static public bool Revive(Player Plr, ref List<string> Values)
+        {
+            Unit Target = Plr.CbtInterface.GetUnitTarget();
+            if (Target == null || !Target.IsDead)
+                return false;
+
+            Target.RezUnit();
+
+            return true;
+        }
 
         static public bool Kill(Player Plr, ref List<string> Values)
         {
             Unit Target = Plr.CbtInterface.GetUnitTarget();
-            if (Target == null)
+            if (Target == null || Target.IsDead)
                 return false;
 
             Target.SetDeath(Plr);
