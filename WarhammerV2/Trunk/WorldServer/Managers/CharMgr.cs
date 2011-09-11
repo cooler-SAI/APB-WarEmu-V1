@@ -166,6 +166,18 @@ namespace WorldServer
         static public int MAX_CHAR_GUID = 1;
         static public Character[] _Chars = new Character[MAX_CHARACTERS];
         static public Dictionary<int, AccountChars> _AcctChars = new Dictionary<int, AccountChars>();
+
+        [LoadingFunction(true)]
+        static public void LoadCharacters()
+        {
+            Character[] Chars = Database.SelectAllObjects<Character>().ToArray();
+
+            foreach (Character Char in Chars)
+                AddChar(Char);
+
+            Log.Success("LoadCharacters", Chars.Length + "  : Character(s) loaded");
+        }
+
         static public int GenerateMaxCharId()
         {
             return System.Threading.Interlocked.Increment(ref MAX_CHAR_GUID);
@@ -222,15 +234,6 @@ namespace WorldServer
 
                 return _AcctChars[AccountId];
             }
-        }
-        static public void LoadCharacters()
-        {
-            Character[] Chars = Database.SelectAllObjects<Character>().ToArray();
-
-            foreach (Character Char in Chars)
-                AddChar(Char);
-
-            Log.Success("LoadCharacters",Chars.Length + "  : Character(s) loaded");
         }
         static public bool NameIsUsed(string Name)
         {
