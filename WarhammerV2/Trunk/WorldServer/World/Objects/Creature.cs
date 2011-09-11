@@ -152,12 +152,12 @@ namespace WorldServer
 
             if (!IsDead)
             {
-                string Text = WorldMgr.GetCreatureText(Spawn.Entry, Spawn.Title);
-
                 switch (InteractType)
                 {
                     case GameData.InteractType.INTERACTTYPE_DYEMERCHANT:
                         {
+                            string Text = WorldMgr.GetCreatureText(Spawn.Entry);
+
                             if (Menu.Menu == 9) // List des objets a vendre
                                 WorldMgr.SendVendor(Plr, Spawn.Entry);
                             else if (Menu.Menu == 11) // Achat d'un item

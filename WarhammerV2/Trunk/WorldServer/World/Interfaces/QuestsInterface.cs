@@ -76,10 +76,10 @@ namespace WorldServer
             List<Quest> Starter = WorldMgr.GetStartQuests(Entry);
             List<Quest> Finisher = WorldMgr.GetFinishersQuests(Entry);
 
-            if (Starter == null && Finisher == null)
-                return;
+            string Text = WorldMgr.GetCreatureText(Entry);
 
-            string Text = "";
+            if (Starter == null && Finisher == null && Text.Length <= 0)
+                return;
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_INTERACT_RESPONSE);
             Out.WriteByte(0);

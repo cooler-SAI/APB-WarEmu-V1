@@ -371,7 +371,7 @@ namespace WorldServer
             Log.Success("WorldMgr", "Loaded " + Count + " Creature Texts");
         }
 
-        static public string GetCreatureText(uint Entry, UInt16 Title)
+        static public string GetCreatureText(uint Entry)
         {
             string Text = "Wot a want ?";
 
