@@ -373,7 +373,7 @@ namespace WorldServer
 
         static public string GetCreatureText(uint Entry)
         {
-            string Text = "Wot a want ?";
+            string Text = "";
 
             if (_CreatureTexts.ContainsKey(Entry))
             {
