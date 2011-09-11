@@ -3,18 +3,51 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Reflection;
 
-using Common;
-using FrameWork;
-
-namespace WorldServer
+namespace FrameWork
 {
     public class LoaderMgr
     {
-        public delegate void LoadFunction();
-        public delegate void MultiLoadFunction(int ThreadCount,int Id);
+        #region Static
+
         static public int LoaderCount = 0;
-        static public int MaxThread = 2;
+        static public int MaxThread = 0;
+
+        static public void Start()
+        {
+            long Start = TCPManager.GetTimeStampMS();
+
+            List<LoadFunction> WaitEnd = new List<LoadFunction>();
+
+            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+                foreach (Type type in assembly.GetTypes())
+                {
+                    // Pick up a class
+                    if (type.IsClass != true)
+                        continue;
+
+                    foreach (MethodInfo m in type.GetMethods())
+                        foreach (LoadingFunctionAttribute at in m.GetCustomAttributes(typeof(LoadingFunctionAttribute), false))
+                        {
+                            LoadFunction loadfunction = (LoadFunction)Delegate.CreateDelegate(typeof(LoadFunction), m);
+
+                            if (at.CreateNewThread)
+                                InitLoad(loadfunction);
+                            else
+                                WaitEnd.Add(loadfunction);
+                        }
+                }
+
+            Wait();
+
+            foreach (LoadFunction Function in WaitEnd)
+                Function.Invoke();
+
+            long End = TCPManager.GetTimeStampMS();
+
+            Log.Success("LoaderMgr", "Loading complete in : " + (End - Start) + "ms");
+        }
 
         static public void InitLoad(LoadFunction Func)
         {
@@ -32,18 +65,22 @@ namespace WorldServer
                 new LoaderMgr(Func, Count,i);
         }
 
-        static public void InitMultiLoad()
-        {
-
-        }
-
         static public void Wait()
         {
             while (LoaderCount > 0)
                 Thread.Sleep(50);
         }
 
+        #endregion
+
+        public delegate void LoadFunction();
+        public delegate void MultiLoadFunction(int ThreadCount, int Id);
+
+        private int Id;
+        private int Count;
         private LoadFunction _Function;
+        private MultiLoadFunction _MultiFunction;
+
         public LoaderMgr(LoadFunction Function)
         {
             _Function = Function;
@@ -51,6 +88,17 @@ namespace WorldServer
             Thread LoadThread = new Thread(Start);
             LoadThread.Start();
         }
+
+        public LoaderMgr(MultiLoadFunction Function, int Count, int Id)
+        {
+            _MultiFunction = Function;
+            this.Count = Count;
+            this.Id = Id;
+            ThreadStart Start = new ThreadStart(MultiLoad);
+            Thread LoadThread = new Thread(Start);
+            LoadThread.Start();
+        }
+
         public void Load()
         {
             System.Threading.Interlocked.Increment(ref LoaderCount);
@@ -70,19 +118,6 @@ namespace WorldServer
             {
                 System.Threading.Interlocked.Decrement(ref LoaderCount);
             }
-        }
-
-        private MultiLoadFunction _MultiFunction;
-        private int Id;
-        private int Count;
-        public LoaderMgr(MultiLoadFunction Function,int Count,int Id)
-        {
-            _MultiFunction = Function;
-            this.Count = Count;
-            this.Id = Id;
-            ThreadStart Start = new ThreadStart(MultiLoad);
-            Thread LoadThread = new Thread(Start);
-            LoadThread.Start();
         }
 
         public void MultiLoad()

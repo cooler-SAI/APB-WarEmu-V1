@@ -56,6 +56,8 @@ namespace WorldServer
             if (WorldMgr.Database == null)
                 ConsoleMgr.WaitAndExit(2000);
 
+            AbilityMgr.Database = WorldMgr.Database;
+
             Client = new RpcClient("WorldServer-" + Config.RealmId, Config.AccountCacherInfo.RpcLocalIp, 1);
             if (!Client.Start(Config.AccountCacherInfo.RpcServerIp, Config.AccountCacherInfo.RpcServerPort))
                 ConsoleMgr.WaitAndExit(2000);
@@ -69,38 +71,7 @@ namespace WorldServer
                 return;
             }
 
-            long Start = TCPManager.GetTimeStampMS();
-
-            LoaderMgr.InitLoad(WorldMgr.LoadItem_Info);
-
-            LoaderMgr.InitLoad(WorldMgr.LoadCreatureProto);
-            LoaderMgr.InitLoad(WorldMgr.LoadCreatureSpawns);
-            LoaderMgr.InitLoad(WorldMgr.LoadCreatureItems);
-
-            LoaderMgr.InitLoad(WorldMgr.LoadGameObjectProtos);
-            LoaderMgr.InitLoad(WorldMgr.LoadGameObjectSpawns);
-
-            LoaderMgr.InitLoad(WorldMgr.LoadZone_Info);
-            LoaderMgr.InitLoad(WorldMgr.LoadXp_Info);
-            LoaderMgr.InitLoad(WorldMgr.LoadRenown_Info);
-            LoaderMgr.InitLoad(WorldMgr.LoadTok_Infos);
-            LoaderMgr.InitLoad(WorldMgr.LoadChapter_Infos);
-
-            LoaderMgr.InitLoad(WorldMgr.LoadQuests);
-            LoaderMgr.InitLoad(WorldMgr.LoadQuestsObjectives);
-
-            LoaderMgr.InitLoad(CharMgr.LoadCharacterInfo);
-            LoaderMgr.InitLoad(CharMgr.LoadCharacterInfoItems);
-            LoaderMgr.InitLoad(CharMgr.LoadCharacterInfoStats);
-            LoaderMgr.InitLoad(CharMgr.LoadCharacters);
-            LoaderMgr.InitLoad(CharMgr.LoadItems);
-
-            LoaderMgr.Wait();
-            WorldMgr.LoadRelation();
-
-            long End = TCPManager.GetTimeStampMS();
-
-            Log.Info("Loader", "Database loaded in : " + (End - Start) + "ms");
+            LoaderMgr.Start();
 
             if (!TCPManager.Listen<TCPServer>(Rm.Port, "World"))
                 ConsoleMgr.WaitAndExit(2000);

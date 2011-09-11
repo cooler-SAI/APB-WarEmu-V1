@@ -88,6 +88,7 @@
     <Compile Include="Database\World\Creatures\Creature_loot.cs" />
     <Compile Include="Database\World\Creatures\Creature_proto.cs" />
     <Compile Include="Database\World\Creatures\Creature_spawn.cs" />
+    <Compile Include="Database\World\Creatures\Creature_text.cs" />
     <Compile Include="Database\World\Creatures\Creature_vendor.cs" />
     <Compile Include="Database\World\GameObjects\GameObject_proto.cs" />
     <Compile Include="Database\World\GameObjects\GameObject_spawn.cs" />

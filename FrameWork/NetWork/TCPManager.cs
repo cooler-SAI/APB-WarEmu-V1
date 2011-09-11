@@ -519,10 +519,6 @@ namespace FrameWork
                     if (type.IsClass != true)
                         continue;
 
-                    object[] attrib = type.GetCustomAttributes(typeof(CryptAttribute), true);
-                    if (attrib.Length <= 0)
-                        continue;
-
                     CryptAttribute[] crypthandler =
                         (CryptAttribute[])type.GetCustomAttributes(typeof(CryptAttribute), true);
 

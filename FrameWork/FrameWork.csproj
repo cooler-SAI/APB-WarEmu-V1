@@ -68,6 +68,8 @@
     <Compile Include="Database\ObjectDatabase.cs" />
     <Compile Include="Database\Transaction\IsolationLevel.cs" />
     <Compile Include="Database\UniqueID\IDGenerator.cs" />
+    <Compile Include="Loader\LoaderMgr.cs" />
+    <Compile Include="Loader\LoadingFunctionAttribute.cs" />
     <Compile Include="Logs\Log.cs" />
     <Compile Include="Logs\LogConfig.cs" />
     <Compile Include="NetWork\ByteSwap.cs" />

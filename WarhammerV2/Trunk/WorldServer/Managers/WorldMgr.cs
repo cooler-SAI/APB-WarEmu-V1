@@ -16,6 +16,7 @@ namespace WorldServer
 
         static public List<Zone_Info> _Zone_Info;
 
+        [LoadingFunction(true)]
         static public void LoadZone_Info()
         {
             Log.Debug("WorldMgr", "Loading Zone_Info...");
@@ -43,6 +44,7 @@ namespace WorldServer
 
         static public Dictionary<uint, Chapter_Info> _Chapters;
 
+        [LoadingFunction(true)]
         static public void LoadChapter_Infos()
         {
             Log.Debug("WorldMgr", "Loading Chapter_Infos...");
@@ -84,6 +86,7 @@ namespace WorldServer
 
         static public Dictionary<uint, Tok_Info> _Toks;
 
+        [LoadingFunction(true)]
         static public void LoadTok_Infos()
         {
             Log.Debug("WorldMgr", "Loading LoadTok_Infos...");
@@ -115,6 +118,7 @@ namespace WorldServer
 
         static public Dictionary<uint, Item_Info> _Item_Info;
 
+        [LoadingFunction(true)]
         static public void LoadItem_Info()
         {
             Log.Debug("WorldMgr", "Loading Item_Info...");
@@ -171,6 +175,8 @@ namespace WorldServer
         #region Xp
 
         static private Dictionary<byte, Xp_Info> _Xp_Infos;
+
+        [LoadingFunction(true)]
         static public void LoadXp_Info()
         {
             Log.Debug("WorldMgr", "Loading Xp_Infos...");
@@ -216,6 +222,8 @@ namespace WorldServer
         #region Renown_Info
 
         static private Dictionary<byte, Renown_Info> _Renown_Infos;
+
+        [LoadingFunction(true)]
         static public void LoadRenown_Info()
         {
             Log.Debug("WorldMgr", "Loading Renown_Info...");
@@ -240,6 +248,8 @@ namespace WorldServer
         #region CreatureProto
 
         static public Dictionary<uint, Creature_proto> CreatureProtos;
+
+        [LoadingFunction(true)]
         static public void LoadCreatureProto()
         {
             Log.Debug("WorldMgr", "Loading Creature_Protos...");
@@ -253,6 +263,7 @@ namespace WorldServer
 
            Log.Success("LoadCreatureProto", "Loaded " + CreatureProtos.Count + " Creature_Protos");
         }
+
         static public Creature_proto GetCreatureProto(uint Entry)
         {
             Creature_proto Proto;
@@ -266,6 +277,7 @@ namespace WorldServer
 
         static public Dictionary<uint, Creature_spawn> CreatureSpawns;
 
+        [LoadingFunction(true)]
         static public void LoadCreatureSpawns()
         {
             Log.Debug("WorldMgr", "Loading Creature_Spawns...");
@@ -286,6 +298,8 @@ namespace WorldServer
         #region CreatureItems
 
         static public Dictionary<uint, List<Creature_item>> _CreatureItems;
+
+        [LoadingFunction(true)]
         static public void LoadCreatureItems()
         {
             Log.Debug("WorldMgr", "Loading Creature_Items...");
@@ -304,6 +318,7 @@ namespace WorldServer
 
             Log.Success("LoadCreatureItems", "Loaded " + (Items != null ? Items.Count : 0) + " Creature_Items");
         }
+
         static public List<Creature_item> GetCreatureItems(uint Entry)
         {
             if (!_CreatureItems.ContainsKey(Entry))
@@ -316,9 +331,41 @@ namespace WorldServer
 
         #region CreatureText
 
-        static public string GetCreatureText(uint entry, UInt16 Title)
+        static public Dictionary<uint, List<Creature_text>> _CreatureTexts = new Dictionary<uint, List<Creature_text>>();
+
+        [LoadingFunction(true)]
+        static public void LoadCreatureTexts()
         {
-            return "Wot a want?";
+            _CreatureTexts = new Dictionary<uint, List<Creature_text>>();
+
+            Log.Debug("WorldMgr", "Loading Creature_texts...");
+
+            IList<Creature_text> Texts = Database.SelectAllObjects<Creature_text>();
+
+            int Count = 0;
+            foreach (Creature_text Text in Texts)
+            {
+                if (!_CreatureTexts.ContainsKey(Text.Entry))
+                    _CreatureTexts.Add(Text.Entry, new List<Creature_text>());
+
+                _CreatureTexts[Text.Entry].Add(Text);
+                ++Count;
+            }
+
+            Log.Success("WorldMgr", "Loaded " + Count + " Creature Texts");
+        }
+
+        static public string GetCreatureText(uint Entry, UInt16 Title)
+        {
+            string Text = "Wot a want ?";
+
+            if (_CreatureTexts.ContainsKey(Entry))
+            {
+                int RandomNum = RandomMgr.Next(_CreatureTexts[Entry].Count-1);
+                Text = _CreatureTexts[Entry][RandomNum].Text;
+            }
+
+            return Text;
         }
 
         #endregion
@@ -388,7 +435,8 @@ namespace WorldServer
 
         static public Dictionary<uint, GameObject_proto> GameObjectProtos;
         static public Dictionary<uint, GameObject_spawn> GameObjectSpawns;
-        
+
+        [LoadingFunction(true)]
         static public void LoadGameObjectProtos()
         {
             Log.Debug("WorldMgr", "Loading GameObject_Protos...");
@@ -410,6 +458,7 @@ namespace WorldServer
             return Proto;
         }
 
+        [LoadingFunction(true)]
         static public void LoadGameObjectSpawns()
         {
             Log.Debug("WorldMgr", "Loading GameObject_Spawns...");
@@ -575,6 +624,8 @@ namespace WorldServer
         #region Quests
 
         static public Dictionary<ushort, Quest> _Quests;
+
+        [LoadingFunction(true)]
         static public void LoadQuests()
         {
             _Quests = new Dictionary<ushort, Quest>();
@@ -595,6 +646,8 @@ namespace WorldServer
         }
 
         static public Dictionary<int, Quest_Objectives> _Objectives;
+
+        [LoadingFunction(true)]
         static public void LoadQuestsObjectives()
         {
             _Objectives = new Dictionary<int, Quest_Objectives>();
@@ -653,6 +706,8 @@ namespace WorldServer
         }
 
         static public Dictionary<uint, List<Quest>> _CreatureStarter;
+
+        [LoadingFunction(true)]
         static public void LoadQuestCreatureStarter()
         {
             _CreatureStarter = new Dictionary<uint, List<Quest>>();
@@ -683,6 +738,8 @@ namespace WorldServer
         }
 
         static public Dictionary<uint, List<Quest>> _CreatureFinisher;
+
+        [LoadingFunction(true)]
         static public void LoadQuestCreatureFinisher()
         {
             _CreatureFinisher = new Dictionary<uint, List<Quest>>();
@@ -741,6 +798,7 @@ namespace WorldServer
             return _RegionCells[RegionId];
         }
 
+        [LoadingFunction(false)]
         static public void LoadRelation()
         {
             Log.Success("LoadRelation", "Loading Relations");
