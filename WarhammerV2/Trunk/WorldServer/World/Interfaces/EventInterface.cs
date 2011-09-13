@@ -45,7 +45,7 @@ namespace WorldServer
         public int Count;
         public int BaseCount;
         public EventDelegate Del;
-        private int NextExecute = 0;
+        private long NextExecute = 0;
         public bool ToDelete = false;
 
         public EventInfo(EventDelegate Del,int Interval, int Count)
@@ -61,7 +61,7 @@ namespace WorldServer
             Log.Success("AddEvent", "Del =" + Del.Method.Name + ",Name" + Del.Target.ToString());
         }
 
-        public bool Update(int Tick)
+        public bool Update(long Tick)
         {
             if (ToDelete)
                 return true;
@@ -137,7 +137,7 @@ namespace WorldServer
 
         private bool Running = true;
         public List<EventInfo> _Events = new List<EventInfo>();
-        public override void Update(int Tick)
+        public override void Update(long Tick)
         {
             if (!Running)
                 return;

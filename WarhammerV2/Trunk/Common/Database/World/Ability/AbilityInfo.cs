@@ -11,7 +11,7 @@ namespace Common
     [Serializable]
     public class Ability_Info : DataObject
     {
-        [PrimaryKey]
+        [DataElement()]
         public UInt16 Entry;
 
         [DataElement()]
@@ -28,6 +28,9 @@ namespace Common
 
         [DataElement()]
         public int MaxRange;
+
+        [DataElement]
+        public int CastTime;
 
         [DataElement]
         public int CoolDown;

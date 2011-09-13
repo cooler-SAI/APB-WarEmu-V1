@@ -23,7 +23,7 @@ namespace WorldServer
             this.Obj = Obj;
         }
 
-        public virtual void Update(int Tick)
+        public virtual void Update(long Tick)
         {
 
         }

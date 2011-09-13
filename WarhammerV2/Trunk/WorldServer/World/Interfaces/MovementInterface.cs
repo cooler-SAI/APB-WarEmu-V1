@@ -39,7 +39,7 @@ namespace WorldServer
         {
         }
 
-        public override void Update(int Tick)
+        public override void Update(long Tick)
         {
             UpdateFollow();
 
@@ -200,15 +200,15 @@ namespace WorldServer
 
         #region Move
 
-        public int MovementStart;
+        public long MovementStart;
         public int CurrentSpeed;
         public float TickSpeedX;
         public float TickSpeedY;
         public float TickSpeedZ;
 
-        public virtual int MovementElapsedMs()
+        public virtual long MovementElapsedMs()
         {
-            int Elapsed = Environment.TickCount - MovementStart;
+            long Elapsed = TCPManager.GetTimeStampMS() - MovementStart;
             return Elapsed;
         }
 
@@ -277,7 +277,7 @@ namespace WorldServer
 
             TurnTo(Obj.GetHeading(TargetPosition), false);
 
-            MovementStart = Environment.TickCount;
+            MovementStart = TCPManager.GetTimeStampMS();
             CurrentSpeed = speed;
             Obj.IsMoving = true;
             StartPosition.X = Obj.X;
@@ -299,7 +299,7 @@ namespace WorldServer
 
             CurrentSpeed = speed;
 
-            MovementStart = Environment.TickCount;
+            MovementStart = TCPManager.GetTimeStampMS();
             UpdateTickSpeed();
         }
         public virtual void CancelWalkTo()

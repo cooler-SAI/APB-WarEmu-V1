@@ -76,7 +76,7 @@ namespace WorldServer
     {
         public TargetInfo Target = null;
         public bool Attacking = false;
-        public int NextAttackTime = 0;
+        public long NextAttackTime = 0;
 
         public AiState State = AiState.STANDING;
 
@@ -141,7 +141,7 @@ namespace WorldServer
             return Targ.GetPlayer();
         }
 
-        public override void Update(int Tick)
+        public override void Update(long Tick)
         {
             if (!HasUnit())
                 return;
@@ -188,7 +188,7 @@ namespace WorldServer
                 return;
             }
 
-            int Tick = Environment.TickCount;
+            long Tick = TCPManager.GetTimeStampMS();
 
             LookAt(Target);
 

@@ -52,9 +52,7 @@ namespace WorldServer
 
         public virtual void Update()
         {
-            int Tick = Environment.TickCount;
-
-            EvtInterface.Update(Tick);
+            EvtInterface.Update(TCPManager.GetTimeStampMS());
         }
 
         public bool _Loaded = false;

@@ -111,9 +111,10 @@ namespace WorldServer
         }
         public override void Update()
         {
-            int Tick = Environment.TickCount;
+            long Tick = TCPManager.GetTimeStampMS();
 
             UpdateHealth(Tick);
+            UpdateActionPoints(Tick);
             CbtInterface.Update(Tick);
             ItmInterface.Update(Tick);
             StsInterface.Update(Tick);
@@ -133,7 +134,7 @@ namespace WorldServer
 
         #region Sender
 
-        private int NextSend = 0;
+        private long NextSend = 0;
 
         public override void SendMeTo(Player Plr)
         {
@@ -193,6 +194,9 @@ namespace WorldServer
             }
         }
 
+        public UInt16 ActionPoints = 0;
+        public UInt16 MaxActionPoints = 100;
+
         public uint TotalHealth { get { return MaxHealth + BonusHealth; } }
         public byte PctHealth { get { return (byte)((Health * 100) / TotalHealth); } }
         public bool IsDead 
@@ -206,10 +210,9 @@ namespace WorldServer
             } 
         }
 
-        public int NextHpRegen = 0;
-        public void UpdateHealth(int Tick)
+        public long NextHpRegen = 0;
+        public void UpdateHealth(long Tick)
         {
-
             if (Tick >= NextHpRegen)
             {
                 NextHpRegen = Tick + HEALTH_REGEN_TIME;
@@ -225,6 +228,31 @@ namespace WorldServer
                         Health = TotalHealth;
                     else
                         Health += Regen;
+                }
+            }
+        }
+
+        public long NextApRegen = 0;
+        public void UpdateActionPoints(long Tick)
+        {
+            if (Tick >= NextApRegen)
+            {
+                NextApRegen = Tick + ACTION_REGEN_TIME;
+
+                if (AbtInterface.IsCasting())
+                    return;
+
+                UInt16 Regen = 25; // 25 + items bonus
+
+                if (ActionPoints < MaxActionPoints)
+                {
+                    ActionPoints += Regen;
+
+                    if (ActionPoints > MaxActionPoints)
+                        ActionPoints = MaxActionPoints;
+
+                    if (IsPlayer())
+                        GetPlayer().SendHealh();
                 }
             }
         }

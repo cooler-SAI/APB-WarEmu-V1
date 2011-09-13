@@ -53,7 +53,7 @@ namespace WorldServer
         public UInt16 RegionId;
         public Thread _Updater;
         public bool Running = true;
-        public int NextCollect = 0;
+        public long NextCollect = 0;
 
         public RegionMgr(UInt16 RegionId,List<Zone_Info> Zones)
         {
@@ -134,7 +134,7 @@ namespace WorldServer
         {
             while (Running)
             {
-                int Start = Environment.TickCount;
+                long Start = TCPManager.GetTimeStampMS();
 
                 try
                 {
@@ -153,10 +153,10 @@ namespace WorldServer
                     NextCollect = Start + COLLECT_UPDATE_INTERVAL;
                 }
 
-                int End = Environment.TickCount;
-                int Elapsed = End - Start;
+                long End = TCPManager.GetTimeStampMS();
+                long Elapsed = End - Start;
                 if (Elapsed < REGION_UPDATE_INTERVAL)
-                    Thread.Sleep(REGION_UPDATE_INTERVAL - Elapsed);
+                    Thread.Sleep((int)(REGION_UPDATE_INTERVAL - Elapsed));
                 else
                 {
                     Log.Error("RegionMgr", "[" + RegionId + "] La region lag, " + GetObjects() + " objets! " + Elapsed +"ms");

@@ -176,7 +176,7 @@ namespace WorldServer
                 QtsInterface.Load(this._Info.Quests);
                 TokInterface.Load(_Info.Toks);
                 SocInterface.Load(_Info.Socials);
-
+                AbtInterface.Load();
                 StsInterface.ApplyStats();
 
                 SetLevel(_Value.Level);
@@ -225,14 +225,15 @@ namespace WorldServer
             SendSkills();
             Health = TotalHealth;
             ItmInterface.SendAllItems(this);
+            AbtInterface.SendAbilities();
 
-            PacketOut Out = new PacketOut((byte)Opcodes.F_CHARACTER_INFO);
+            /*PacketOut Out = new PacketOut((byte)Opcodes.F_CHARACTER_INFO);
             Out.WriteByte(1);
             Out.WriteByte(1);
             Out.WriteUInt16(0x300);
             Out.WriteUInt16(8159);
             Out.WriteByte(1);
-            SendPacket(Out);
+            SendPacket(Out);*/
 
             QtsInterface.SendQuests();
 
@@ -500,8 +501,8 @@ namespace WorldServer
             PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_HEALTH);
             Out.WriteUInt32(Health);
             Out.WriteUInt32(TotalHealth);
-            Out.WriteUInt16(0); // Todo, Actionpoints
-            Out.WriteUInt16(0); // Todo, MaxAction
+            Out.WriteUInt16(ActionPoints); //  Actionpoints
+            Out.WriteUInt16(MaxActionPoints); //  MaxAction
             Out.WriteUInt16(0); // Control le cercle bleu
             Out.WriteUInt16(0x0E10); // Idem
             SendPacket(Out);

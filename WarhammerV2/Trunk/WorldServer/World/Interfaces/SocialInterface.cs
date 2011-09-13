@@ -43,7 +43,7 @@ namespace WorldServer
             return Interface;
         }
 
-        public override void Update(int Tick)
+        public override void Update(long Tick)
         {
 
         }

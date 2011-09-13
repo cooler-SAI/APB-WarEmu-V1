@@ -50,14 +50,14 @@ namespace WorldServer
 
         #region Ability_Info
 
-        static public Dictionary<UInt16, Ability_Info> _AbilityInfos = new Dictionary<ushort, Ability_Info>();
+        static public Dictionary<UInt16, List<Ability_Info>> _AbilityInfos = new Dictionary<ushort, List<Ability_Info>>();
 
         [LoadingFunction(true)]
         static public void LoadAbilityInfo()
         {
             LoadAbilityType();
 
-            _AbilityInfos = new Dictionary<ushort, Ability_Info>();
+            _AbilityInfos = new Dictionary<ushort, List<Ability_Info>>();
 
             Log.Debug("AbilityMgr", "Loading Ability Info...");
 
@@ -73,7 +73,11 @@ namespace WorldServer
                     continue;
                 }
 
-                _AbilityInfos.Add(Info.Entry, Info);
+
+                if (!_AbilityInfos.ContainsKey(Info.Entry))
+                    _AbilityInfos.Add(Info.Entry, new List<Ability_Info>());
+
+                _AbilityInfos[Info.Entry].Add(Info);
 
                 if (Info.CareerLine != 0)
                 {
@@ -90,10 +94,11 @@ namespace WorldServer
             Log.Success("AbilityMgr", "Loaded " + _AbilityInfos.Count + " Ability Info");
         }
 
-        static public Ability_Info GetAbilityInfo(UInt16 AbilityEntry)
+        static public Ability_Info GetAbilityInfo(UInt16 AbilityEntry,byte Level)
         {
-            Ability_Info Info;
-            _AbilityInfos.TryGetValue(AbilityEntry, out Info);
+            Ability_Info Info = null;
+            if (_AbilityInfos.ContainsKey(AbilityEntry))
+                Info = _AbilityInfos[AbilityEntry].Find(info => info.Level == Level);
             return Info;
         }
 
