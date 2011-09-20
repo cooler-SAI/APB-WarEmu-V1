@@ -52,6 +52,20 @@ namespace Common
             pValue <<= 6;
             pValue |= (byte)(pParameter1 & 0x3F);
         }
+        public static bool Decode2Parameters(long pValue, out int pParameter1, out int pParameter2)
+        {
+            pParameter1 = (int)(pValue & 0x07);
+            pParameter2 = (int)(pValue >> 3);
+            if (pParameter1 < 0x07) return true;
+            pParameter1 = pParameter2 & 0x07;
+            pParameter2 = (int)(pValue >> 6);
+            if (pParameter1 < 0x07)
+            {
+                pParameter1 += 0x08;
+                return true;
+            }
+            return false;
+        }
         public static void Encode3Parameters(out long pValue, int pParameter1, int pParameter2, int pParameter3)
         {
             if (pParameter1 > 0x07)
@@ -88,6 +102,13 @@ namespace Common
                 pValue |= (byte)(pParameter1 & 0x3F);
             }
         }
-        
+        public static bool Decode3Parameters(long pValue, out int pParameter1, out int pParameter2, out int pParameter3)
+        {
+            pParameter1 = 0;
+            pParameter2 = 0;
+            pParameter3 = 0;
+            return Decode2Parameters(pValue, out pParameter1, out pParameter2) &&
+                   Decode2Parameters(pParameter2, out pParameter2, out pParameter3);
+        }
     }
 }

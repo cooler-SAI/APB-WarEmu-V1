@@ -169,12 +169,54 @@ namespace FrameWork
             return Col;
 
         }
-        public static String AssemblyVersion
+        static public String AssemblyVersion
         {
             get
             {
                 return System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             }
+        }
+
+        static public long Encode2Values(int P1, int P2)
+        {
+            return (long)(P1 << 32 + P2);
+        }
+        static public void Decode2Values(long Value, out int P1, out int P2)
+        {
+            P1 = (int)(Value >> 32);
+            P2 = (int)(Value & 0xFFFFFFFF);
+        }
+
+        static public int Encode2Values(ushort P1, ushort P2)
+        {
+            return (int)(P1 << 16 + P2);
+        }
+        static public void Decode2Values(int Value, out ushort P1, out ushort P2)
+        {
+            P1 = (ushort)(Value >> 16);
+            P2 = (ushort)(Value & 0xFFFF);
+        }
+
+        static public ushort Encode2Values(byte P1, byte P2)
+        {
+            return (ushort)((P1 << 8) + P2);
+        }
+        static public void Decode2Values(ushort Value, out byte P1, out byte P2)
+        {
+            P1 = (byte)(Value >> 8);
+            P2 = (byte)(Value & 0xFF);
+        }
+
+        static public int Encode4Values(byte P1, byte P2, byte P3, byte P4)
+        {
+            return (int)((P1 << 24) + (P2 << 16) + (P3 << 8) + P4);
+        }
+        static public void Decode4Values(int Value, out byte P1, out byte P2, out byte P3, out byte P4)
+        {
+            P1 = (byte)(Value >> 24);
+            P2 = (byte)(Value >> 16);
+            P3 = (byte)(Value >> 8);
+            P4 = (byte)(Value & 0xFF);
         }
     }
 }
