@@ -42,11 +42,11 @@ namespace WorldServer
                 CharacterInfo CharInfo = CharMgr.GetCharacterInfo(Info.career);
                 if (CharInfo == null)
                 {
-                    Log.Error("ON_CREATE", "Impossible de trouver la carrière :" + Info.career);
+                    Log.Error("ON_CREATE", "Can not find career :" + Info.career);
                     return;
                 }
 
-                Log.Success("OnCreate", "Création d'un nouveau personnage : " + Name);
+                Log.Success("OnCreate", "Creating new Character : " + Name);
 
                 Character Char = new Character();
                 Char.AccountId = cclient._Account.AccountId;
@@ -62,7 +62,7 @@ namespace WorldServer
 
                 if (!CharMgr.CreateChar(Char))
                 {
-                    Log.Error("CreateCharacter", "Hack : création de + de 10 characters!");
+                    Log.Error("CreateCharacter", "Hack : can not create more than 10 characters!");
                     return;
                 }
 
@@ -106,8 +106,10 @@ namespace WorldServer
 
                 Char.Value = new Character_value[1] { CInfo };
             }
+
+
             PacketOut Out = new PacketOut((byte)Opcodes.F_SEND_CHARACTER_RESPONSE);
-            Out.WriteString(cclient._Account.Username, 24);
+            Out.WritePascalString(cclient._Account.Username);
             cclient.SendTCP(Out);
         }
 
@@ -127,7 +129,7 @@ namespace WorldServer
             CharMgr.RemoveCharacter(Slot, cclient._Account.AccountId);
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_SEND_CHARACTER_RESPONSE);
-            Out.WriteString(cclient._Account.Username, 24);
+            Out.WritePascalString(cclient._Account.Username);
             cclient.SendTCP(Out);
         }
 
@@ -172,7 +174,7 @@ namespace WorldServer
 
             if (Char == null)
             {
-                Log.Error("F_DUMP_ARENAS_LARGE", "Erreur , Character Introuvable au slot : " + CharacterSlot);
+                Log.Error("F_DUMP_ARENAS_LARGE", "Can not find character on slot : " + CharacterSlot);
                 cclient.Disconnect();
                 return;
             }

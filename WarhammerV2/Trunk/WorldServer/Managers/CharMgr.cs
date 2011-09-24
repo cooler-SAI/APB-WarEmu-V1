@@ -44,28 +44,26 @@ namespace WorldServer
         {
             int CharacterId = -1;
             if (_Chars[Slot] != null)
-            {
                 CharacterId = _Chars[Slot].CharacterId;
-                _Chars[Slot] = null;
-            }
 
+            _Chars[Slot] = null;
              _Realm = GameData.pRealm.REALM_NONE;
 
-            for(byte i=0;i<_Chars.Length;++i)
-                if (_Chars[i] != null)
+            foreach(Character Char in _Chars)
+                if (Char != null)
                 {
-                    _Realm = (GameData.pRealm)_Chars[i].Realm;
+                    _Realm = (GameData.pRealm)Char.Realm;
                     break;
                 }
 
             return CharacterId;
         }
-        public Character GetCharacterBySlot(byte SlotId)
+        public Character GetCharacterBySlot(byte Slot)
         {
-            if (SlotId < 0 || SlotId > _Chars.Length)
+            if (Slot < 0 || Slot > _Chars.Length)
                 return null;
 
-            return _Chars[SlotId];
+            return _Chars[Slot];
         }
     };
 
@@ -331,12 +329,12 @@ namespace WorldServer
         static public void RemoveCharacter(byte Slot, int AccountId)
         {
             int CharacterId = GetAccountChar(AccountId).RemoveCharacter(Slot);
-            Log.Debug("RemoveCharacter", "Slot=" + Slot + ",Acct=" + AccountId + ",CharId=" + CharacterId);
 
-            if(CharacterId >= 0)
             lock(_Chars)
-                if (_Chars[CharacterId] != null)
+                if (CharacterId >= 0 &&_Chars[CharacterId] != null)
                 {
+                    Log.Debug("RemoveCharacter", "Slot=" + Slot + ",Acct=" + AccountId + ",CharId=" + CharacterId);
+
                     RemoveItemsChar(CharacterId);
                     Database.DeleteObject(_Chars[CharacterId]);
                     _Chars[CharacterId] = null;

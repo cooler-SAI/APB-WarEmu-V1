@@ -43,7 +43,6 @@ namespace WorldServer
             return WorldMgr.GetFinishersQuests(Entry).Find(info => info.Entry == QuestID) != null;
         }
 
-
         public bool CreatureHasQuestToComplete(Player Plr)
         {
             if (Entry == 0)
@@ -98,9 +97,6 @@ namespace WorldServer
                 Out.WriteByte((byte)Starts.Count);
                 foreach (Quest Q in Starts)
                 {
-                    if (Text.Length <= 0)
-                        Text = Q.Particular;
-
                     Out.WriteByte(0);
                     Out.WriteUInt16(Q.Entry);
                     Out.WriteUInt16(0);
@@ -119,9 +115,6 @@ namespace WorldServer
                 Out.WriteByte((byte)Finishs.Count);
                 foreach (Quest Q in Finishs)
                 {
-                    if (Text.Length <= 0)
-                        Text = Q.Particular;
-
                     Out.WriteByte(0);
                     Out.WriteUInt16(Q.Entry);
                     Out.WritePascalString(Q.Name);
@@ -130,8 +123,9 @@ namespace WorldServer
             else
                 Out.WriteByte(0);
 
-            Out.WriteByte(0);
-            Out.WritePascalString(Text);
+            Log.Info("QTS", "Text=" + Text);
+            Out.WriteUInt16((ushort)Text.Length);
+            Out.WriteStringBytes(Text);
             Out.WriteByte(0);
 
             Plr.SendPacket(Out);
