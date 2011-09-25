@@ -48,10 +48,4 @@ namespace MapServer
         [PacketBit(8)]
         public CharacterInfoCache Field8;
     }
-
-    [ISerializableAttribute((long)Opcodes.WorldEntityUpdate)]
-    public class WorldEntityUpdate : ISerializablePacket
-    {
-
-    }
 }

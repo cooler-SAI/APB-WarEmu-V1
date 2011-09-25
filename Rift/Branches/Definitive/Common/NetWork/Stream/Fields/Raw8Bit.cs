@@ -30,9 +30,9 @@ namespace Common
             val = Data.Read(8);
         }
 
-        public override bool Serialize(ref PacketOutStream Data)
+        public override bool Serialize(ref PacketOutStream Data, bool Force)
         {
-            if (val == null || val.ToString() == "0")
+            if (!Force && (val == null || val.ToString() == "0"))
                 return false;
 
             if (val is byte[])
@@ -53,7 +53,7 @@ namespace Common
                 Info.SetValue(Packet, (byte[])val);
             else if (Field.Equals(typeof(long)))
             {
-                Array.Reverse((val as byte[]));
+                //Array.Reverse((val as byte[]));
                 Info.SetValue(Packet, BitConverter.ToInt64((byte[])val, 0));
             }
         }

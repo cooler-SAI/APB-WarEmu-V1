@@ -31,7 +31,7 @@ namespace Common
                 val = (bool)false;
         }
 
-        public override bool Serialize(ref PacketOutStream Data)
+        public override bool Serialize(ref PacketOutStream Data,bool Force)
         {
 
             return true;

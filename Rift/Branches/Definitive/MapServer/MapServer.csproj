@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="Configs\MapConfig.cs" />
     <Compile Include="NetWork\Handlers\WorldAuthenticationRequest.cs" />
+    <Compile Include="NetWork\Handlers\WorldEntityUpdate.cs" />
+    <Compile Include="NetWork\Handlers\WorldMapLoaded.cs" />
     <Compile Include="NetWork\Senders\WorldEntityUpdate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -57,7 +57,7 @@ namespace Common
                 Response.AddField(0, EPacketFieldType.Unsigned7BitEncoded, (long)6);
             else
             {
-                Response.AddField(0, EPacketFieldType.Unsigned7BitEncoded, (long)0);
+                Response.AddField(0, EPacketFieldType.Unsigned7BitEncoded, (long)6);
 
 
                 Character Char = new Character();

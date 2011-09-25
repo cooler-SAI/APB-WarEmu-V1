@@ -321,5 +321,37 @@ namespace Common
         }
 
         #endregion
+
+        public void SendCache(long CacheType, uint ID)
+        {
+            byte[] Packet = GetCache(CacheType, ID);
+            if (Packet == null)
+                return;
+
+            SendTCPWithSize(Packet);
+        }
+
+        public byte[] GetCache(long CacheType, uint ID)
+        {
+            try
+            {
+                FileStream Ft = new FileStream("CacheData/" + CacheType + "-" + ID + ".cache", FileMode.Open);
+                if (Ft == null || !Ft.CanRead)
+                {
+                    Log.Error("GetCache", "Invalid Cache Data : Type=" + CacheType + ",ID=" + ID);
+                    return null;
+                }
+
+                byte[] Result = new byte[Ft.Length];
+                Ft.Read(Result, 0, (int)Result.Length);
+                Ft.Close();
+                return Result;
+            }
+            catch (Exception e)
+            {
+                Log.Error("GetCache", "Invalid Cache Data : Type=" + CacheType + ",ID=" + ID);
+                return null;
+            }
+        }
     }
 }

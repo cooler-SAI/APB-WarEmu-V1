@@ -73,6 +73,16 @@ namespace MapServer
             BuildPlayer = new byte[Str.Length];
             Str.Read(BuildPlayer, 0, BuildPlayer.Length);
 
+            /*// Listening Client
+            if (!TCPManager.Listen<RiftServer>(Config.ServerInfo.MapPort, "CharacterServer"))
+                ConsoleMgr.WaitAndExit(2000);
+
+            PacketInStream Entity = new PacketInStream(BuildPlayer,BuildPlayer.Length);
+            WorldEntityUpdate Update = PacketProcessor.ReadPacket(ref Entity) as WorldEntityUpdate;
+            Log.Info("Entity", "GUID = " + Update.GUID + " List Lengh = " + Update.Field1.Count);
+            Console.ReadKey();
+            Environment.Exit(0);*/
+
             // Starting Remote Client
             Client = new RpcClient("Map-" + Config.ServerInfo.MapAdress, Config.ClientInfo.RpcLocalIp, 2);
             if (!Client.Start(Config.ClientInfo.RpcServerIp, Config.ClientInfo.RpcServerPort))

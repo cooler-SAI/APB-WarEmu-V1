@@ -47,9 +47,9 @@ namespace Common
             val = Fields;
         }
 
-        public override bool Serialize(ref PacketOutStream Data)
+        public override bool Serialize(ref PacketOutStream Data,bool Force)
         {
-            Log.Success("WriteList", "Serialize : " + val);
+            Log.Debug("WriteList", "Serialize : " + val);
 
             if (val == null)
                 return false;
@@ -88,18 +88,18 @@ namespace Common
                 Data.WriteEncoded7Bit(ListData);
 
                 for (int i = 0; i < Values.Count; ++i)
-                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Unsigned7BitEncoded, (ulong)Values[i]);
+                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Unsigned7BitEncoded, (ulong)Values[i], true);
             }
             else if (val is List<long>)
             {
                 List<long> Values = val as List<long>;
 
                 long ListData;
-                PacketOutStream.Encode2Parameters(out ListData, (int)EPacketFieldType.Signed7BitEncoded, Values.Count);
+                PacketOutStream.Encode2Parameters(out ListData, (int)EPacketFieldType.Unsigned7BitEncoded, Values.Count);
                 Data.WriteEncoded7Bit(ListData);
 
                 for (int i = 0; i < Values.Count; ++i)
-                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Signed7BitEncoded, (long)Values[i]);
+                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Unsigned7BitEncoded, (long)Values[i],true);
             }
             else if (val is List<uint>)
             {
@@ -113,7 +113,7 @@ namespace Common
                 Data.WriteEncoded7Bit(ListData);
 
                 for (int i = 0; i < Values.Count; ++i)
-                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Raw4Bytes, (uint)Values[i]);
+                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Raw4Bytes, (uint)Values[i], true);
             }
             else if (val is List<float>)
             {
@@ -127,7 +127,7 @@ namespace Common
                 Data.WriteEncoded7Bit(ListData);
 
                 for (int i = 0; i < Values.Count; ++i)
-                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Raw4Bytes, Values[i]);
+                    PacketProcessor.WriteField(ref Data, EPacketFieldType.Raw4Bytes, Values[i], true);
             }
             else if (val is List<string>)
             {
@@ -141,7 +141,7 @@ namespace Common
                 Data.WriteEncoded7Bit(ListData);
 
                 for (int i = 0; i < Strs.Count; ++i)
-                    PacketProcessor.WriteField(ref Data, EPacketFieldType.ByteArray, (string)Strs[i]);
+                    PacketProcessor.WriteField(ref Data, EPacketFieldType.ByteArray, (string)Strs[i], true);
 
                 return true;
             }
@@ -159,7 +159,7 @@ namespace Common
                 Data.WriteEncoded7Bit(ListData);
 
                 for (int i = 0; i < Strs.Count; ++i)
-                    PacketProcessor.WriteField(ref Data, Strs[i].PacketType, Strs[i].val);
+                    PacketProcessor.WriteField(ref Data, Strs[i].PacketType, Strs[i].val, true);
 
                 return true;
             }

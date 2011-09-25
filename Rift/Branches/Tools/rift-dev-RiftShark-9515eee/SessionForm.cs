@@ -401,12 +401,12 @@ namespace RiftShark
             using (FileStream stream = new FileStream(pFilename, FileMode.Open, FileAccess.Read))
             {
                 BinaryReader reader = new BinaryReader(stream);
-                mLocalPort = reader.ReadUInt16();
+                mLocalPort = 8000;
                 while (stream.Position < stream.Length)
                 {
-                    long timestamp = reader.ReadInt64();
-                    bool outbound = reader.ReadBoolean();
-                    int size = reader.ReadInt32();
+                    long timestamp = 0;
+                    bool outbound = false;
+                    int size = (int)reader.BaseStream.Length;
                     byte[] buffer = reader.ReadBytes(size);
                     RiftPacketReader packetReader = new RiftPacketReader(new DateTime(timestamp), outbound, buffer, 0, buffer.Length);
                     RiftPacket packet;

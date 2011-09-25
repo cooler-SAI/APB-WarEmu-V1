@@ -28,9 +28,9 @@ namespace Common
             val = Data.ReadEncoded7Bit();
         }
 
-        public override bool Serialize(ref PacketOutStream Data)
+        public override bool Serialize(ref PacketOutStream Data, bool Force)
         {
-            if (val == null || val.ToString() == "0")
+            if (!Force && (val == null || val.ToString() == "0"))
                 return false;
 
             Data.WriteEncoded7Bit((long)(Convert.ChangeType(val,typeof(long))));

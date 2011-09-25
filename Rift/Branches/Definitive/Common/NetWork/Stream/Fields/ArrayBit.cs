@@ -31,9 +31,9 @@ namespace Common
             val = Data.Read((int)Size);
         }
 
-        public override bool Serialize(ref PacketOutStream Data)
+        public override bool Serialize(ref PacketOutStream Data,bool Force)
         {
-            if (val == null || val.ToString() == "")
+            if (!Force && (val == null || val.ToString() == "0"))
                 return false;
 
             byte[] Result = new byte[0];

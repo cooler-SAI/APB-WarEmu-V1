@@ -46,7 +46,7 @@ namespace Common
         public object val;
 
         public abstract void Deserialize(ref PacketInStream Data);
-        public abstract bool Serialize(ref PacketOutStream Data);
+        public abstract bool Serialize(ref PacketOutStream Data,bool Force);
 
         public abstract void ApplyToFieldInfo(FieldInfo Info,ISerializablePacket Packet, Type Field);
 

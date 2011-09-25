@@ -30,9 +30,9 @@ namespace Common
             val = Data.Read(4);
         }
 
-        public override bool Serialize(ref PacketOutStream Data)
+        public override bool Serialize(ref PacketOutStream Data, bool Force)
         {
-            if (val == null || val.ToString() == "0")
+            if (!Force && (val == null || val.ToString() == "0"))
                 return false;
 
             if (val is UInt32)

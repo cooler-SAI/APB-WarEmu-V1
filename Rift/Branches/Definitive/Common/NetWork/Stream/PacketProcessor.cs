@@ -172,7 +172,7 @@ namespace Common
                 Field.PacketType = PacketProcessor.GetFieldType(Field);
 
                 PacketOutStream Str = new PacketOutStream();
-                Field.Serialize(ref Str);
+                Field.Serialize(ref Str,true);
                 byte[] Result =  Str.ToArray();
                 return Result;
             }
@@ -243,20 +243,20 @@ namespace Common
             PacketOutStream.Encode2Parameters(out FieldResult, FieldType, FieldIndex);
             NewStream.WriteEncoded7Bit(FieldResult);
 
-            if(Field == null || Field.Serialize(ref NewStream))
+            if(Field == null || Field.Serialize(ref NewStream,false))
                 Stream.Write(NewStream.ToArray());
 
             return true;
         }
 
-        public static bool WriteField(ref PacketOutStream Stream, EPacketFieldType FieldType, object Value)
+        public static bool WriteField(ref PacketOutStream Stream, EPacketFieldType FieldType, object Value, bool Force)
         {
             ISerializableField Field = GetFieldType(FieldType);
             Log.Debug("WriteField", "Type=" + FieldType + ",Val=" + Value + ",Field="+Field);
             if (Field != null)
             {
                 Field.val = Value;
-                Field.Serialize(ref Stream);
+                Field.Serialize(ref Stream,true);
                 return true;
             }
 

@@ -50,7 +50,7 @@ namespace Common
             val = Dic;
         }
 
-        public override bool Serialize(ref PacketOutStream Data)
+        public override bool Serialize(ref PacketOutStream Data, bool Force)
         {
             if (val == null)
                 return false;
@@ -71,8 +71,8 @@ namespace Common
 
                 foreach (KeyValuePair<long, ISerializablePacket> KP in Dic)
                 {
-                    PacketProcessor.WriteField(ref Data, (EPacketFieldType)KeyType, KP.Key);
-                    PacketProcessor.WriteField(ref Data, (EPacketFieldType)ValueType, KP.Value);
+                    PacketProcessor.WriteField(ref Data, (EPacketFieldType)KeyType, KP.Key,true);
+                    PacketProcessor.WriteField(ref Data, (EPacketFieldType)ValueType, KP.Value,true);
                 }
 
                 return true;

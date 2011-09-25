@@ -103,7 +103,7 @@ namespace Common
                 Fields.Add(Index, Field);
             else
             {
-                Log.Error("ISerializablePacket", "Duplicate Field Index : " + GetType().Name);
+                //Log.Error("ISerializablePacket", "Duplicate Field Index : " + GetType().Name);
 
                 Fields.Remove(Index);
                 AddField(Index, Field);
