@@ -1,0 +1,52 @@
+Pour pas que j'oubli :
+
+Donc , pour pouvoir faire des quète public il faut débloquer les chapitres
+Pour débloquer les chapitres , il faut ouvrir zones/zoneXXX/mappoints.xml
+Dedans on y trouve par exemple:
+
+    <chapter iname="Grimmenhagen Village" id="7" mapIcon="1030" x="23689" y="54448">
+        <race>Empire</race>
+        <number>1</number>
+        <ranks realm="order" min="1" max="2" />
+        <services>
+            <service>Career Trainer</service>
+            <service>General Merchants</service>
+            <service>Renown Trainer</service>
+            <service>Healer</service>
+            <service>Rally Master</service>
+            <service>Kill Collector</service>
+            <service>Mailbox</service>
+        </services>
+    </chapter>
+	
+Donc il faut récupérer : chapter Empire 1
+
+Ensuite on ouvre : 
+data/strings/english/tome/unlock_event_descs.txt
+
+Dedans il y a par exemple :
+131	You have unlocked the Empire Prologue
+132	You have discovered Altdorf
+133	You have unlocked Empire Chapter 1
+134	You have unlocked Empire Chapter 2
+135	You have unlocked Empire Chapter 3
+136	You have unlocked Empire Warcamp 1
+
+Donc on construit le texte : "Empire Chapter 1"
+On récupère la valeur 131
+et on envoi 
+		Buffer *b = new Buffer(9+3);
+		b->write<uint16>(9);
+		b->write<uint8>(F_TOK_ENTRY_UPDATE);
+		b->write<uint32>(1);
+		b->write<uint16>(131);
+		b->write<uint16>(0x0101);
+		b->write<uint8>(0);
+		sendPacket(b);
+		
+Donc , l'objectif c'est de détecter aussi , lorsqu'un joueur s'approche de la zone hein
+
+Il faut récupérer x="23689" y="54448" qui sont les pinx/y et faire un getdistance toutes les X secondes hein ^^
+
+Pour les prologues : Dé ke le joueur se connecte il doit pouvoir Voir ces prologues hein ^^
+

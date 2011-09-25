@@ -1,0 +1,17 @@
+// Adresse RC4
+0x00C9CBB2
+// Adresse size
+0x001857D7
+// Adresse opcode
+10
+// Adresse Packet
+0x001857E0
+// Nombre max de différence pour ajouté le packet : si il y a + de 8 différences dans le packet c'est un nouveau(changeable)
+10
+// Type de décodage
+// 0 = Packet sur plusieurs ligne
+// 1 = Packet sur une seule ligne
+0
+
+// 1857E0 == Opcodes j'en suis sur
+// 1857d4 == Function
