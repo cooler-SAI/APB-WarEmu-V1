@@ -45,7 +45,10 @@ namespace CharacterServer
             Log.Success("SelectRequest", "Enter on World : " + From.GetIp + ",GUID=" + GUID);
 
             if (From.Acct == null || From.Rm == null)
+            {
+                Log.Error("LobbyCharacterSelectRequest", "Acct or Rm == null");
                 return;
+            }
 
             Character Char = From.Rm.GetObject<CharactersMgr>().GetCharacter(GUID);
             if (Char == null || Char.AccountId != From.Acct.Id)

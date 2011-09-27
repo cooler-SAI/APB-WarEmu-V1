@@ -70,7 +70,7 @@ namespace MapServer
 
             SetCharacterInformation(Char);
             SetCharacterStats(Char);
-            SetPosition(676, "guardian_map", new List<float> { 1113.03967f, 920.1114f, 1444.58533f });
+            SetPosition(Char.Info.MapID, Char.Info.MapName, Char.Info.Position);
 
             AddPacketToList(0x026B);
             AddPacketToList(0x025A);

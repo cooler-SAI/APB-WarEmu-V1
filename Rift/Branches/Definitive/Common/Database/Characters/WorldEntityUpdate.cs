@@ -25,16 +25,16 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
 
-using Common;
 using FrameWork;
 
-namespace MapServer
+namespace Common
 {
+    [Serializable]
     [ISerializableAttribute((long)Opcodes.WorldPositionExtra)]
     public class WorldPositionExtra : ISerializablePacket
     {
         [ArrayBit(1)]
-        public string MapName;
+        public string MapName = "guardian_map";
 
         [Unsigned7Bit(2)]
         public long MapId = 676;
@@ -42,7 +42,6 @@ namespace MapServer
         [ListBit(3)]
         public List<float> Position = new List<float>() { 1113.03967f, 920.1114f, 1444.58533f }; // X,Y,Z
 
-        // Unk
         [ListBit(4)]
         public List<uint> Field4 = new List<uint>() { 2147483648, 3212777419, 2147483648, 3182182386 }; // Unk
 

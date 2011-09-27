@@ -100,6 +100,7 @@ public enum Opcodes
     WorldPorticulumTeleport = 0x0E55,
     WorldPorticulumConfirm = 0x11CE,
     WorldTeleport = 0x0F04,
+    WorldDisconnect = 0x0F17,
     WorldChatMessage = 0x010CC,
 
     WorldCharacterInformation = 0x02AE,

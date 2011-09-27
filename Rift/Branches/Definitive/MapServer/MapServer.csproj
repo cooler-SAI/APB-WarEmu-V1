@@ -44,10 +44,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configs\MapConfig.cs" />
+    <Compile Include="NetWork\GameRiftClient.cs" />
+    <Compile Include="NetWork\GameRiftServer.cs" />
     <Compile Include="NetWork\Handlers\WorldAuthenticationRequest.cs" />
+    <Compile Include="NetWork\Handlers\WorldDisconnect.cs" />
     <Compile Include="NetWork\Handlers\WorldEntityUpdate.cs" />
     <Compile Include="NetWork\Handlers\WorldMapLoaded.cs" />
-    <Compile Include="NetWork\Senders\WorldEntityUpdate.cs" />
+    <Compile Include="NetWork\Handlers\WorldServerPositionUpdate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -60,6 +63,9 @@
       <Project>{2045BAA2-435E-442E-8387-A2884E2E3413}</Project>
       <Name>Common</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="NetWork\Senders\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -27,33 +27,36 @@ using FrameWork;
 
 namespace CharacterServer
 {
-    [ISerializableAttribute((long)Opcodes.LobbyCharacterListRequest)]
-    public class LobbyCharacterListRequest : ISerializablePacket
+    [ISerializableAttribute((long)Opcodes.LobbyCharacterDeleteResponse)]
+    public class LobbyCharacterDeleteResponse : ISerializablePacket
     {
+        [Unsigned7Bit(0)]
+        public long Result;
+    }
+
+    [ISerializableAttribute((long)Opcodes.LobbyCharacterDeleteRequest)]
+    public class LobbyCharacterDeleteRequest : ISerializablePacket
+    {
+        [ArrayBit(0)]
+        public string UnkText;
+
+        [Raw8Bit(1)]
+        public long GUID;
+
         public override void OnRead(RiftClient From)
         {
-            Log.Success("CharacterListRequest", "Characters For : " + From.GetIp + " RPC : " + From.Rm.RpcInfo.Description());
+            Log.Success("LobbyCharacterDeleteRequest", "Deleting Character : " + GUID);
 
             if (From.Acct == null || From.Rm == null)
                 return;
 
-            LobbyCharacterListResponse ListRp = new LobbyCharacterListResponse();
-            Character[] Chars = From.Rm.GetObject<CharactersMgr>().GetCharacters(From.Acct.Id);
-            foreach (Character Char in Chars)
-                ListRp.Characters.Add(Char);
-            From.SendSerialized(ListRp);
+            CharactersMgr Mgr = From.Rm.GetObject<CharactersMgr>();
+            bool Result = Mgr.DeleteCharacter(GUID, From.Acct.Id);
 
-            Log.Success("Characters","Count = " + ListRp.Characters.Count);
-
-            if (From.JustCreatedCharacter >= 0)
-            {
-                long CharacterId = From.JustCreatedCharacter;
-                From.JustCreatedCharacter = -1;
-
-                LobbyCharacterSelectRequest Request = new LobbyCharacterSelectRequest();
-                Request.GUID = CharacterId;
-                Request.OnRead(From);
-            }
+            // TODO : Check in game player
+            LobbyCharacterDeleteResponse DeleteResult = new LobbyCharacterDeleteResponse();
+            DeleteResult.Result = Convert.ToInt64(!Result); // Result, 15 Error must wait logout, 0 OK
+            From.SendSerialized(DeleteResult);
         }
     }
 }

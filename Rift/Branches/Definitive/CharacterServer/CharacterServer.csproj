@@ -49,6 +49,7 @@
     <Compile Include="NetWork\Authentification\ProtocolHandshakeAuthenticationRequest.cs" />
     <Compile Include="NetWork\Authentification\ProtocolHandshakeAuthenticationResponse.cs" />
     <Compile Include="NetWork\Characters\LobbyCharacterCreationCacheRequest.cs" />
+    <Compile Include="NetWork\Characters\LobbyCharacterDeleteRequest.cs" />
     <Compile Include="NetWork\Characters\LobbyCharacterListRequest.cs" />
     <Compile Include="NetWork\Characters\LobbyCharacterRandomNameRequest.cs" />
     <Compile Include="NetWork\Characters\LobbyCharacterSelectRequest.cs" />

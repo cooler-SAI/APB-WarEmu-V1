@@ -26,6 +26,14 @@ using FrameWork;
 
 namespace Common
 {
+    public enum CharacterCreateResponses
+    {
+        CREATE_OK = 0,
+        PROCESS_ERROR = 1,
+        INVALID_NAME = 6,
+
+    }
+
     [Serializable]
     [ISerializableAttribute((long)Opcodes.LobbyCharacterCreateRequest)]
     public class LobbyCharacterCreateRequest : ISerializablePacket
@@ -73,12 +81,9 @@ namespace Common
             ISerializablePacket Response = new ISerializablePacket();
             Response.Opcode = (int)Opcodes.LobbyCharacterCreateResponse;
             if (Mgr.CharacterExist(Name))
-                Response.AddField(0, EPacketFieldType.Unsigned7BitEncoded, (long)6);
+                Response.AddField(0, EPacketFieldType.Unsigned7BitEncoded, (long)CharacterCreateResponses.INVALID_NAME);
             else
             {
-                Response.AddField(0, EPacketFieldType.Unsigned7BitEncoded, (long)6);
-
-
                 Character Char = new Character();
                 Char.AccountId = From.Acct.Id;
                 Char.CharacterName = Name;
@@ -91,7 +96,10 @@ namespace Common
                 Char.Info.Race = Race;
                 Char.Info.Sex = Sex;
 
-                Mgr.AddCharacter(Char);
+                long CharacterID = Mgr.AddCharacter(Char);
+
+                Response.AddField(0, EPacketFieldType.Unsigned7BitEncoded, (long)CharacterCreateResponses.CREATE_OK);
+                From.JustCreatedCharacter = CharacterID;
             }
 
             From.SendSerialized(Response);

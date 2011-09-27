@@ -44,7 +44,7 @@ namespace Common
 
         [DataElement()]
         [Unsigned7Bit(4)]
-        public uint MapID = 290412351;
+        public uint MapID = 676;
 
         [DataElement()]
         [Raw4Bit(5)]
@@ -116,7 +116,7 @@ namespace Common
 
         [DataElement()]
         [ListBit(24)]
-        public List<uint> Field24 = new List<uint>(new uint[] { 1149965263, 1147537107, 1152778324 });
+        public List<float> Position = new List<float> { 1113.03967f, 920.1114f, 1444.58533f };
 
         [ListBit(25)]
         public List<ISerializablePacket> Field25List = new List<ISerializablePacket>();
