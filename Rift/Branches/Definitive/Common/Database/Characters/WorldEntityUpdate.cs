@@ -53,6 +53,7 @@ namespace Common
         public List<float> Position2 = new List<float>() { 1113.03967f, 920.1114f, 1444.58533f };
     }
 
+    [Serializable]
     [ISerializableAttribute((long)Opcodes.CharacterInfoCache)]
     public class CharacterInfoCache : ISerializablePacket
     {
@@ -60,6 +61,7 @@ namespace Common
         public uint CacheIdentifier;
     }
 
+    [Serializable]
     [ISerializableAttribute((long)Opcodes.CharacterInfoDesc)]
     public class CharacterDesc : ISerializablePacket
     {
