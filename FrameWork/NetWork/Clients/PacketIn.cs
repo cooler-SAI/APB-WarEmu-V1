@@ -135,7 +135,6 @@ namespace FrameWork
 
         public UInt64 GetUint64()
         {
-
             UInt64 value = (GetUint32() << 24) + (GetUint32());
             return value;
         }
@@ -148,14 +147,15 @@ namespace FrameWork
 
         public Int64 GetInt64()
         {
-            Int64 value = (GetInt32() << 24) + (GetInt32());
-            return value;
+            byte[] tmp = Read(8);
+            return BitConverter.ToInt64(tmp, 0);
         }
 
         public Int64 GetInt64R()
         {
-            Int64 value = (GetInt32()) + (GetInt32() << 24);
-            return value;
+            byte[] tmp = Read(8);
+            Array.Reverse(tmp);
+            return BitConverter.ToInt64(tmp, 0);
         }
 
         public float GetFloat()

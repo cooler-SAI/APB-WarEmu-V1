@@ -137,7 +137,7 @@ namespace FrameWork
             else if (val is double)
                 Obj = ((double)val).ToString(Nfi);
             else if (val is string)
-                Obj = Escape(val.ToString());
+                Obj = Escape((string)val);
 
             else if (val is List<byte>)
                 Obj = Utils.ConvertArrayToString<byte>((val as List<byte>).ToArray());
