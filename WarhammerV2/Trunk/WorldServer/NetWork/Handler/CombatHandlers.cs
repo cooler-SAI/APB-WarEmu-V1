@@ -112,5 +112,24 @@ namespace WorldServer
 
             Obj.SendInteract(cclient.Plr, Menu);
         }
+
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_DO_ABILITY, "F_DO_ABILITY")]
+        static public void F_DO_ABILITY(BaseClient client, PacketIn packet)
+        {
+            GameClient cclient = client as GameClient;
+
+            if (cclient.Plr == null)
+                return;
+
+            UInt32 Unk, Unk2, Unk3 = 0;
+            UInt16 AbilityID = 0;
+
+            Unk = packet.GetUint32();
+            Unk2 = packet.GetUint32();
+            Unk3 = packet.GetUint32();
+            AbilityID = packet.GetUint16();
+
+            cclient.Plr.AbtInterface.StartCast(AbilityID);
+        }
     }
 }

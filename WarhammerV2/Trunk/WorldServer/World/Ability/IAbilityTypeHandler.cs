@@ -42,10 +42,16 @@ namespace WorldServer
 
     public abstract class IAbilityTypeHandler
     {
-        public abstract void Start(Object Attacker, Object Victim,Ability_Info Info);
+        public abstract void Start(Ability Ab);
 
         public abstract void Update();
 
+        public abstract GameData.AbilityResult CanCast();
+
+        public abstract void Cast();
+
         public abstract void Stop();
+
+        public abstract UInt32 GetAbilityDamage();
     }
 }

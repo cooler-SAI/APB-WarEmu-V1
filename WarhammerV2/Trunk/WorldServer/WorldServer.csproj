@@ -85,6 +85,7 @@
     <Compile Include="NetWork\Handler\SocialHandlers.cs" />
     <Compile Include="NetWork\Handler\TchatHandlers.cs" />
     <Compile Include="NetWork\Handler\F_UNK1.cs" />
+    <Compile Include="World\Ability\Ability.cs" />
     <Compile Include="World\Ability\AbilityMgr.cs" />
     <Compile Include="World\Ability\AbilityTypes\DealDamageHandler.cs" />
     <Compile Include="World\Ability\IAbilityTypeHandler.cs" />

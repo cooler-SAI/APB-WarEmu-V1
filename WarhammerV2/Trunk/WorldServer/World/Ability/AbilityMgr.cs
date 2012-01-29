@@ -67,6 +67,15 @@ namespace WorldServer
             return _AbilityTypes.ContainsKey(AbilityType);
         }
 
+        static public IAbilityTypeHandler GetAbilityHandler(UInt16 AbilityType)
+        {
+            IAbilityTypeHandler Handler = null;
+            if (_AbilityTypes.TryGetValue(AbilityType, out Handler))
+                return Activator.CreateInstance(Handler.GetType()) as IAbilityTypeHandler;
+
+            return null;
+        }
+
         #region Ability_Info
 
         static public Dictionary<UInt16, List<Ability_Info>> _AbilityInfos = new Dictionary<ushort, List<Ability_Info>>();

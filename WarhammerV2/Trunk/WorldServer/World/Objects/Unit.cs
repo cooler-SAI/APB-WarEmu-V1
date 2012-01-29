@@ -134,13 +134,14 @@ namespace WorldServer
 
             UpdateHealth(Tick);
             UpdateActionPoints(Tick);
+            EvtInterface.Update(Tick);
+
             CbtInterface.Update(Tick);
             ItmInterface.Update(Tick);
             StsInterface.Update(Tick);
             QtsInterface.Update(Tick);
             MvtInterface.Update(Tick);
             AbtInterface.Update(Tick);
-            EvtInterface.Update(Tick);
 
             if (NextSend < Tick)
             {
@@ -298,7 +299,7 @@ namespace WorldServer
             SendAttackMovement(Target);
             DealDamage(Target,RealDamage,Damage,0);
         }
-        public void SendAttackState(Unit Target,UInt16 RealDamage,UInt16 Damage)
+        public void SendAttackState(Unit Target, UInt16 RealDamage, UInt16 Damage, Ability_Info Ability = null)
         {
             if (Target == null)
                 return;
@@ -307,12 +308,27 @@ namespace WorldServer
             {
                 PacketOut Out = new PacketOut((byte)Opcodes.F_USE_ABILITY);
                 Out.WriteUInt16(0);
+
+                Out.WriteUInt16(Ability != null ? Ability.Entry : Oid);
                 Out.WriteUInt16(Oid);
-                Out.WriteUInt16(Oid);
-                Out.WriteUInt16(0);
+
+                Out.WriteUInt16((ushort)(Ability != null ? 0x610 : 0));
                 Out.WriteUInt16(Target.Oid);
-                Out.WriteByte(2);
-                Out.Fill(0, 9);
+
+                if (Ability != null)
+                {
+                    Out.WriteByte(6);
+                    Out.WriteByte(1);
+                    Out.WriteUInt16(0);
+                    Out.WriteUInt32(0x023F0C00);
+                    Out.WriteUInt16(0);
+                }
+                else
+                {
+                    Out.WriteByte(2);
+                    Out.Fill(0, 9);
+                }
+
                 DispatchPacket(Out, true);
             }
 
@@ -320,12 +336,25 @@ namespace WorldServer
                 PacketOut Out = new PacketOut((byte)Opcodes.F_CAST_PLAYER_EFFECT);
                 Out.WriteUInt16(Oid);
                 Out.WriteUInt16(Target.Oid);
-                Out.WriteUInt16(0);
-                Out.WriteByte(0);
-                Out.WriteByte((byte)GameData.CombatEvent.COMBATEVENT_HIT);
-                Out.WriteByte(0x13);
-                Out.WriteByte((byte)(RealDamage > 0 ? (RealDamage * 2) - 1 : 0));
-                Out.WriteByte((byte)( (Damage-RealDamage)*2));
+
+                Out.WriteUInt16((ushort)(Ability != null ? Ability.Entry : 0));
+                Out.WriteByte((byte)(Ability != null ? 2 : 0));
+
+                if(Ability == null)
+                    Out.WriteByte((byte)GameData.CombatEvent.COMBATEVENT_HIT);
+                else
+                    Out.WriteByte((byte)GameData.CombatEvent.COMBATEVENT_ABILITY_HIT);
+
+                Out.WriteByte((byte)(Ability != null ? 7 : 0x13));
+
+                if (Ability == null)
+                {
+                    Out.WriteByte((byte)(RealDamage > 0 ? (RealDamage * 2) - 1 : 0));
+                    Out.WriteByte((byte)((Damage - RealDamage) * 2));
+                }
+                else
+                    Out.WriteUInt16(0x0799);
+
                 Out.WriteByte(0);
                 DispatchPacket(Out, true);
             }

@@ -198,8 +198,11 @@ namespace WorldServer
 		{
 			double dx = (double) X - point.X;
 			double dy = (double) Y - point.Y;
+            double Range = Math.Sqrt(dx * dx + dy * dy) / 13.2F;
+            if (Range < 15)
+                Range /= 2;
 
-			return (int) (Math.Sqrt(dx*dx + dy*dy) / 13.2f);
+            return (int)(Range);
 		}
 
 		public virtual void Clear()
