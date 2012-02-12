@@ -82,9 +82,15 @@ namespace WorldServer
                         {
                             Log.Info("F_QUEST", "Done Quest : " + QuestID);
 
-                            cclient.Plr.QtsInterface.DoneQuest(QuestID);
-                            Crea.SendRemove(cclient.Plr);
-                            Crea.SendMeTo(cclient.Plr);
+                            if (cclient.Plr.QtsInterface.DoneQuest(QuestID))
+                            {
+                                Crea.SendRemove(cclient.Plr);
+                                Crea.SendMeTo(cclient.Plr);
+                            }
+                            else
+                            {
+                                Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr, true);
+                            }
                         }
 
                     }break;

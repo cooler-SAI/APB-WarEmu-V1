@@ -301,12 +301,12 @@ namespace WorldServer
                 return;
         }
 
-        public void DoneQuest(UInt16 QuestID)
+        public bool DoneQuest(UInt16 QuestID)
         {
             Character_quest Quest = GetQuest(QuestID);
 
             if (Quest == null || !Quest.IsDone())
-                return;
+                return false;
 
             Player Plr = GetPlayer();
 
@@ -316,7 +316,7 @@ namespace WorldServer
             if (FreeSlots < Quest.SelectedRewards.Count)
             {
                 Plr.SendLocalizeString("", Localized_text.TEXT_OVERAGE_CANT_SALVAGE);
-                return;
+                return false;
             }
 
             byte num = 0;
@@ -339,6 +339,7 @@ namespace WorldServer
             SendQuestState(Quest.Quest, QuestCompletion.QUESTCOMPLETION_DONE);
 
             CharMgr.Database.SaveObject(Quest);
+            return true;
         }
 
         public void FinishQuest(Quest Quest)

@@ -108,7 +108,10 @@ namespace WorldServer
                 return;
 
             if (Obj.GetDistanceTo(cclient.Plr) > 20)
+            {
+                Log.Error("F_INTERACT", "Distance = " + Obj.GetDistanceTo(cclient.Plr));
                 return;
+            }
 
             Obj.SendInteract(cclient.Plr, Menu);
         }
