@@ -59,7 +59,11 @@ namespace WorldServer
 
         public bool hasQuestFinisher(UInt16 QuestID)
         {
-            return WorldMgr.GetFinishersQuests(Entry).Find(info => info.Entry == QuestID) != null;
+            List<Quest> Quests = WorldMgr.GetFinishersQuests(Entry);
+            if(Quests != null)
+                return WorldMgr.GetFinishersQuests(Entry).Find(info => info.Entry == QuestID) != null;
+
+            return false;
         }
 
         public bool CreatureHasQuestToComplete(Player Plr)
@@ -93,10 +97,11 @@ namespace WorldServer
 
             List<Quest> Starter = WorldMgr.GetStartQuests(Entry);
             List<Quest> Finisher = WorldMgr.GetFinishersQuests(Entry);
+            List<Quest> InProgress = Starter != null ? Starter.FindAll(info => Plr.QtsInterface.HasQuest(info.Entry)) : null;
 
             string Text = WorldMgr.GetCreatureText(Entry);
 
-            if (Starter == null && Finisher == null && Text.Length <= 0)
+            if (Starter == null && Finisher == null && Text.Length <= 0 && InProgress == null)
                 return;
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_INTERACT_RESPONSE);
@@ -133,6 +138,18 @@ namespace WorldServer
 
                 Out.WriteByte((byte)Finishs.Count);
                 foreach (Quest Q in Finishs)
+                {
+                    Out.WriteByte(0);
+                    Out.WriteUInt16(Q.Entry);
+                    Out.WritePascalString(Q.Name);
+                }
+            }
+            else if (InProgress != null)
+            {
+                Log.Success("QuestInterface", "Handle Interact : InProgress=" + InProgress.Count);
+
+                Out.WriteByte((byte)InProgress.Count);
+                foreach (Quest Q in InProgress)
                 {
                     Out.WriteByte(0);
                     Out.WriteUInt16(Q.Entry);
@@ -240,18 +257,18 @@ namespace WorldServer
             return true;
         }
 
-        public void AcceptQuest(UInt16 QuestID)
+        public bool AcceptQuest(UInt16 QuestID)
         {
-            AcceptQuest(WorldMgr.GetQuest(QuestID));
+            return AcceptQuest(WorldMgr.GetQuest(QuestID));
         }
 
-        public void AcceptQuest(Quest Quest)
+        public bool AcceptQuest(Quest Quest)
         {
             if (Quest == null)
-                return;
+                return false;
 
             if (!CanStartQuest(Quest))
-                return;
+                return false;
 
             Character_quest CQuest = new Character_quest();
             CQuest.QuestID = Quest.Entry;
@@ -272,6 +289,7 @@ namespace WorldServer
             CharMgr.Database.AddObject(CQuest);
 
             SendQuestState(Quest, QuestCompletion.QUESTCOMPLETION_OFFER);
+            return true;
         }
 
         public void DeclineQuest(Quest Quest)
@@ -384,9 +402,9 @@ namespace WorldServer
 
         #endregion
 
-        static public void BuildQuestInfo(PacketOut Out,Player Plr, Quest Q)
+        static public void BuildQuestInfo(PacketOut Out,Player Plr, Quest Q,bool InProgress=false)
         {
-            BuildQuestHeader(Out, Q, true);
+            BuildQuestHeader(Out, Q, true, InProgress);
 
             BuildQuestRewards(Out, Plr, Q);
 
@@ -394,16 +412,27 @@ namespace WorldServer
 
             Out.WriteByte(0);
         }
-        static public void BuildQuestHeader(PacketOut Out, Quest Q, bool Particular)
+        static public void BuildQuestHeader(PacketOut Out, Quest Q, bool Particular,bool InProgress=false)
         {
             Out.WritePascalString(Q.Name);
-            Out.WriteUInt16((UInt16)Q.Description.Length);
-            Out.WriteStringBytes(Q.Description);
+
+            if (InProgress == false)
+            {
+                Out.WriteUInt16((UInt16)Q.Description.Length);
+                Out.WriteStringBytes(Q.Description);
+            }
+            else
+            {
+                Out.WriteUInt16((UInt16)Q.ProgressText.Length);
+                Out.WriteStringBytes(Q.ProgressText);
+            }
+
             if (Particular)
             {
                 Out.WriteUInt16((UInt16)Q.Particular.Length);
                 Out.WriteStringBytes(Q.Particular);
             }
+
             Out.WriteByte(1);
             Out.WriteUInt32(Q.Gold);
             Out.WriteUInt32(Q.Xp);
@@ -430,7 +459,7 @@ namespace WorldServer
             Out.WriteUInt16(ReceiverOid);
         }
 
-        public void BuildQuest(UInt16 QuestID, Player Plr)
+        public void BuildQuest(UInt16 QuestID, Player Plr,bool InProgress=false)
         {
             Quest Q = WorldMgr.GetQuest(QuestID);
             if (Q == null)
@@ -444,7 +473,7 @@ namespace WorldServer
 
             Out.WriteUInt16(0);
 
-            BuildQuestInfo(Out, Plr, Q);
+            BuildQuestInfo(Out, Plr, Q, InProgress);
 
             Plr.SendPacket(Out);
         }

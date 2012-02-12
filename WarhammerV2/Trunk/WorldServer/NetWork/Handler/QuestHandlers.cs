@@ -42,15 +42,18 @@ namespace WorldServer
             UInt16 Unk4 = packet.GetUint16();
             UInt16 CreatureOID = packet.GetUint16();
 
+            Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
+
+            if (Crea == null)
+                return;
+
             switch (State)
             {
                 case 1: // Show Quest
                     {
                         Log.Info("F_QUEST", "Show Quest : " + QuestID);
 
-                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
-
-                        if (Crea != null && Crea.QtsInterface.HasQuestStarter(QuestID))
+                        if (Crea.QtsInterface.HasQuestStarter(QuestID))
                             Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr);
 
                     } break;
@@ -59,16 +62,15 @@ namespace WorldServer
                     {
                         Log.Info("F_QUEST", "Accept Quest : " + QuestID);
 
-                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
-
-                        if (Crea != null && Crea.QtsInterface.HasQuestStarter(QuestID))
+                        if (Crea.QtsInterface.HasQuestStarter(QuestID))
                         {
-                            cclient.Plr.QtsInterface.AcceptQuest(QuestID);
-
-                            if (!Crea.QtsInterface.CreatureHasStartQuest(cclient.Plr))
+                            if (cclient.Plr.QtsInterface.AcceptQuest(QuestID))
                             {
-                                Crea.SendRemove(cclient.Plr);
-                                Crea.SendMeTo(cclient.Plr);
+                                if (!Crea.QtsInterface.CreatureHasStartQuest(cclient.Plr))
+                                {
+                                    Crea.SendRemove(cclient.Plr);
+                                    Crea.SendMeTo(cclient.Plr);
+                                }
                             }
                         }
 
@@ -76,12 +78,10 @@ namespace WorldServer
 
                 case 3: // Quest Done
                     {
-                        Log.Info("F_QUEST", "Done Quest : " + QuestID);
-
-                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
-
-                        if (Crea != null && Crea.QtsInterface.hasQuestFinisher(QuestID))
+                        if (Crea.QtsInterface.hasQuestFinisher(QuestID))
                         {
+                            Log.Info("F_QUEST", "Done Quest : " + QuestID);
+
                             cclient.Plr.QtsInterface.DoneQuest(QuestID);
                             Crea.SendRemove(cclient.Plr);
                             Crea.SendMeTo(cclient.Plr);
@@ -91,19 +91,22 @@ namespace WorldServer
 
                 case 4: // Quest Done Info
                     {
-                        Log.Info("F_QUEST", "Done Quest Info: " + QuestID);
-                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
 
-                        if (Crea != null && Crea.QtsInterface.hasQuestFinisher(QuestID))
+                        if (Crea.QtsInterface.hasQuestFinisher(QuestID))
                             Crea.QtsInterface.SendQuestDoneInfo(cclient.Plr, QuestID);
+                        else if (Crea.QtsInterface.HasQuestStarter(QuestID))
+                        {
+                            Log.Info("F_QUEST", "InProgress Quest : " + QuestID);
+                            Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr,true);
+                        }
+
                     } break;
 
                 case 5: // Select Quest Reward
                     {
                         Log.Info("F_QUEST", "Select Quest Reward: " + QuestID);
-                        Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
 
-                        if (Crea != null && Crea.QtsInterface.hasQuestFinisher(QuestID))
+                        if (Crea.QtsInterface.hasQuestFinisher(QuestID))
                             cclient.Plr.QtsInterface.SelectRewards(QuestID, Unk3);
 
                     } break;
