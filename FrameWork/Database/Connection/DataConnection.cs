@@ -72,6 +72,17 @@ namespace FrameWork
         }
 
         // Supprimes les caractères non autorisé
+        static public string SQLEscape(string s)
+        {
+            s = s.Replace("\\", "\\\\");
+            s = s.Replace("\"", "\\\"");
+            s = s.Replace("'", "\\'");
+            s = s.Replace("’", "\\’");
+
+            return s;
+        }
+
+        // Supprimes les caractères non autorisé
         public string Escape(string s)
         {
             if (!IsSQLConnection)
