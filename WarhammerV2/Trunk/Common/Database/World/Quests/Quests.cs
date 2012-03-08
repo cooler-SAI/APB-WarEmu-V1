@@ -47,6 +47,9 @@ namespace Common
         public string Description;
 
         [DataElement(AllowDbNull = false)]
+        public string OnCompletionQuest;
+
+        [DataElement(AllowDbNull = false)]
         public string ProgressText;
 
         [DataElement(AllowDbNull = false)]

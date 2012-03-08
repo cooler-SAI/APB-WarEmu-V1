@@ -89,11 +89,11 @@ namespace WorldServer
                             }
                             else
                             {
-                                Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr, true);
+                                Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr);
                             }
                         }
 
-                    }break;
+                    } break;
 
                 case 4: // Quest Done Info
                     {
@@ -103,7 +103,7 @@ namespace WorldServer
                         else if (Crea.QtsInterface.HasQuestStarter(QuestID))
                         {
                             Log.Info("F_QUEST", "InProgress Quest : " + QuestID);
-                            Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr,true);
+                            Crea.QtsInterface.SendQuestInProgressInfo(cclient.Plr, QuestID);
                         }
 
                     } break;

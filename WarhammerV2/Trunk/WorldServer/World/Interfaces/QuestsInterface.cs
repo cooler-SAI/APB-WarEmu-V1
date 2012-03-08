@@ -403,9 +403,9 @@ namespace WorldServer
 
         #endregion
 
-        static public void BuildQuestInfo(PacketOut Out,Player Plr, Quest Q,bool InProgress=false)
+        static public void BuildQuestInfo(PacketOut Out, Player Plr, Quest Q)
         {
-            BuildQuestHeader(Out, Q, true, InProgress);
+            BuildQuestHeader(Out, Q, true);
 
             BuildQuestRewards(Out, Plr, Q);
 
@@ -413,27 +413,35 @@ namespace WorldServer
 
             Out.WriteByte(0);
         }
-        static public void BuildQuestHeader(PacketOut Out, Quest Q, bool Particular,bool InProgress=false)
+        static public void BuildQuestHeader(PacketOut Out, Quest Q, bool Particular)
         {
             Out.WritePascalString(Q.Name);
-
-            if (InProgress == false)
-            {
-                Out.WriteUInt16((UInt16)Q.Description.Length);
-                Out.WriteStringBytes(Q.Description);
-            }
-            else
-            {
-                Out.WriteUInt16((UInt16)Q.ProgressText.Length);
-                Out.WriteStringBytes(Q.ProgressText);
-            }
-
+            Out.WriteUInt16((UInt16)Q.Description.Length);
+            Out.WriteStringBytes(Q.Description);
             if (Particular)
             {
                 Out.WriteUInt16((UInt16)Q.Particular.Length);
                 Out.WriteStringBytes(Q.Particular);
             }
+            Out.WriteByte(1);
+            Out.WriteUInt32(Q.Gold);
+            Out.WriteUInt32(Q.Xp);
 
+        }
+
+        static public void BuildQuestInProgress(PacketOut Out, Quest Q, bool Particular)
+        {
+            Out.WritePascalString(Q.Name);
+            Out.WriteUInt16((UInt16)Q.ProgressText.Length);
+            Out.WriteStringBytes(Q.ProgressText);
+            Out.WriteByte(1);
+        }
+
+        static public void BuildQuestComplete(PacketOut Out, Quest Q, bool Particular)
+        {
+            Out.WritePascalString(Q.Name);
+            Out.WriteUInt16((UInt16)Q.OnCompletionQuest.Length);
+            Out.WriteStringBytes(Q.OnCompletionQuest);
             Out.WriteByte(1);
             Out.WriteUInt32(Q.Gold);
             Out.WriteUInt32(Q.Xp);
@@ -460,7 +468,7 @@ namespace WorldServer
             Out.WriteUInt16(ReceiverOid);
         }
 
-        public void BuildQuest(UInt16 QuestID, Player Plr,bool InProgress=false)
+        public void BuildQuest(UInt16 QuestID, Player Plr)
         {
             Quest Q = WorldMgr.GetQuest(QuestID);
             if (Q == null)
@@ -474,7 +482,7 @@ namespace WorldServer
 
             Out.WriteUInt16(0);
 
-            BuildQuestInfo(Out, Plr, Q, InProgress);
+            BuildQuestInfo(Out, Plr, Q);
 
             Plr.SendPacket(Out);
         }
@@ -575,7 +583,7 @@ namespace WorldServer
             GetPlayer().SendPacket(Packet);
         }
 
-        public void SendQuestDoneInfo(Player Plr,UInt16 QuestID)
+        public void SendQuestDoneInfo(Player Plr, UInt16 QuestID)
         {
             Character_quest Quest = Plr.QtsInterface.GetQuest(QuestID);
 
@@ -588,9 +596,27 @@ namespace WorldServer
 
             BuildQuestInteract(Out, Quest.QuestID, Obj.Oid, Plr.Oid);
 
-            BuildQuestHeader(Out, Quest.Quest, false);
+            BuildQuestComplete(Out, Quest.Quest, false);
 
             BuildQuestRewards(Out, Plr, Quest.Quest);
+
+            Plr.SendPacket(Out);
+        }
+
+        public void SendQuestInProgressInfo(Player Plr, UInt16 QuestID)
+        {
+            Character_quest Quest = Plr.QtsInterface.GetQuest(QuestID);
+
+            if (Quest == null)
+                return;
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_INTERACT_RESPONSE);
+            Out.WriteByte(2);
+            Out.WriteByte(1);
+
+            BuildQuestInteract(Out, Quest.QuestID, Obj.Oid, Plr.Oid);
+
+            BuildQuestInProgress(Out, Quest.Quest, false);
 
             Plr.SendPacket(Out);
         }
