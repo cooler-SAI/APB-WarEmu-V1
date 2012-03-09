@@ -237,7 +237,7 @@ namespace WorldServer
             if (Quest == null)
                 return false;
 
-            if (HasQuest(Quest.Entry) || Quest.Level > GetPlayer().Level || (Quest.PrevQuest != 0 && !HasQuest(Quest.PrevQuest)))
+            if (HasQuest(Quest.Entry) || Quest.Level > GetPlayer().Level || (Quest.PrevQuest != 0 && !HasDoneQuest(Quest.PrevQuest)))
                 return false;
 
             return true;

@@ -396,7 +396,7 @@ namespace WorldServer
 
             if (_CreatureTexts.ContainsKey(Entry))
             {
-                int RandomNum = RandomMgr.Next(_CreatureTexts[Entry].Count-1);
+                int RandomNum = RandomMgr.Next(_CreatureTexts[Entry].Count);
                 Text = _CreatureTexts[Entry][RandomNum].Text;
             }
 
