@@ -296,7 +296,7 @@ namespace WorldServer
             Log.Success("Strike","["+ Name + "] Strike -> " + Target.Name +"Dmg="+Damage+",Reduce="+DmgReduce);
 
             SendAttackState(Target, (UInt16)RealDamage, (UInt16)Damage);
-            SendAttackMovement(Target);
+            SendAttackMovement(Target, null);
             DealDamage(Target,RealDamage,Damage,0);
         }
         public void SendAttackState(Unit Target, UInt16 RealDamage, UInt16 Damage, Ability_Info Ability = null)
@@ -359,18 +359,27 @@ namespace WorldServer
                 DispatchPacket(Out, true);
             }
         }
-        public void SendAttackMovement(Unit Target)
+        public void SendAttackMovement(Unit Target,Ability_Info Info)
         {
-            Log.Success("SendAttackMovement", "Target =" + Target.Name);
-
-            /*PacketOut Out = new PacketOut((byte)Opcodes.F_HIT_PLAYER);
+            PacketOut Out = new PacketOut((byte)Opcodes.F_HIT_PLAYER);
             Out.WriteUInt16(Oid);
-            Out.WriteUInt16(Target.Oid);
+
+            if(Target != null)
+                Out.WriteUInt16(Target.Oid);
+
+            if (Info != null)
+                Out.WriteUInt16(Info.Entry);
+
             Out.WriteByte(2);
-            Out.WriteByte(Target.PctHealth);
-            Out.WriteByte(Target.PctHealth);
+
+            if (Info == null && Target != null)
+            {
+                Out.WriteByte(Target.PctHealth);
+                Out.WriteByte(Target.PctHealth);
+            }
+
             Out.WriteByte(0);
-            DispatchPacket(Out, true);*/
+            DispatchPacket(Out, true);
         }
         public virtual void DealDamage(Unit Target, int RealDamage, int Mitiged, byte Event)
         {

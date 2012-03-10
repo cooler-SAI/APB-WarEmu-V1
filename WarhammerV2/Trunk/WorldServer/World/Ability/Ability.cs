@@ -35,8 +35,6 @@ namespace WorldServer
 
             if (StartTime + Info.CastTime < TCPServer.GetTimeStampMS())
                 Cast();
-
-            Stop();
         }
 
         public void Start()
@@ -51,6 +49,8 @@ namespace WorldServer
 
         public void Stop()
         {
+            IsDone = true;
+
             if (Handler != null)
                 Handler.Stop();
         }
@@ -58,6 +58,9 @@ namespace WorldServer
         public void Cast()
         {
             Log.Info("Ability", "Cast");
+
+            if (IsDone)
+                return;
 
             IsDone = true;
             DoneTime = TCPServer.GetTimeStampMS();
@@ -92,6 +95,11 @@ namespace WorldServer
             Out.WriteByte(1);
             Out.WriteUInt16(0x3E18);
             Caster.DispatchPacket(Out, true);
+        }
+
+        public void SendAbilityDone(ushort TargetOID)
+        {
+            // ???
         }
     }
 }

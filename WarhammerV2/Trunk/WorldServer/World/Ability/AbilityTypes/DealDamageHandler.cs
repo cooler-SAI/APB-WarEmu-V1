@@ -70,6 +70,7 @@ namespace WorldServer
             Ab.SendSpellDamage(Target.Oid, Damage);
             Ab.Caster.GetUnit().SendAttackState(Target, (ushort)Damage, (ushort)Damage, Ab.Info);
             Ab.Caster.GetUnit().DealDamage(Target, (int)Damage, 0, 0);
+            Ab.SendAbilityDone(Target.Oid);
         }
 
         public override void Stop()

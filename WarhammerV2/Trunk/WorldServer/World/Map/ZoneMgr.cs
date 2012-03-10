@@ -47,7 +47,6 @@ namespace WorldServer
             Log.Success("ZoneMgr", "[" + ZoneId + "] Stop");
         }
 
-
         #region Objects
 
         static public UInt16 MAX_OBJECTS = 65000;
@@ -113,7 +112,6 @@ namespace WorldServer
         }
 
         #endregion
-
 
         #region Range
 

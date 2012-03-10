@@ -88,6 +88,13 @@ namespace WorldServer
             Y = Zone.CalculPin((uint)(Spawn.WorldY), false);
             Z = (ushort)(Spawn.WorldZ * 2);
 
+            int HeightMap = HeightMapMgr.GetHeight(Zone.ZoneId, X, Y);
+            if (Z < HeightMap)
+            {
+                Log.Error("Creature", "["+Spawn.Entry+"] Invalid Height : Min=" + HeightMap + ",Z=" + Z);
+                return;
+            }
+
             Heading = (ushort)Spawn.WorldO;
             SetOffset((ushort)(Spawn.WorldX >> 12), (ushort)(Spawn.WorldY >> 12));
             Region.UpdateRange(this);

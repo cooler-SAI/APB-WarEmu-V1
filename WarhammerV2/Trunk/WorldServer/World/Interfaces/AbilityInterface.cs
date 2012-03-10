@@ -149,6 +149,8 @@ namespace WorldServer
                     if (Obj.IsPlayer())
                         Obj.GetPlayer().SendHealh();
                 }
+                else
+                    CurrentAbility.Stop();
             }
         }
 

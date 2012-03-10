@@ -45,5 +45,7 @@ namespace WorldServer
         public int GoldRate = 1;
         public int XpRate = 1;
         public int RenownRate = 1;
+
+        public string ZoneFolder = "zones/";
     }
 }
