@@ -34,6 +34,7 @@ namespace WorldServer
         public Zone_Info Info;
         public RegionMgr Region;
         public bool Running;
+        public AreaMapInfo AreaInfo;
 
         public ZoneMgr(RegionMgr Region,Zone_Info Info)
         {
@@ -41,6 +42,7 @@ namespace WorldServer
             this.ZoneId = Info.ZoneId;
             this.Info = Info;
             this.Running = true;
+            this.AreaInfo = AreaMapMgr.GetAreaInfo(Info.ZoneId);
         }
         public void Stop()
         {

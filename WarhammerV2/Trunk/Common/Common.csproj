@@ -59,6 +59,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -98,11 +99,12 @@
     <Compile Include="Database\World\Levels\Renown_Info.cs" />
     <Compile Include="Database\World\Chapters\Tok_Info.cs" />
     <Compile Include="Database\World\Levels\Xp_Info.cs" />
+    <Compile Include="Database\World\Maps\Zone_Area.cs" />
     <Compile Include="Database\World\Quests\Quests.cs" />
     <Compile Include="Database\World\Quests\Quests_Creature_Finisher.cs" />
     <Compile Include="Database\World\Quests\Quests_Creature_Starter.cs" />
     <Compile Include="Database\World\Quests\Quests_Objectives.cs" />
-    <Compile Include="Database\World\Zone_Info.cs" />
+    <Compile Include="Database\World\Maps\Zone_Info.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rpc\AccountMgr.cs" />
   </ItemGroup>

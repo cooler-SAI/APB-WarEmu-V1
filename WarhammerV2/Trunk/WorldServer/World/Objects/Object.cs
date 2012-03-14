@@ -330,8 +330,9 @@ namespace WorldServer
             XOffset = OffX;
             YOffset = OffY;
         }
-        public virtual void SetPosition(UInt16 PinX, UInt16 PinY, UInt16 PinZ, UInt16 Head)
+        public virtual bool SetPosition(UInt16 PinX, UInt16 PinY, UInt16 PinZ, UInt16 Head)
         {
+            bool Updated = false;
             if (PinX != X || PinY != Y || PinZ != Z || Head != Heading)
             {
                 X = PinX;
@@ -343,11 +344,13 @@ namespace WorldServer
                 if(!IsPlayer())
                     CalculOffset();
 
-                Region.UpdateRange(this);
+                Updated = Region.UpdateRange(this);
 
                 if (!IsPlayer())
                     GetUnit().SendState(null);
             }
+
+            return Updated;
         }
 
         #endregion

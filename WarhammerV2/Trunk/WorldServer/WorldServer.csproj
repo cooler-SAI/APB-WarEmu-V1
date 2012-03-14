@@ -73,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configs\WorldConfigs.cs" />
+    <Compile Include="Managers\AreaMapMgr.cs" />
     <Compile Include="Managers\CharMgr.cs" />
     <Compile Include="Managers\CommandMgr.cs" />
     <Compile Include="Managers\GmCommand.cs" />

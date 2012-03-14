@@ -243,7 +243,7 @@ namespace WorldServer
             return true;
         }
 
-        public void UpdateRange(Object CurObj)
+        public bool UpdateRange(Object CurObj)
         {
             float Distance = CurObj.GetDistance(CurObj.LastRangeCheck);
             if (Distance > 100)
@@ -252,7 +252,7 @@ namespace WorldServer
                 CurObj.LastRangeCheck.Y = CurObj.Y;
             }
             else 
-                return;
+                return false;
 
             List<Object> Objects = GetRangedObject(CurObj, 1);
 
@@ -287,6 +287,8 @@ namespace WorldServer
                 CurObj.RemoveInRange(Dist);
                 Dist.RemoveInRange(CurObj);
             }
+
+            return true;
         }
 
         #endregion

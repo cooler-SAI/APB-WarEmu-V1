@@ -794,7 +794,7 @@ namespace WorldServer
                 _Value.WorldZ = (32768+Z)/2;
         }
 
-        public override void SetPosition(ushort PinX, ushort PinY, ushort PinZ, ushort Head)
+        public override bool SetPosition(ushort PinX, ushort PinY, ushort PinZ, ushort Head)
         {
             if (_Client.State != (int)eClientState.Playing)
             {
@@ -805,7 +805,13 @@ namespace WorldServer
 
             _Value.WorldO = Head;
 
-            base.SetPosition(PinX, PinY, PinZ, Head);
+            if (base.SetPosition(PinX, PinY, PinZ, Head))
+            {
+                uint ExploreID = Zone.AreaInfo.GetTokExplore(TokInterface, PinX, PinY, _Info.Realm);
+                return true;
+            }
+
+            return false;
         }
 
         #endregion

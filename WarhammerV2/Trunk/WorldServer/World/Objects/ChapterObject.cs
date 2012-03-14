@@ -45,22 +45,17 @@ namespace WorldServer
 
         public override void OnLoad()
         {
-            Log.Success("ChapterObject", "OnLoad");
             X = Info.PinX;
             Y = Info.PinY;
             Z = 16384;
             SetOffset(Info.OffX, Info.OffY);
             Region.UpdateRange(this);
 
-            Log.Success("ChapterObject", "Range =" + _ObjectRanged.Count);
-
             base.OnLoad();
         }
 
         public override void SendMeTo(Player Plr)
         {
-            Log.Success("SendMeTo", "ChapterObject");
-            Plr.TokInterface.AddTok(Info.TokExploreEntry);
             Plr.TokInterface.AddTok(Info.TokEntry);
         }
     }
