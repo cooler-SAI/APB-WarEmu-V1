@@ -70,13 +70,7 @@ namespace WorldServer
         {
             InteractType = GenerateInteractType(Spawn.Title);
 
-            Faction = Spawn.Proto.Faction;
-            while (Faction >= 8) Faction -= 8;
-            if (Faction < 2) Rank = 0;
-            else if (Faction < 4) Rank = 1;
-            else if (Faction < 6) Rank = 2;
-            else if (Faction < 9) Rank = 3;
-            Faction = Spawn.Proto.Faction;
+            SetFaction(Faction);
 
             ItmInterface.Load(WorldMgr.GetCreatureItems(Spawn.Entry));
             Level = (byte)RandomMgr.Next((int)Spawn.Proto.MinLevel, (int)Spawn.Proto.MaxLevel);

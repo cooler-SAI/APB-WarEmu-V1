@@ -314,7 +314,7 @@ namespace WorldServer
             }
 
         }
-        public bool AddObject(Object Obj,UInt16 ZoneId)
+        public bool AddObject(Object Obj,UInt16 ZoneId,bool MustUpdateRange=false)
         {
             if(Obj.IsChapter())
                 Log.Success("AddObject", "RegionMgr : " + Obj.Name + "," + ZoneId);
@@ -333,6 +333,9 @@ namespace WorldServer
 
             ZoneMgr Mgr = GetZoneMgr(ZoneId, true);
             Mgr.AddObject(Obj);
+
+            if (MustUpdateRange)
+                UpdateRange(Obj);
 
             return true;
         }

@@ -70,7 +70,7 @@ namespace Common
             PinX = (ushort)(PinX / 64);
             PinY = (ushort)(PinY / 64);
 
-            //Log.Info("IsOnArea", "PinX=" + PinX + ",PinY=" + PinY + ",OX=" + Information.OffsetX + ",OY=" + Information.OffsetY + ",Size=" + Information.Width + "," + Information.Height);
+            //Log.Info(InfluenceId+",IsOnArea,"+PieceId, "PinX=" + PinX + ",PinY=" + PinY + ",OX=" + Information.OffsetX + ",OY=" + Information.OffsetY + ",Size=" + Information.Width + "," + Information.Height);
 
             if (Information.OffsetX > PinX)
                 return false;

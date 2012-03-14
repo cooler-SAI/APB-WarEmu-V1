@@ -528,6 +528,22 @@ namespace WorldServer
 
         public byte Rank = 0;
         public byte Faction = 0;
+        public byte FactionId = 0;
+
+        public void SetFaction(byte NewFaction)
+        {
+            Faction = NewFaction;
+
+            FactionId = (byte)(NewFaction / 8);
+            Faction = (byte)(NewFaction % 8);
+
+            if (Faction < 2) Rank = 0;
+            else if (Faction < 4) Rank = 1;
+            else if (Faction < 6) Rank = 2;
+            else if (Faction < 9) Rank = 3;
+
+            Faction = NewFaction;
+        }
 
         #endregion
     }

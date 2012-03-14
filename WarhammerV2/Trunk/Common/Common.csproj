@@ -96,6 +96,7 @@
     <Compile Include="Database\World\GameObjects\GameObject_spawn.cs" />
     <Compile Include="Database\World\Items\Item_Info.cs" />
     <Compile Include="Database\World\Characters\Random_names.cs" />
+    <Compile Include="Database\World\Levels\Faction_Info.cs" />
     <Compile Include="Database\World\Levels\Renown_Info.cs" />
     <Compile Include="Database\World\Chapters\Tok_Info.cs" />
     <Compile Include="Database\World\Levels\Xp_Info.cs" />

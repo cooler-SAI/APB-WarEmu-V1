@@ -170,7 +170,7 @@ namespace WorldServer
             _Value = Info.Value[0];
 
             Name = Info.Name;
-            Faction = 0x46;
+            Faction = 70; // Default : 70;
 
             EvtInterface = EventInterface.GetEventInterface((uint)_Info.CharacterId);
             SocInterface = new SocialInterface(this);

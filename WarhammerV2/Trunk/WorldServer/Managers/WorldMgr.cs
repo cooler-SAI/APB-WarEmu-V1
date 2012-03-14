@@ -77,6 +77,10 @@ namespace WorldServer
                     _Zone_Area.Add(Area.ZoneId, Areas);
                 }
 
+                Areas.Add(Area);
+
+                //Area.PieceId = (byte)Areas.Count;
+                
                 if (Area.PieceId != 0)
                 {
                     Area.Information = GetPieceInformation(Area.ZoneId, Area.PieceId);
@@ -84,8 +88,6 @@ namespace WorldServer
                     if(Area.Information != null)
                         ++PieceInformation;
                 }
-
-                Areas.Add(Area);
             }
 
             Log.Success("LoadZone_Info", "Loaded " + Infos.Count + " Zone_Area && " + PieceInformation + " Piece Informations");
@@ -922,6 +924,60 @@ namespace WorldServer
             LoadRegionSpawns();
             LoadChapters();
             LoadQuestsRelation();
+
+            //string Request = "UPDATE zone_areas,tok_infos SET zone_areas.TokExploreEntry = tok_infos.Entry WHERE zone_areas.`PieceId` != 0 AND tok_infos.`EventName` LIKE 'You have discovered%' AND tok_infos.`Flag`=zone_areas.`PieceId` AND tok_infos.`index` = zone_areas.`ZoneId`";
+
+            //foreach (Zone_Info Zone in _Zone_Info)
+            //{
+            //    /*if (Zone.ZoneId != 106)
+            //        continue;*/
+
+            //    Dictionary<byte, byte> Excepts = new Dictionary<byte, byte>();
+
+            //    foreach (Chapter_Info Info in GetChapters(Zone.ZoneId))
+            //    {
+            //        if (Info.InfluenceEntry == 0)
+            //            continue;
+
+            //            AreaMapInfo AreaMap = AreaMapMgr.GetAreaInfo(Info.ZoneId);
+            //            Zone_Area SelectedArea = null;
+            //            Zone_Area ToUpdateArea = Database.SelectObject<Zone_Area>("ZoneId=" + Info.ZoneId + " AND InfluenceId=" + Info.InfluenceEntry);
+
+            //            if (ToUpdateArea == null)
+            //                continue;
+
+            //            foreach (Zone_Area Area in AreaMap.Areas)
+            //            {
+            //                if (Excepts.ContainsKey(Area.PieceId) && Excepts[Area.PieceId] == ToUpdateArea.Realm)
+            //                    continue;
+
+            //                if (AreaMap.IsOnExploreArea(Area, Info.PinX, Info.PinY))
+            //                {
+            //                    SelectedArea = Area;
+            //                    break;
+            //                }
+
+            //                if (Area.IsOnArea(Info.PinX, Info.PinY))
+            //                    SelectedArea = Area;
+            //            }
+
+            //            if (SelectedArea != null)
+            //            {
+            //                //Log.Info("Update", "Piece=" + SelectedArea.PieceId + ",Influence=" + Info.InfluenceEntry + ",Realm=" + ToUpdateArea.Realm);
+
+            //                if (!Excepts.ContainsKey(SelectedArea.PieceId))
+            //                    Excepts.Add(SelectedArea.PieceId, 0);
+
+            //                Excepts[SelectedArea.PieceId] = ToUpdateArea.Realm;
+            //                ToUpdateArea.PieceId = SelectedArea.PieceId;
+            //            }
+            //            else
+            //                ToUpdateArea.PieceId = 0;
+
+            //            ToUpdateArea.Dirty = true;
+            //            Database.SaveObject(ToUpdateArea);
+            //        }
+            //}
         }
         static public void LoadRegionSpawns()
         {

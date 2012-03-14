@@ -82,6 +82,8 @@ namespace WorldServer
                 if (Obj.IsPlayer())
                     _Players.Add(Obj.GetPlayer());
             }
+
+            Obj.LastRangeCheck = new Point2D();
         }
         public void RemoveObject(Object Obj)
         {

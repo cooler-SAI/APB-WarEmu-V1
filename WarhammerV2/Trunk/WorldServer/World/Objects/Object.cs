@@ -400,7 +400,7 @@ namespace WorldServer
         public virtual void DispatchPacket(PacketOut Out, bool Self)
         {
             foreach (Object Player in _PlayerRanged)
-                if (Player != null)
+                if (Player != null && Player != this)
                     Player.GetPlayer().SendCopy(Out);
 
             if (Self && IsPlayer())

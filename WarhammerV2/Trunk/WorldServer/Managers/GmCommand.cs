@@ -235,8 +235,13 @@ namespace WorldServer
         {
             byte Faction = (byte)GetInt(ref Values);
             Object Obj = GetObjectTarget(Plr);
-            Obj.GetUnit().Faction = Faction;
-            Obj.SendMeTo(Plr);
+
+            RegionMgr Region = Obj.Region;
+            ushort ZoneId = Obj.Zone.ZoneId;
+
+            Obj.RemoveFromWorld();
+            Obj.GetUnit().SetFaction(Faction);
+            Region.AddObject(Obj.GetUnit(), ZoneId, true);
 
             return true;
         }
