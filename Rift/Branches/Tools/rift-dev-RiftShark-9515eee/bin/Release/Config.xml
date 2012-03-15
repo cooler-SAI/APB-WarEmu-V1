@@ -1,0 +1,7 @@
+﻿<Config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PacketDescriptions>..\..\PacketDescriptions.xml</PacketDescriptions>
+  <Plugins>Plugins\</Plugins>
+  <Interface />
+  <LowPort>6500</LowPort>
+  <HighPort>6900</HighPort>
+</Config>

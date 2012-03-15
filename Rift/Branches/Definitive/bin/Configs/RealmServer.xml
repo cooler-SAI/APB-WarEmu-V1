@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<RealmConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <IConfiguredTheFile>true</IConfiguredTheFile>
+  <RpcCharacter>
+    <RpcLocalIp>127.0.0.1</RpcLocalIp>
+    <RpcServerIp>127.0.0.1</RpcServerIp>
+    <RpcServerPort>6800</RpcServerPort>
+  </RpcCharacter>
+  <RpcMapServer>
+    <RpcIp>127.0.0.1</RpcIp>
+    <RpcPort>6499</RpcPort>
+    <RpcClientStartingPort>6500</RpcClientStartingPort>
+  </RpcMapServer>
+  <RealmInfo>
+    <RealmId>1</RealmId>
+    <PVP>0</PVP>
+    <RP>0</RP>
+    <Language>1</Language>
+    <Recommended>1</Recommended>
+    <ClientVersion>0</ClientVersion>
+  </RealmInfo>
+  <CharactersDB>
+    <Server>127.0.0.1</Server>
+    <Port>3306</Port>
+    <Database>rift_characters</Database>
+    <Username>root</Username>
+    <Password>waqwaq</Password>
+    <Custom>Treat Tiny As Boolean=False</Custom>
+  </CharactersDB>
+  <WorldDB>
+    <Server>127.0.0.1</Server>
+    <Port>3306</Port>
+    <Database>rift_world</Database>
+    <Username>root</Username>
+    <Password>waqwaq</Password>
+    <Custom>Treat Tiny As Boolean=False</Custom>
+  </WorldDB>
+  <LogLevel>
+    <Info>true</Info>
+    <Successs>true</Successs>
+    <Notice>true</Notice>
+    <Error>true</Error>
+    <Debug>false</Debug>
+    <Tcp>false</Tcp>
+    <Dump>false</Dump>
+  </LogLevel>
+</RealmConfig>
