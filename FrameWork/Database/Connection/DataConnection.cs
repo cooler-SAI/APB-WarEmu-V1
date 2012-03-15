@@ -48,6 +48,7 @@ namespace FrameWork
         // Construction d'une connexion , Type(Mysql,ODBC,etc..) + paramètre de la connexion
         public DataConnection(ConnectionType connType, string connString)
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             this.connType = connType;
 
             // Options de connexion pour Mysql
@@ -102,6 +103,7 @@ namespace FrameWork
         // Renvoi une connexion mysql du pool
         private MySqlConnection GetMySqlConnection(out bool isNewConnection)
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             // Get connection from pool
             MySqlConnection conn = null;
             lock (m_connectionPool)
@@ -160,6 +162,7 @@ namespace FrameWork
 
                     try
                     {
+                        System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
                         long start = Environment.TickCount;
                         affected = cmd.ExecuteNonQuery();
 
@@ -354,6 +357,7 @@ namespace FrameWork
                 {
                     ExecuteSelect("DESCRIBE `" + table.TableName + "`", delegate(MySqlDataReader reader)
                     {
+                        System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
                         while (reader.Read())
                         {
                             currentTableColumns.Add(reader.GetString(0).ToLower());

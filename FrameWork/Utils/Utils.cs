@@ -79,23 +79,23 @@ namespace FrameWork
             return Result;
         }
 
-        static public string ChannelsToString(Dictionary<byte, Color> Chans)
+        static public string ChannelsToString(Dictionary<int, Color> Chans)
         {
             string Result = "";
 
             if (Chans.Count <= 0)
                 return Result;
 
-            foreach (KeyValuePair<byte, Color> Kp in Chans)
+            foreach (KeyValuePair<int, Color> Kp in Chans)
                 Result += Kp.Key.ToString() + "," + ColorToString(Kp.Value) + "|";
 
             // 0 - 1 - 2    
             return Result.Remove(Result.Length - 1, 1);
         }
-        static public Dictionary<byte, Color> StringToChannels(string Str)
+        static public Dictionary<int, Color> StringToChannels(string Str)
         {
             // 1,18:20:25:45|2,457:154:651:0
-            Dictionary<byte, Color> Chans = new Dictionary<byte, Color>();
+            Dictionary<int, Color> Chans = new Dictionary<int, Color>();
             if (Str.Length <= 0)
                 return Chans;
 
@@ -104,7 +104,7 @@ namespace FrameWork
                 if (Kp.Length <= 0)
                     continue;
 
-                byte ChannelId = byte.Parse(Kp.Split(',')[0]);
+                int ChannelId = int.Parse(Kp.Split(',')[0]);
                 Color Col = StringToColor(Kp.Split(',')[1]);
 
                 if (!Chans.ContainsKey(ChannelId))
@@ -113,7 +113,7 @@ namespace FrameWork
             return Chans;
         }
 
-        static public string UintArrayToString(uint[] Values)
+        static public string IntArrayToString(int[] Values)
         {
             string Result = "";
 
@@ -125,37 +125,37 @@ namespace FrameWork
 
             return Result.Remove(Result.Length - 1, 1);
         }
-        static public uint[] StringToUintArray(string Str)
+        static public int[] StringToIntArray(string Str)
         {
             if (Str.Length <= 0)
-                return new uint[0];
+                return new int[0];
 
             string[] Values = Str.Split(':');
-            uint[] Result = new uint[Values.Length];
+            int[] Result = new int[Values.Length];
 
             for (int i = 0; i < Values.Length; ++i)
                 if (Values[i].Length > 0)
-                    Result[i] = uint.Parse(Values[i]);
+                    Result[i] = int.Parse(Values[i]);
 
             return Result;
         }
 
-        static public string EquipementToString(Dictionary<byte, uint> Chans)
+        static public string EquipementToString(Dictionary<int, int> Chans)
         {
             string Result = "";
 
             if (Chans.Count <= 0)
                 return Result;
 
-            foreach (KeyValuePair<byte, uint> Kp in Chans)
+            foreach (KeyValuePair<int, int> Kp in Chans)
                 Result += Kp.Key.ToString() + "," + Kp.Value.ToString() + "|";
 
             return Result.Remove(Result.Length - 1, 1);
         }
-        static public Dictionary<byte, uint> StringToEquipement(string Str)
+        static public Dictionary<int, int> StringToEquipement(string Str)
         {
             // 1,134|2,18
-            Dictionary<byte, uint> Chans = new Dictionary<byte, uint>();
+            Dictionary<int, int> Chans = new Dictionary<int, int>();
             if (Str.Length <= 0)
                 return Chans;
 
@@ -164,8 +164,8 @@ namespace FrameWork
                 if (Kp.Length <= 0)
                     continue;
 
-                byte ChannelId = byte.Parse(Kp.Split(',')[0]);
-                uint ItemId = uint.Parse(Kp.Split(',')[1]);
+                int ChannelId = int.Parse(Kp.Split(',')[0]);
+                int ItemId = int.Parse(Kp.Split(',')[1]);
 
                 if (!Chans.ContainsKey(ChannelId))
                     Chans.Add(ChannelId, ItemId);

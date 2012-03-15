@@ -207,12 +207,28 @@ namespace FrameWork
 
         public T GetServerObject<T>() where T : RpcObject
         {
-            return Activator.GetObject(typeof(T), "tcp://" + RpcServerIp + ":" + RpcServerPort + "/" + typeof(T).Name) as T;
+            try
+            {
+                T data = Activator.GetObject(typeof(T), "tcp://" + RpcServerIp + ":" + RpcServerPort + "/" + typeof(T).Name) as T;
+                return data;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public T GetLocalObject<T>() where T : RpcObject
         {
-            return Activator.GetObject(typeof(T), "tcp://" + Info.Ip + ":" + Info.Port + "/" + typeof(T).Name) as T;
+            try
+            {
+                T data = Activator.GetObject(typeof(T), "tcp://" + Info.Ip + ":" + Info.Port + "/" + typeof(T).Name) as T;
+                return data;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public T GetClientObject<T>(string Name) where T : RpcObject

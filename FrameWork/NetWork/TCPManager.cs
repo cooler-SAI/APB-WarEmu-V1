@@ -122,53 +122,87 @@ namespace FrameWork
 
         // Liste des clients connectés
         static public int MAX_CLIENT = 65000;
+
+        private ReaderWriterLockSlim ClientRWLock = new ReaderWriterLockSlim();
         public BaseClient[] Clients = new BaseClient[MAX_CLIENT];
         public int GetClientCount()
         {
             int Count = 0;
 
-            lock (Clients.SyncRoot)
-                for (int i = 0; i < Clients.Length; ++i)
-                    if (Clients[i] != null)
-                        ++Count;
+            LockReadClients();
+
+            for (int i = 0; i < Clients.Length; ++i)
+                if (Clients[i] != null)
+                    ++Count;
+
+            UnLockReadClients();
 
             return Count;
         }
 
         public void GenerateId(BaseClient Client)
         {
-            lock (Clients.SyncRoot)
+            LockWriteClients();
+
+            for (int i = 10; i < Clients.Length; ++i)
             {
-                for(int i=10;i<Clients.Length;++i)
-                    if (Clients[i] == null)
-                    {
-                        Client.Id = i;
-                        Clients[i] = Client;
-                        break;
-                    }
+                if (Clients[i] == null)
+                {
+                    Client.Id = i;
+                    Clients[i] = Client;
+                    break;
+                }
             }
+
+            UnLockWriteClients();
         }
 
         public void RemoveClient(BaseClient Client)
         {
-            lock (Clients.SyncRoot)
-                if (Clients[Client.Id] == Client)
-                    Clients[Client.Id] = null;
+            LockWriteClients();
+
+            if (Clients[Client.Id] == Client)
+                Clients[Client.Id] = null;
+
+            UnLockWriteClients();
         }
         public void RemoveClient(int Id)
         {
-            lock (Clients.SyncRoot)
+            LockWriteClients();
+
                 if (Id >= 0 && Id < Clients.Length)
                     Clients[Id] = null;
+
+           UnLockWriteClients();
         }
 
         public BaseClient GetClient(int Id)
         {
-            lock (Clients.SyncRoot)
-                if (Id >= 0 && Id < Clients.Length)
-                    return Clients[Id];
+            LockReadClients();
+
+            if (Id >= 0 && Id < Clients.Length)
+                return Clients[Id];
+
+            UnLockReadClients();
 
             return null;
+        }
+
+        public void LockReadClients()
+        {
+            ClientRWLock.EnterReadLock();
+        }
+        public void UnLockReadClients()
+        {
+            ClientRWLock.ExitReadLock();
+        }
+        public void LockWriteClients()
+        {
+            ClientRWLock.EnterWriteLock();
+        }
+        public void UnLockWriteClients()
+        {
+            ClientRWLock.ExitWriteLock();
         }
 
         #endregion
@@ -332,14 +366,15 @@ namespace FrameWork
         {
             Packet.WritePacketLength();
 
-            lock (Clients.SyncRoot)
+            LockReadClients();
+
+            for (int i = 0; i < Clients.Length; ++i)
             {
-                for (int i = 0; i < Clients.Length; ++i)
-                {
-                    if (Clients[i] != null)
-                        Clients[i].SendTCP(Packet.ToArray());
-                }
+                if (Clients[i] != null)
+                    Clients[i].SendTCP(Packet.ToArray());
             }
+
+            UnLockReadClients();
         }
 
         #region Packet buffer pool
