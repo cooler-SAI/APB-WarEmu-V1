@@ -188,7 +188,7 @@ namespace WorldServer
         {
             Player Target = null;
 
-            Target = Plr.CbtInterface.GetPlayerTarget();
+            Target = Plr.CbtInterface.GetTarget() as Player;
             if (Target == null)
                 Target = Plr;
 
@@ -196,7 +196,7 @@ namespace WorldServer
         }
         static public Object GetObjectTarget(Player Obj)
         {
-            Object Target = Obj.CbtInterface.GetObjectTarget();
+            Unit Target = Obj.CbtInterface.GetTarget();
             if (Target == null)
                 Target = Obj;
 
@@ -234,6 +234,8 @@ namespace WorldServer
         static public bool ModifyFaction(Player Plr, ref List<string> Values)
         {
             byte Faction = (byte)GetInt(ref Values);
+            byte Save = (byte)(Values.Count > 0 ? GetInt(ref Values) : 0);
+
             Object Obj = GetObjectTarget(Plr);
 
             RegionMgr Region = Obj.Region;
@@ -242,6 +244,16 @@ namespace WorldServer
             Obj.RemoveFromWorld();
             Obj.GetUnit().SetFaction(Faction);
             Region.AddObject(Obj.GetUnit(), ZoneId, true);
+
+            if (Save > 0)
+            {
+                if (Obj.IsCreature())
+                {
+                    Creature Crea = Obj.GetCreature();
+                    Crea.Spawn.Faction = Faction;
+                    WorldMgr.Database.SaveObject(Crea.Spawn);
+                }
+            }
 
             return true;
         }
@@ -333,7 +345,7 @@ namespace WorldServer
         static public bool Gps(Player Plr, ref List<string> Values)
         {
             Plr.CalcWorldPositions();
-            Object Obj = Plr.CbtInterface.GetObjectTarget();
+            Object Obj = Plr.CbtInterface.GetTarget();
 
             string Pos = "Px="+Plr.X+",Py="+Plr.Y+",Pz="+Plr.Z;
             Pos+=",Wx="+Plr._Value.WorldX +",Wy="+Plr._Value.WorldY;
@@ -351,7 +363,7 @@ namespace WorldServer
 
         static public bool Revive(Player Plr, ref List<string> Values)
         {
-            Unit Target = Plr.CbtInterface.GetUnitTarget();
+            Unit Target = Plr.CbtInterface.GetTarget();
             if (Target == null || !Target.IsDead)
                 return false;
 
@@ -362,7 +374,7 @@ namespace WorldServer
 
         static public bool Kill(Player Plr, ref List<string> Values)
         {
-            Unit Target = Plr.CbtInterface.GetUnitTarget();
+            Unit Target = Plr.CbtInterface.GetTarget();
             if (Target == null || Target.IsDead)
                 return false;
 
@@ -377,7 +389,7 @@ namespace WorldServer
 
         static public bool Move(Player Plr, ref List<string> Values)
         {
-            Object Target = Plr.CbtInterface.GetObjectTarget();
+            Object Target = Plr.CbtInterface.GetTarget();
             if (Target == null || !Target.IsCreature())
                 return false;
 
@@ -463,6 +475,7 @@ namespace WorldServer
             Plr.CalcWorldPositions();
 
             Creature_spawn Spawn = new Creature_spawn();
+            Spawn.Guid = (uint)WorldMgr.GenerateSpawnGUID();
             Spawn.BuildFromProto(Proto);
             Spawn.WorldO = Plr._Value.WorldO;
             Spawn.WorldY = Plr._Value.WorldY;

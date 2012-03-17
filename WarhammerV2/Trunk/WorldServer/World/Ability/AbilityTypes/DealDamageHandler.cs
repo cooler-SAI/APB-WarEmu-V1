@@ -38,7 +38,7 @@ namespace WorldServer
             this.Ab = Ab;
 
             if (Ab.Caster.IsUnit())
-                Target = Ab.Caster.GetUnit().CbtInterface.GetUnitTarget();
+                Target = Ab.Caster.GetUnit().CbtInterface.GetTarget();
 
             Log.Info("DealDamage", "Target = " + Target);
         }
@@ -51,7 +51,7 @@ namespace WorldServer
                 return GameData.AbilityResult.ABILITYRESULT_ILLEGALTARGET_DEAD;
             else if (Ab.Caster.GetDistance(Target) > Ab.Info.MaxRange)
                 return GameData.AbilityResult.ABILITYRESULT_OUTOFRANGE;
-            else if (Ab.Caster.GetUnit().CbtInterface.IsFriendTarget())
+            else if (Ab.Caster.GetUnit().CbtInterface.GetTargetType() != GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY)
                 return GameData.AbilityResult.ABILITYRESULT_ILLEGALTARGET_IN_YOUR_ALLIANCE;
             
             return GameData.AbilityResult.ABILITYRESULT_OK;

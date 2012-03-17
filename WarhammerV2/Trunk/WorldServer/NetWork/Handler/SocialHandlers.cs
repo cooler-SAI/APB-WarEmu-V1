@@ -45,7 +45,7 @@ namespace WorldServer
             {
                 case 11: // Inspection
                     {
-                        Player Target = Plr.CbtInterface.GetPlayerTarget();
+                        Player Target = Plr.CbtInterface.GetTarget() as Player;
                         if (Target == null)
                             Plr.SendLocalizeString("", GameData.Localized_text.TEXT_SN_LISTS_ERR_PLAYER_NOT_FOUND);
                         else

@@ -153,6 +153,8 @@ namespace WorldServer
             get { return _ZoneMgr != null ? _ZoneMgr.Region : null; }
         }
         public bool IsInWorld() { return _ZoneMgr != null; }
+        public Point3D WorldPosition = new Point3D();
+
         public void RemoveFromWorld()
         {
             if (!IsInWorld())
@@ -172,6 +174,20 @@ namespace WorldServer
             if(Ox != XOffset || Oy != YOffset)
                 SetOffset(Ox, Oy);
         }
+
+        public void CalcWorldPositions()
+        {
+            int x = X > 32768 ? X - 32768 : X;
+            int y = Y > 32768 ? Y - 32768 : Y;
+
+
+            WorldPosition.X = (int)((int)XZone + ((int)((int)x) & 0x00000FFF));
+            WorldPosition.Y = (int)((int)YZone + ((int)((int)y) & 0x00000FFF));
+            WorldPosition.Z = Z / 2;
+            if (Zone.ZoneId == 161)
+                WorldPosition.Z = (32768 + Z) / 2;
+        }
+
         public void SetOffset(UInt16 OffX, UInt16 OffY)
         {
             if (OffX <= 0 || OffY <= 0)
@@ -323,6 +339,7 @@ namespace WorldServer
             }
         }
         public Point2D LastRangeCheck = new Point2D(0,0);
+
         public virtual void InitPosition(UInt16 OffX, UInt16 OffY, UInt16 PinX, UInt16 PinY)
         {
             X = PinX;
@@ -344,6 +361,7 @@ namespace WorldServer
                 if(!IsPlayer())
                     CalculOffset();
 
+                CalcWorldPositions();
                 Updated = Region.UpdateRange(this);
 
                 if (!IsPlayer())
@@ -392,7 +410,11 @@ namespace WorldServer
         }
         public virtual void ClearRange()
         {
-            SendRemove(null);
+            //SendRemove(null);
+
+            foreach (Object Ranged in _ObjectRanged)
+                Ranged.RemoveInRange(this);
+
             _PlayerRanged.Clear();
             _ObjectRanged.Clear();
         }

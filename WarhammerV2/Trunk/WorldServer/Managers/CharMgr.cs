@@ -30,7 +30,7 @@ namespace WorldServer
     public class AccountChars
     {
         public int AccountId;
-        public GameData.pRealm _Realm = GameData.pRealm.REALM_NONE;
+        public GameData.Realms _Realm = GameData.Realms.REALMS_REALM_NEUTRAL;
 
         public AccountChars(int AccountId)
         {
@@ -50,7 +50,7 @@ namespace WorldServer
         public bool AddChar(Character Char)
         {
             if (Char != null)
-                _Realm = (GameData.pRealm)Char.Realm;
+                _Realm = (GameData.Realms)Char.Realm;
 
             if (_Chars[Char.SlotId] == null)
                 _Chars[Char.SlotId] = Char;
@@ -66,12 +66,12 @@ namespace WorldServer
                 CharacterId = _Chars[Slot].CharacterId;
 
             _Chars[Slot] = null;
-             _Realm = GameData.pRealm.REALM_NONE;
+            _Realm = GameData.Realms.REALMS_REALM_NEUTRAL;
 
             foreach(Character Char in _Chars)
                 if (Char != null)
                 {
-                    _Realm = (GameData.pRealm)Char.Realm;
+                    _Realm = (GameData.Realms)Char.Realm;
                     break;
                 }
 
@@ -341,7 +341,7 @@ namespace WorldServer
             }
             return Out.ToArray();
         }
-        static public GameData.pRealm GetAccountRealm(int AccountId)
+        static public GameData.Realms GetAccountRealm(int AccountId)
         {
             return GetAccountChar(AccountId)._Realm;
         }

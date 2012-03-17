@@ -77,7 +77,7 @@ namespace WorldServer
             if (Interval == 0 )
                 ToDelete = true;
 
-            Log.Success("AddEvent", "Del =" + Del.Method.Name + ",Name" + Del.Target.ToString());
+            //Log.Success("AddEvent", "Del =" + Del.Method.Name + ",Name" + Del.Target.ToString());
         }
 
         public bool Update(long Tick)
@@ -167,7 +167,7 @@ namespace WorldServer
         public void AddEvent(EventDelegate Del, int Interval, int Count)
         {
             lock (_Events)
-            _Events.Add(new EventInfo(Del, Interval, Count));
+                _Events.Add(new EventInfo(Del, Interval, Count));
         }
         public void RemoveEvent(EventDelegate Del)
         {

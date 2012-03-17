@@ -102,6 +102,7 @@ namespace WorldServer
             QtsInterface = new QuestsInterface(this);
             MvtInterface = new MovementInterface(this);
             AbtInterface = new AbilityInterface(this);
+            AiInterface = new AIInterface(this);
         }
 
         public override void OnLoad()
@@ -113,6 +114,7 @@ namespace WorldServer
             if (EvtInterface == null)
                 EvtInterface = new EventInterface(this);
 
+            AiInterface.Load();
             base.OnLoad();
         }
 
@@ -125,6 +127,7 @@ namespace WorldServer
             MvtInterface.Stop();
             AbtInterface.Stop();
             EvtInterface.Stop();
+            AiInterface.Stop();
 
             base.Dispose();
         }
@@ -142,6 +145,7 @@ namespace WorldServer
             QtsInterface.Update(Tick);
             MvtInterface.Update(Tick);
             AbtInterface.Update(Tick);
+            AiInterface.Update(Tick);
 
             if (NextSend < Tick)
             {
@@ -165,6 +169,9 @@ namespace WorldServer
         public virtual void SendState(Player Plr)
         {
             if (IsPlayer())
+                return;
+
+            if (!IsInWorld())
                 return;
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_OBJECT_STATE);
@@ -192,6 +199,7 @@ namespace WorldServer
         public StatsInterface StsInterface;
         public QuestsInterface QtsInterface;
         public AbilityInterface AbtInterface;
+        public AIInterface AiInterface;
 
         #endregion
 
@@ -293,7 +301,7 @@ namespace WorldServer
 
             RealDamage = (int)(Damage-( (float)(DmgReduce/100 * DmgReduce)));
 
-            Log.Success("Strike","["+ Name + "] Strike -> " + Target.Name +"Dmg="+Damage+",Reduce="+DmgReduce);
+            //Log.Success("Strike","["+ Name + "] Strike -> " + Target.Name +"Dmg="+Damage+",Reduce="+DmgReduce);
 
             SendAttackState(Target, (UInt16)RealDamage, (UInt16)Damage);
             SendAttackMovement(Target, null);
@@ -386,7 +394,7 @@ namespace WorldServer
             if (Target == null || Target.IsDead)
                 return;
 
-            Log.Success("DealDamage",Name + " Deal " + RealDamage + "/"+Target.Health + "/"+Target.PctHealth + "% To " + Target.Name);
+            //Log.Success("DealDamage",Name + " Deal " + RealDamage + "/"+Target.Health + "/"+Target.PctHealth + "% To " + Target.Name);
             CbtInterface.OnDealDamage(Target, (UInt32)RealDamage);
 
             if (Target.Health <= RealDamage)
@@ -424,6 +432,7 @@ namespace WorldServer
         public virtual void RezUnit()
         {
             CbtInterface.Evade();
+            States.Remove(3); // Death State
             Health = TotalHealth;
         }
 
@@ -526,9 +535,11 @@ namespace WorldServer
             }
         }
 
-        public byte Rank = 0;
-        public byte Faction = 0;
-        public byte FactionId = 0;
+        public byte Rank = 0; // Normal,Champion,Hero,Lord
+        public byte Faction = 0; // Faction Flag
+        public byte FactionId = 0; // FactionFlag/8
+        public bool Agressive = false;
+        public GameData.Realms Realm = GameData.Realms.REALMS_REALM_NEUTRAL;
 
         public void SetFaction(byte NewFaction)
         {
@@ -536,13 +547,46 @@ namespace WorldServer
 
             FactionId = (byte)(NewFaction / 8);
             Faction = (byte)(NewFaction % 8);
+            Agressive = Convert.ToBoolean(Faction % 2);
+            Rank = (byte)(Faction / 2);
 
-            if (Faction < 2) Rank = 0;
-            else if (Faction < 4) Rank = 1;
-            else if (Faction < 6) Rank = 2;
-            else if (Faction < 9) Rank = 3;
+            if (FactionId >= 8 && FactionId <= 15)
+                Realm = GameData.Realms.REALMS_REALM_ORDER;
+            else if (FactionId >= 16 && FactionId <= 23)
+                Realm = GameData.Realms.REALMS_REALM_DESTRUCTION;
+            else
+                Realm = GameData.Realms.REALMS_REALM_NEUTRAL;
 
             Faction = NewFaction;
+
+            if (Agressive)
+                AiInterface.SetBrain(new AgressiveBrain(AiInterface));
+        }
+
+        #endregion
+
+        #region Range
+
+        public override void AddInRange(Object Obj)
+        {
+            if(Obj.IsUnit())
+                AiInterface.AddRange(Obj.GetUnit());
+
+            base.AddInRange(Obj);
+        }
+
+        public override void RemoveInRange(Object Obj)
+        {
+            if (Obj.IsUnit())
+                AiInterface.RemoveRange(Obj.GetUnit());
+
+            base.RemoveInRange(Obj);
+        }
+
+        public override void ClearRange()
+        {
+            AiInterface.ClearRange();
+            base.ClearRange();
         }
 
         #endregion

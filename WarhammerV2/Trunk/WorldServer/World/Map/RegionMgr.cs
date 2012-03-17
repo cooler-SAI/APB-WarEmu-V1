@@ -364,6 +364,9 @@ namespace WorldServer
         }
         public Object GetObject(UInt16 Oid)
         {
+            if (Oid == 0)
+                return null;
+
             if (Oid >= _Objects.Length)
                 return null;
             if (Oid < 2)

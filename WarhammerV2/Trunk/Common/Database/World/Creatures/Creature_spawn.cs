@@ -44,6 +44,7 @@ namespace Common
         private byte _Icone;
         private byte _Emote;
         private ushort _Title;
+        private byte _Faction;
 
         [PrimaryKey(AutoIncrement = true)]
         public uint Guid
@@ -120,6 +121,13 @@ namespace Common
         {
             get { return _Title; }
             set { _Title = value; Dirty = true; }
+        }
+
+        [DataElement(AllowDbNull = false)]
+        public byte Faction
+        {
+            get { return _Faction; }
+            set { _Faction = value; Dirty = true; }
         }
 
 

@@ -92,7 +92,12 @@
     <Compile Include="World\Ability\AbilityMgr.cs" />
     <Compile Include="World\Ability\AbilityTypes\DealDamageHandler.cs" />
     <Compile Include="World\Ability\IAbilityTypeHandler.cs" />
+    <Compile Include="World\AI\ABrain.cs" />
+    <Compile Include="World\AI\AgressiveBrain.cs" />
+    <Compile Include="World\AI\GuardBrain.cs" />
+    <Compile Include="World\AI\PassiveBrain.cs" />
     <Compile Include="World\Interfaces\AbilityInterface.cs" />
+    <Compile Include="World\Interfaces\AIInterface.cs" />
     <Compile Include="World\Interfaces\BaseInterface.cs" />
     <Compile Include="World\Interfaces\CombatInterface.cs" />
     <Compile Include="World\Interfaces\EventInterface.cs" />
@@ -155,6 +160,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -41,7 +41,7 @@ namespace WorldServer
                 if (!_Players.Contains(Plr))
                 {
                     _Players.Add(Plr);
-                    if (Plr._Info.Realm == (byte)GameData.pRealm.REALM_ORDER)
+                    if (Plr.Realm == GameData.Realms.REALMS_REALM_ORDER)
                         ++Program.Rm.OrderCount;
                     else
                         ++Program.Rm.DestructionCount;
@@ -55,7 +55,7 @@ namespace WorldServer
             lock (_Players)
             {
                 _Players.Remove(Plr);
-                if (Plr._Info.Realm == (byte)GameData.pRealm.REALM_ORDER)
+                if (Plr._Info.Realm == (byte)GameData.Realms.REALMS_REALM_ORDER)
                     --Program.Rm.OrderCount;
                 else
                     --Program.Rm.DestructionCount;
@@ -170,16 +170,18 @@ namespace WorldServer
             _Value = Info.Value[0];
 
             Name = Info.Name;
-            Faction = 70; // Default : 70;
+            SetFaction((byte)(8*(8*Info.Realm)+6));
 
             EvtInterface = EventInterface.GetEventInterface((uint)_Info.CharacterId);
             SocInterface = new SocialInterface(this);
             TokInterface = new TokInterface(this);
         }
+
         ~Player()
         {
             Log.Success("Player", "Destruction de " + Name);
         }
+
         public override void OnLoad()
         {
             _Client.State = (int)eClientState.WorldEnter;
@@ -538,7 +540,7 @@ namespace WorldServer
             Out.WriteUInt32((uint)_Value.WorldY);
             Out.WriteUInt16((ushort)_Value.WorldO);
             Out.WriteByte(0);
-            Out.WriteByte(_Info.Realm);
+            Out.WriteByte((byte)Realm);
             Out.Fill(0, 5); // ??
             Out.WriteByte((byte)Zone.Info.Region);
             Out.WriteUInt16(1);
@@ -782,18 +784,6 @@ namespace WorldServer
         public int LastCX,LastCY = 0;
         public int LastX, LastY = 0;
 
-        public void CalcWorldPositions()
-        {
-            int x = X > 32768 ? X - 32768 : X;
-            int y = Y > 32768 ? Y - 32768 : Y;
-
-            _Value.WorldX = (int)((int)XZone + ((int)((int)x) & 0x00000FFF));
-            _Value.WorldY = (int)((int)YZone + ((int)((int)y) & 0x00000FFF));
-            _Value.WorldZ = Z / 2;
-            if (Zone.ZoneId == 161)
-                _Value.WorldZ = (32768+Z)/2;
-        }
-
         public override bool SetPosition(ushort PinX, ushort PinY, ushort PinZ, ushort Head)
         {
             if (_Client.State != (int)eClientState.Playing)
@@ -803,15 +793,17 @@ namespace WorldServer
                 EvtInterface.Notify("Playing", this, null);
             }
 
+            bool Updated = base.SetPosition(PinX, PinY, PinZ, Head);
+
+            if (Updated)
+                Zone.AreaInfo.GetTokExplore(TokInterface, PinX, PinY, (byte)Realm);
+
+            _Value.WorldX = WorldPosition.X;
+            _Value.WorldY = WorldPosition.Y;
+            _Value.WorldZ = WorldPosition.Z;
             _Value.WorldO = Head;
 
-            if (base.SetPosition(PinX, PinY, PinZ, Head))
-            {
-                uint ExploreID = Zone.AreaInfo.GetTokExplore(TokInterface, PinX, PinY, _Info.Realm);
-                return true;
-            }
-
-            return false;
+            return Updated;
         }
 
         #endregion

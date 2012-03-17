@@ -73,13 +73,13 @@ namespace WorldServer
 
     public class TargetInfo
     {
-        public TargetInfo(UInt16 Oid,GameData.TargetTypes Type)
+        public TargetInfo(Unit Target, GameData.TargetTypes Type)
         {
-            this.Target = Oid;
+            this.Target = Target;
             this.Type = Type;
         }
 
-        public UInt16 Target;
+        public Unit Target;
         public GameData.TargetTypes Type;
     };
 
@@ -93,7 +93,6 @@ namespace WorldServer
 
     public class CombatInterface : BaseInterface
     {
-        public TargetInfo Target = null;
         public bool Attacking = false;
         public long NextAttackTime = 0;
 
@@ -103,61 +102,6 @@ namespace WorldServer
             : base(Obj)
         {
 
-        }
-
-        public void RemoveTarget()
-        {
-            Target = null;
-            Attacking = false;
-        }
-        public void SetTarget(UInt16 Oid, GameData.TargetTypes Type)
-        {
-            RemoveTarget();
-
-            if (Oid != 0)
-                Target = new TargetInfo(Oid, Type);
-        }
-        public bool HasTarget()
-        {
-            if (Target == null)
-                return false;
-
-            return true;
-        }
-        public bool IsFriendTarget()
-        {
-            if (!HasTarget())
-                return false;
-
-            if (Target.Type != GameData.TargetTypes.TARGETTYPES_TARGET_ALLY)
-                return false;
-
-            return true;
-        }
-        public Object GetObjectTarget()
-        {
-            if (!HasTarget())
-                return null;
-
-            return Obj.Region.GetObject(Target.Target);
-        }
-        public Unit GetUnitTarget()
-        {
-            Object Targ = GetObjectTarget();
-
-            if (Targ == null || !Targ.IsUnit())
-                return null;
-
-            return GetObjectTarget().GetUnit();
-        }
-        public Player GetPlayerTarget()
-        {
-            Object Targ = GetObjectTarget();
-
-            if (Targ == null || !Targ.IsPlayer())
-                return null;
-
-            return Targ.GetPlayer();
         }
 
         public override void Update(long Tick)
@@ -209,6 +153,7 @@ namespace WorldServer
 
             long Tick = TCPManager.GetTimeStampMS();
 
+            SetTarget(Target);
             LookAt(Target);
 
             if (NextAttackTime < Tick)
@@ -236,7 +181,6 @@ namespace WorldServer
             Crea.MvtInterface.FollowUnit(Target, 7, 10,200, eFormationType.Protect);
         }
 
-
         #region IASystem
 
         public bool IsFighting()
@@ -247,15 +191,30 @@ namespace WorldServer
             return false;
         }
 
+        public bool IsFightingWithFriend(Unit Me)
+        {
+            if (!HasTarget())
+                return false;
+
+            if (!IsFighting())
+                return false;
+
+            if(IsFriend(Me, CurrentTarget.Target))
+                return true;
+            else
+                return false;
+        }
+
         public void CombatStart(Unit Fighter)
         {
             Log.Success("CombatStart", Obj.Name + " Start combat with " + Fighter.Name);
             State = AiState.FIGHTING;
+            GetAggro(Fighter.Oid).DamagesReceive+=100;
         }
 
         public void CombatStop()
         {
-            Log.Success("CombatStop", Obj.Name + " Stop combat ");
+            //Log.Success("CombatStop", Obj.Name + " Stop combat ");
             State = AiState.STANDING;
             ClearTargets();
 
@@ -264,6 +223,8 @@ namespace WorldServer
 
             if(Obj.IsCreature() && !Obj.GetCreature().IsDead)
                 ReturnToSpawn();
+
+            Obj.EvtInterface.Notify("CombatStop", null, null);
         }
 
         public void Evade()
@@ -278,36 +239,6 @@ namespace WorldServer
             }
 
             CombatStop();
-        }
-
-        public void OnTakeDamage(Unit Fighter,UInt32 DamageCount)
-        {
-            switch (State)
-            {
-                case AiState.STANDING:
-                    CombatStart(Fighter);
-                    break;
-            };
-
-            AddDamageReceive(Fighter.Oid, DamageCount);
-        }
-
-        public void OnDealDamage(Unit Victim,UInt32 DamageCount)
-        {
-            switch (State)
-            {
-                case AiState.STANDING:
-                    CombatStart(Victim);
-                    break;
-            };
-        }
-
-        public void OnTargetDie(Unit Victim)
-        {
-            RemoveAggro(Victim.Oid);
-
-            if (GetAggroCount() <= 0)
-                CombatStop();
         }
 
         public bool CheckSpawnRange()
@@ -341,10 +272,11 @@ namespace WorldServer
         #region AggroSystem
 
         public Dictionary<UInt16, AggroInfo> _Aggros = new Dictionary<ushort, AggroInfo>();
-        public AggroInfo GetAggro(UInt16 Oid)
+
+        public AggroInfo GetAggro(UInt16 Oid, bool Create=true)
         {
             AggroInfo Info = null;
-            if (!_Aggros.TryGetValue(Oid, out Info))
+            if (!_Aggros.TryGetValue(Oid, out Info) && Create)
             {
                 Info = new AggroInfo(Oid);
                 _Aggros.Add(Oid, Info);
@@ -360,17 +292,25 @@ namespace WorldServer
         {
             return (UInt32)_Aggros.Count;
         }
-
-        public void ClearTargets()
+        public AggroInfo GetMaxAggroHate()
         {
-            _Aggros.Clear();
-        }
-        public void AddDamageReceive(UInt16 Oid, UInt32 Damages)
-        {
-            AggroInfo Info = GetAggro(Oid);
-            Info.DamagesDeal = Damages;
-        }
+            UInt64 TotalDamages = TotalDamageReceive();
+            AggroInfo Aggro = null;
+            float MaxHate = -1;
 
+            foreach (AggroInfo Info in _Aggros.Values.ToArray())
+            {
+                float Hate = Info.GetHate(TotalDamages);
+
+                if (Hate > MaxHate)
+                {
+                    MaxHate = Hate;
+                    Aggro = Info;
+                }
+            }
+
+            return Aggro;
+        }
         public UInt64 TotalDamageReceive()
         {
             UInt64 Damages = 0;
@@ -381,6 +321,17 @@ namespace WorldServer
             return Damages;
         }
 
+        public void ClearTargets()
+        {
+            _Aggros.Clear();
+            SetTarget(null);
+        }
+        public void AddDamageReceive(UInt16 Oid, UInt32 Damages)
+        {
+            AggroInfo Info = GetAggro(Oid);
+            Info.DamagesDeal = Damages;
+        }
+
         public Unit GetNextTarget()
         {
             Unit Me = GetUnit();
@@ -388,44 +339,30 @@ namespace WorldServer
 
             if (!Me.IsPlayer())
             {
-                UInt16 TargetOid = 0;
+                AggroInfo Info = GetMaxAggroHate();
+                if(Info != null)
+                    Target = Obj.Region.GetObject(Info.Oid) as Unit;
 
-                UInt64 TotalDamages = TotalDamageReceive();
-                float MaxHate = 0;
-
-                foreach (AggroInfo Info in _Aggros.Values.ToArray())
-                {
-                    float Hate = Info.GetHate(TotalDamages);
-
-                    if (Hate > MaxHate)
-                    {
-                        MaxHate = Hate;
-                        TargetOid = Info.Oid;
-                    }
-                }
-
-                if (TargetOid <= 0)
-                    Target = null;
-                else
-                    Target = Obj.Region.GetObject(TargetOid) as Unit;
             }
             else
             {
-                if (!IsFriendTarget())
-                    Target = GetUnitTarget();
+                if (CurrentTarget.Type != GameData.TargetTypes.TARGETTYPES_TARGET_ALLY)
+                    Target = CurrentTarget.Target;
             }
 
             if (Target == null)
                 return null;
 
-            if (Target.IsDead && State == AiState.FIGHTING)
-                OnTargetDie(Target);
-
             if (!Target.IsInWorld())
                 return null;
 
             if (Target.IsDead)
+            {
+                if(State == AiState.FIGHTING)
+                    OnTargetDie(Target);
+
                 return null;
+            }
 
             return Target;
         }
@@ -462,5 +399,112 @@ namespace WorldServer
         }
 
         #endregion
+
+        #region Targets
+
+        public TargetInfo CurrentTarget = new TargetInfo(null, GameData.TargetTypes.TARGETTYPES_TARGET_NONE);
+
+        public void SetTarget(Unit Target)
+        {
+            CurrentTarget.Target = Target;
+            CurrentTarget.Type = GetTargetType(GetUnit(), Target);
+        }
+        public Unit GetTarget()
+        {
+            return CurrentTarget.Target;
+        }
+        public bool HasTarget()
+        {
+            return CurrentTarget.Type != GameData.TargetTypes.TARGETTYPES_TARGET_NONE;
+        }
+        public GameData.TargetTypes GetTargetType()
+        {
+            return CurrentTarget.Type;
+        }
+
+        #endregion
+
+        #region Events
+
+        public void OnTakeDamage(Unit Fighter, UInt32 DamageCount)
+        {
+            switch (State)
+            {
+                case AiState.STANDING:
+                    CombatStart(Fighter);
+                    break;
+            };
+
+            AddDamageReceive(Fighter.Oid, DamageCount);
+            Obj.EvtInterface.Notify("OnTakeDamage", Fighter, null);
+        }
+
+        public void OnDealDamage(Unit Victim, UInt32 DamageCount)
+        {
+            switch (State)
+            {
+                case AiState.STANDING:
+                    CombatStart(Victim);
+                    break;
+            };
+            Obj.EvtInterface.Notify("OnDealDamage", Victim, null);
+        }
+
+        public void OnTargetDie(Unit Victim)
+        {
+            RemoveAggro(Victim.Oid);
+
+            if (GetAggroCount() <= 0)
+                CombatStop();
+
+            Obj.EvtInterface.Notify("OnTargetDie", Victim, null);
+        }
+
+        #endregion
+
+        static public GameData.TargetTypes GetTargetType(Unit A, Unit B)
+        {
+            if (B == null)
+                return GameData.TargetTypes.TARGETTYPES_TARGET_NONE;
+
+            if (A == B)
+                return GameData.TargetTypes.TARGETTYPES_TARGET_SELF;
+
+            if (IsEnemy(A, B))
+                return GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY;
+
+            if (IsFriend(A, B))
+                return GameData.TargetTypes.TARGETTYPES_TARGET_ALLY;
+
+            return GameData.TargetTypes.TARGETTYPES_TARGET_NONE;
+        }
+        static public bool IsEnemy(Unit A, Unit B)
+        {
+            if (A.Realm == GameData.Realms.REALMS_REALM_NEUTRAL && B.Realm == GameData.Realms.REALMS_REALM_NEUTRAL)
+                return false;
+
+            return A.Realm != B.Realm;
+        }
+        static public bool IsFriend(Unit A, Unit B)
+        {
+            return A.Realm == B.Realm;
+        }
+
+        static public bool CanAttack(Unit A, Unit B)
+        {
+            if (A.IsDead || B.IsDead)
+                return false;
+
+            if (A == B)
+                return false;
+
+            if (!IsEnemy(A, B))
+                return false;
+
+            if (!A.IsInWorld() || !B.IsInWorld())
+                return false;
+
+            return true;
+        }
     }
 }

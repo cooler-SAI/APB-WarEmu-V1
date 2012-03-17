@@ -394,6 +394,12 @@ namespace WorldServer
         #region CreatureSpawns
 
         static public Dictionary<uint, Creature_spawn> CreatureSpawns;
+        static public int MaxGUID = 0;
+
+        static public int GenerateSpawnGUID()
+        {
+            return System.Threading.Interlocked.Increment(ref MaxGUID);
+        }
 
         [LoadingFunction(true)]
         static public void LoadCreatureSpawns()
@@ -404,8 +410,12 @@ namespace WorldServer
             IList<Creature_spawn> Spawns = Database.SelectAllObjects<Creature_spawn>();
 
             if(Spawns != null)
-                foreach(Creature_spawn Spawn in Spawns)
+                foreach (Creature_spawn Spawn in Spawns)
+                {
                     CreatureSpawns.Add(Spawn.Guid, Spawn);
+                    if (Spawn.Guid > MaxGUID)
+                        MaxGUID = (int)Spawn.Guid;
+                }
 
 
             Log.Success("LoadCreatureSpawns", "Loaded " + CreatureSpawns.Count + " Creature_Spawns");

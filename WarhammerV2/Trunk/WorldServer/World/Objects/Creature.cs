@@ -70,7 +70,7 @@ namespace WorldServer
         {
             InteractType = GenerateInteractType(Spawn.Title);
 
-            SetFaction(Faction);
+            SetFaction(Spawn.Faction != 0 ? Spawn.Faction : Spawn.Proto.Faction);
 
             ItmInterface.Load(WorldMgr.GetCreatureItems(Spawn.Entry));
             Level = (byte)RandomMgr.Next((int)Spawn.Proto.MinLevel, (int)Spawn.Proto.MaxLevel);
@@ -90,6 +90,10 @@ namespace WorldServer
             }
 
             Heading = (ushort)Spawn.WorldO;
+            WorldPosition.X = Spawn.WorldX;
+            WorldPosition.Y = Spawn.WorldY;
+            WorldPosition.Z = Spawn.WorldZ;
+
             SetOffset((ushort)(Spawn.WorldX >> 12), (ushort)(Spawn.WorldY >> 12));
             Region.UpdateRange(this);
                 
@@ -108,10 +112,10 @@ namespace WorldServer
             Out.WriteUInt16(Oid);
             Out.WriteUInt16(0);
 
-            Out.WriteUInt16((UInt16)Spawn.WorldO);
-            Out.WriteUInt16((UInt16)Spawn.WorldZ);
-            Out.WriteUInt32((UInt32)Spawn.WorldX);
-            Out.WriteUInt32((UInt32)Spawn.WorldY);
+            Out.WriteUInt16((UInt16)Heading);
+            Out.WriteUInt16((UInt16)WorldPosition.Z);
+            Out.WriteUInt32((UInt32)WorldPosition.X);
+            Out.WriteUInt32((UInt32)WorldPosition.Y);
             Out.WriteUInt16(0); // Speed Z
             // 18
             Out.WriteUInt16(Spawn.Proto.Model1);
@@ -214,6 +218,13 @@ namespace WorldServer
         {
             Killer.QtsInterface.HandleEvent(Objective_Type.QUEST_KILL_MOB, Spawn.Entry,1);
             base.SetDeath(Killer);
+            EvtInterface.AddEvent(RezUnit, 60000, 1); // 60 seconde Rez
+        }
+
+        public override void RezUnit()
+        {
+            Region.CreateCreature(Spawn);
+            Dispose();
         }
 
         public override string ToString()

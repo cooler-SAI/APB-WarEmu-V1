@@ -55,8 +55,8 @@ namespace WorldServer
             UInt16 Oid = packet.GetUint16();
             packet.Skip(1);
             byte Faction = packet.GetUint8();
-            Log.Success("F_PLAYER_INFO", "Target de =" + Oid);
-            cclient.Plr.CbtInterface.SetTarget(Oid, (GameData.TargetTypes)Faction);
+
+            cclient.Plr.CbtInterface.SetTarget(cclient.Plr.Region.GetObject(Oid) as Unit);
         }
 
         [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_SWITCH_ATTACK_MODE, "onSwitchAttackMode")]
@@ -68,14 +68,13 @@ namespace WorldServer
 
             Player Plr = cclient.Plr;
 
-            Object Target = Plr.CbtInterface.GetObjectTarget();
-            if (Target == null)
+            if (!Plr.CbtInterface.HasTarget())
             {
                 Log.Error("F_SWITCH_ATTACK_MODE", "Target == null");
                 return;
             }
 
-            if (Plr.CbtInterface.Target.Type != GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY)
+            if (Plr.CbtInterface.GetTargetType() != GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY)
             {
                 Log.Error("F_SWITCH_ATTACK_MODE", "Invalide target !");
                 return;

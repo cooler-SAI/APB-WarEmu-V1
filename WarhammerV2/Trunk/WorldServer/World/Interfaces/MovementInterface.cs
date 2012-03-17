@@ -305,8 +305,6 @@ namespace WorldServer
 
             UpdateTickSpeed();
             Obj.EvtInterface.Notify("WalkTo", Obj, null);
-
-            Log.Info("TimeToMove", "Move =" + GetMsTimeToArriveAt(TargetPosition, speed));
             StartArriveAtTargetAction(GetMsTimeToArriveAt(TargetPosition, speed));
         }
         public virtual void Walk(short speed)

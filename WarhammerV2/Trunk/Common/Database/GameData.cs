@@ -142,13 +142,6 @@ namespace GameData
         LOOTROLL_GREED = 1,
     };
 
-    public enum pRealm
-    {
-        REALM_NONE = 0,
-        REALM_DESTRUCTION = 2,
-        REALM_ORDER = 1,
-    };
-
     public enum CityId
     {
         CITYID_EMPIRE = 3,
