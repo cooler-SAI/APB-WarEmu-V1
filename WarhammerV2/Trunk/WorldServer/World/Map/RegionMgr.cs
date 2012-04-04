@@ -316,9 +316,6 @@ namespace WorldServer
         }
         public bool AddObject(Object Obj,UInt16 ZoneId,bool MustUpdateRange=false)
         {
-            if(Obj.IsChapter())
-                Log.Success("AddObject", "RegionMgr : " + Obj.Name + "," + ZoneId);
-
             Zone_Info Info = GetZone_Info(ZoneId);
             if (Info == null)
                 return false;

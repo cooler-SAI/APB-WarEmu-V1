@@ -382,9 +382,20 @@ namespace WorldServer
 
             base.SetDeath(Killer);
 
-            EvtInterface.AddEvent(RezUnit, 20000, 1);
+            if(Killer.IsPlayer())
+                WorldMgr.GenerateRenown(Killer.GetPlayer(), this);
+
+            EvtInterface.AddEvent(RespawnPlayer, 20000, 1);
             SendDialog((ushort)5, (ushort)20);
-            
+        }
+
+        public void RespawnPlayer()
+        {
+            Zone_Respawn Respawn = WorldMgr.GetZoneRespawn(Zone.ZoneId, (byte)Realm, this);
+            if (Respawn != null)
+                SafePinTeleport(Respawn.PinX, Respawn.PinY, Respawn.PinZ, Respawn.WorldO);
+
+            RezUnit();
         }
 
         public override void RezUnit()
@@ -493,8 +504,8 @@ namespace WorldServer
             if (CurrentRenown == null)
                 return;
 
-            _Value.Renown = Rest;
             SetRenownLevel((byte)(_Value.RenownRank + 1));
+            AddRenown(Rest);
         }
 
         #endregion
@@ -721,6 +732,16 @@ namespace WorldServer
 
             base.SendMeTo(Plr);
         }
+        public void SendSwitchRegion(UInt16 ZoneID)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_SWITCH_REGION);
+            Out.WriteUInt16(ZoneID);
+            Out.Fill(0, 5);
+            Out.WriteByte(1);
+            Out.WriteByte(1);
+            Out.Fill(0, 11);
+            SendPacket(Out);
+        }
 
         #endregion
 
@@ -804,6 +825,56 @@ namespace WorldServer
             _Value.WorldO = Head;
 
             return Updated;
+        }
+
+        public void SafePinTeleport(UInt16 PinX, UInt16 PinY, UInt16 PinZ, UInt16 WorldO)
+        {
+            if (PinX == 0 || PinY == 0)
+                return;
+
+            Point3D World = ZoneMgr.CalculWorldPosition(Zone.Info, PinX, PinY, PinZ);
+            SafeWorldTeleport((UInt32)World.X, (UInt32)World.Y, (UInt16)World.Z, WorldO);
+        }
+
+        public void SafeWorldTeleport(UInt32 WorldX, UInt32 WorldY, UInt16 WorldZ, UInt16 WorldO)
+        {
+            if (WorldX == 0 || WorldY == 0)
+                return;
+
+            Log.Info("SafeWorldTeleport", "WorldX=" + WorldX + ",WorldY=" + WorldY);
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_JUMP);
+            Out.WriteUInt32(WorldX);
+            Out.WriteUInt32(WorldY);
+            Out.WriteUInt16(Oid);
+            Out.WriteUInt16(WorldZ);
+            Out.WriteUInt16(WorldO);
+            Out.Fill(0, 5);
+            Out.WriteByte(1);
+            SendPacket(Out);
+
+            X = Zone.CalculPin(WorldX, true);
+            Y = Zone.CalculPin(WorldY, true);
+        }
+
+        public void Teleport(UInt16 ZoneID, UInt32 WorldX, UInt32 WorldY, UInt16 WorldZ, UInt16 WorldO)
+        {
+            Zone_Info Info = WorldMgr.GetZone_Info(ZoneID);
+            if(Info == null)
+                return;
+
+            // Change Region , so change thread and maps
+            if (Zone == null || Zone.Info.Region != Info.Region)
+            {
+                RegionMgr NewRegion = WorldMgr.GetRegion(Info.Region, true);
+                if (NewRegion != null)
+                    if (NewRegion.AddObject(this, Info.ZoneId))
+                        SendSwitchRegion(Info.ZoneId);
+            }
+            else // Teleport in current Zone
+            {
+                SafeWorldTeleport(WorldX, WorldY, WorldZ, WorldO);
+            }
         }
 
         #endregion

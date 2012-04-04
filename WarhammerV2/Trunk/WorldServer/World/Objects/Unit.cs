@@ -425,7 +425,6 @@ namespace WorldServer
             CbtInterface.Evade();
 
             WorldMgr.GenerateXP(Killer, this);
-            WorldMgr.GenerateRenown(Killer.GetPlayer(), GetPlayer());
             GenerateLoot(Killer);
         }
 

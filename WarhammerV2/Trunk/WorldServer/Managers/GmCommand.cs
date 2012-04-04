@@ -82,6 +82,13 @@ namespace WorldServer
             new GmCommandHandler("remove",NpcRemove, null, 0, 1, "Delete the target (0=World,1=Database)"),
         };
 
+        static public List<GmCommandHandler> RespawnCommands = new List<GmCommandHandler>()
+        {
+            new GmCommandHandler("add",RespawnAdd, null, 0, 0, "Add respawn point to your position"),
+            new GmCommandHandler("modify",RespawnModify, null, 0, 1, "Modify existing point to you position <ID>"),
+            new GmCommandHandler("remove",RespawnRemove, null, 0, 1, "Delete existing point <ID>"),
+        };
+
         static public List<GmCommandHandler> BaseCommand = new List<GmCommandHandler>()
         {
             new GmCommandHandler("modify",null, ModifyCommands, 3, 0, "All command for modify player info"),
@@ -94,6 +101,7 @@ namespace WorldServer
             new GmCommandHandler("chapter",null, ChapterCommands, 3, 0, "All Chapter commands"),
             new GmCommandHandler("npc",null, NpcCommands, 3, 0, "All Npc commands"),
             new GmCommandHandler("revive",Revive, null, 3, 0, "Rez target Unit"),
+            new GmCommandHandler("respawn",null, RespawnCommands, 3, 0, "Respawn points"),
         };
 
         static public bool HandleCommand(Player Plr, string Text)
@@ -502,6 +510,61 @@ namespace WorldServer
 
             if (Database > 0)
                 WorldMgr.Database.DeleteObject(Obj.GetCreature().Spawn);
+
+            return true;
+        }
+
+        #endregion
+
+        #region Respawns
+
+        static public bool RespawnAdd(Player Plr, ref List<string> Values)
+        {
+            Zone_Respawn Respawn = new Zone_Respawn();
+            Respawn.PinX = (UInt16)Plr.X;
+            Respawn.PinY = (UInt16)Plr.Y;
+            Respawn.PinZ = (UInt16)Plr.Z;
+            Respawn.WorldO = Plr.Heading;
+            Respawn.ZoneID = Plr.Zone.ZoneId;
+            Respawn.Realm = (byte)Plr.Realm;
+            WorldMgr.Database.AddObject(Respawn);
+            WorldMgr.LoadZone_Respawn();
+
+            return true;
+        }
+
+        static public bool RespawnRemove(Player Plr, ref List<string> Values)
+        {
+            int ID = GetInt(ref Values);
+
+            Zone_Respawn Respawn = WorldMgr.Database.SelectObject<Zone_Respawn>("RespawnID=" + ID);
+            if (Respawn != null)
+            {
+                WorldMgr.Database.DeleteObject(Respawn);
+                WorldMgr.LoadZone_Respawn();
+            }
+            else
+                return false;
+
+            return true;
+        }
+
+        static public bool RespawnModify(Player Plr, ref List<string> Values)
+        {
+            int ID = GetInt(ref Values);
+
+            Zone_Respawn Respawn = WorldMgr.Database.SelectObject<Zone_Respawn>("RespawnID=" + ID);
+            if (Respawn == null)
+                return false;
+
+            Respawn.PinX = (UInt16)Plr.X;
+            Respawn.PinY = (UInt16)Plr.Y;
+            Respawn.PinZ = (UInt16)Plr.Z;
+            Respawn.WorldO = Plr.Heading;
+            Respawn.ZoneID = Plr.Zone.ZoneId;
+            Respawn.Realm = (byte)Plr.Realm;
+            WorldMgr.Database.SaveObject(Respawn);
+            WorldMgr.LoadZone_Respawn();
 
             return true;
         }

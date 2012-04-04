@@ -58,6 +58,7 @@ namespace WorldServer
             return _Zone_Info.FindAll(zone => zone != null && zone.Region == RegionId);
         }
 
+
         static public Dictionary<int, List<Zone_Area>> _Zone_Area;
 
         [LoadingFunction(true)]
@@ -138,6 +139,62 @@ namespace WorldServer
                 return new List<Zone_Area>();
             else
                 return Areas;
+        }
+
+
+        static public Dictionary<int, List<Zone_Respawn>> _Zone_Respawn;
+
+        [LoadingFunction(true)]
+        static public void LoadZone_Respawn()
+        {
+            Log.Debug("WorldMgr", "Loading LoadZone_Respawn...");
+
+            _Zone_Respawn = new Dictionary<int, List<Zone_Respawn>>();
+
+            IList<Zone_Respawn> Respawns = Database.SelectAllObjects<Zone_Respawn>();
+            foreach (Zone_Respawn Respawn in Respawns)
+            {
+                List<Zone_Respawn> L;
+                if (!_Zone_Respawn.TryGetValue(Respawn.ZoneID, out L))
+                {
+                    L = new List<Zone_Respawn>();
+                    _Zone_Respawn.Add(Respawn.ZoneID, L);
+                }
+
+                L.Add(Respawn);
+            }
+
+            Log.Success("LoadZone_Info", "Loaded " + Respawns.Count + " Zone_Respawn");
+        }
+
+        static public Zone_Respawn GetZoneRespawn(UInt16 ZoneID, byte Realm, Point3D PinPosition)
+        {
+            Zone_Respawn Respawn = null;
+            List<Zone_Respawn> Respawns;
+
+            if (_Zone_Respawn.TryGetValue(ZoneID, out Respawns))
+            {
+                float LastDistance = float.MaxValue;
+
+                foreach (Zone_Respawn Res in Respawns)
+                {
+                    if (Res.Realm != Realm)
+                        continue;
+
+                    Point3D Pos = new Point3D(Res.PinX, Res.PinY, Res.PinZ);
+                    float Distance = Pos.GetDistance(PinPosition);
+
+                    if (Distance < LastDistance)
+                    {
+                        LastDistance = Distance;
+                        Respawn = Res;
+                    }
+                }
+            }
+            else
+                Log.Error("WorldMgr", "Zone Respawn not found for : " + ZoneID);
+
+            return Respawn;
         }
 
         #endregion
@@ -934,61 +991,8 @@ namespace WorldServer
             LoadRegionSpawns();
             LoadChapters();
             LoadQuestsRelation();
-
-            //string Request = "UPDATE zone_areas,tok_infos SET zone_areas.TokExploreEntry = tok_infos.Entry WHERE zone_areas.`PieceId` != 0 AND tok_infos.`EventName` LIKE 'You have discovered%' AND tok_infos.`Flag`=zone_areas.`PieceId` AND tok_infos.`index` = zone_areas.`ZoneId`";
-
-            //foreach (Zone_Info Zone in _Zone_Info)
-            //{
-            //    /*if (Zone.ZoneId != 106)
-            //        continue;*/
-
-            //    Dictionary<byte, byte> Excepts = new Dictionary<byte, byte>();
-
-            //    foreach (Chapter_Info Info in GetChapters(Zone.ZoneId))
-            //    {
-            //        if (Info.InfluenceEntry == 0)
-            //            continue;
-
-            //            AreaMapInfo AreaMap = AreaMapMgr.GetAreaInfo(Info.ZoneId);
-            //            Zone_Area SelectedArea = null;
-            //            Zone_Area ToUpdateArea = Database.SelectObject<Zone_Area>("ZoneId=" + Info.ZoneId + " AND InfluenceId=" + Info.InfluenceEntry);
-
-            //            if (ToUpdateArea == null)
-            //                continue;
-
-            //            foreach (Zone_Area Area in AreaMap.Areas)
-            //            {
-            //                if (Excepts.ContainsKey(Area.PieceId) && Excepts[Area.PieceId] == ToUpdateArea.Realm)
-            //                    continue;
-
-            //                if (AreaMap.IsOnExploreArea(Area, Info.PinX, Info.PinY))
-            //                {
-            //                    SelectedArea = Area;
-            //                    break;
-            //                }
-
-            //                if (Area.IsOnArea(Info.PinX, Info.PinY))
-            //                    SelectedArea = Area;
-            //            }
-
-            //            if (SelectedArea != null)
-            //            {
-            //                //Log.Info("Update", "Piece=" + SelectedArea.PieceId + ",Influence=" + Info.InfluenceEntry + ",Realm=" + ToUpdateArea.Realm);
-
-            //                if (!Excepts.ContainsKey(SelectedArea.PieceId))
-            //                    Excepts.Add(SelectedArea.PieceId, 0);
-
-            //                Excepts[SelectedArea.PieceId] = ToUpdateArea.Realm;
-            //                ToUpdateArea.PieceId = SelectedArea.PieceId;
-            //            }
-            //            else
-            //                ToUpdateArea.PieceId = 0;
-
-            //            ToUpdateArea.Dirty = true;
-            //            Database.SaveObject(ToUpdateArea);
-            //        }
-            //}
         }
+
         static public void LoadRegionSpawns()
         {
             long InvalidSpawns = 0;
@@ -1132,6 +1136,58 @@ namespace WorldServer
                     else
                         Q.Rewards[Info] += Count;
                 }
+            }
+        }
+        static public void RemoveDoubleSpawns()
+        {
+            uint Space = 250;
+            int[] Removed = new int[255];
+
+            Zone_Info Info = null;
+            foreach (CellSpawns[,] Cell in _RegionCells.Values)
+            {
+                for (int i = 0; i < Cell.GetLength(0); ++i)
+                {
+                    for (int y = 0; y < Cell.GetLength(1); ++y)
+                    {
+                        if (Cell[i, y] == null)
+                            continue;
+
+                        foreach (Creature_spawn Sp in Cell[i, y].CreatureSpawns.ToArray())
+                        {
+                            if (Sp.Proto == null || GetStartQuests(Sp.Proto.Entry) != null)
+                                continue;
+
+                            if (Info == null || Info.ZoneId != Sp.ZoneId)
+                                Info = GetZone_Info(Sp.ZoneId);
+
+                            foreach (Creature_spawn SubSp in Cell[i, y].CreatureSpawns.ToArray())
+                            {
+                                if (SubSp.Proto == null || Sp.Entry != SubSp.Entry || Sp == SubSp)
+                                    continue;
+
+                                if (ZoneMgr.CalculPin(Info, Sp.WorldX, true) > ZoneMgr.CalculPin(Info, SubSp.WorldX, true) + Space || ZoneMgr.CalculPin(Info, Sp.WorldX, true) < ZoneMgr.CalculPin(Info, SubSp.WorldX, true) - Space)
+                                    continue;
+
+                                if (ZoneMgr.CalculPin(Info, Sp.WorldY, false) > ZoneMgr.CalculPin(Info, SubSp.WorldY, false) + Space || ZoneMgr.CalculPin(Info, Sp.WorldY, false) < ZoneMgr.CalculPin(Info, SubSp.WorldY, false) - Space)
+                                    continue;
+
+                                /*if (Sp.WorldZ > SubSp.WorldZ/2 + Space || Sp.WorldZ < SubSp.WorldZ/2 - Space)
+                                    continue;*/
+
+                                Removed[SubSp.ZoneId]++;
+                                SubSp.Proto = null;
+                                Database.DeleteObject(SubSp);
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int i = 0; i < 255; ++i)
+            {
+                if (Removed[i] != 0)
+                    Log.Info("Removed", "Zone : " + i + " : " + Removed[i]);
             }
         }
 

@@ -60,10 +60,10 @@ namespace WorldServer
         static public ushort GenerateWounds(byte Level, byte Rank)
         {
             float Wounds = 0;
-            Wounds += 52 * (Level + 1);
+            Wounds += 92 * (Level + 1);
             Wounds += Level * 2.5f;
             if (Rank > 0)
-                Wounds += Rank * (5.85f * Level * 52);
+                Wounds += Rank * (5.85f * Level * 92);
             return (ushort)(Wounds/10);
         }
         public override void OnLoad()
