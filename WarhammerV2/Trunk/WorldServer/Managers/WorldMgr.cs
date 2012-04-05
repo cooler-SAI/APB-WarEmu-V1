@@ -141,7 +141,6 @@ namespace WorldServer
                 return Areas;
         }
 
-
         static public Dictionary<int, List<Zone_Respawn>> _Zone_Respawn;
 
         [LoadingFunction(true)]
@@ -195,6 +194,62 @@ namespace WorldServer
                 Log.Error("WorldMgr", "Zone Respawn not found for : " + ZoneID);
 
             return Respawn;
+        }
+
+
+        static public Dictionary<UInt16, Zone_Taxi[]> _Zone_Taxi = new Dictionary<UInt16, Zone_Taxi[]>();
+
+        [LoadingFunction(true)]
+        static public void LoadZone_Taxi()
+        {
+            Log.Debug("LoadZone_Info", "Loading Zone_Taxis...");
+
+            IList<Zone_Taxi> Taxis = Database.SelectAllObjects<Zone_Taxi>();
+            _Zone_Taxi = new Dictionary<UInt16, Zone_Taxi[]>();
+
+            foreach (Zone_Taxi Taxi in Taxis)
+            {
+                Zone_Taxi[] Tax;
+                if(!_Zone_Taxi.TryGetValue(Taxi.ZoneID,out Tax))
+                {
+                    Tax = new Zone_Taxi[(int)(GameData.Realms.REALMS_NUM_REALMS) + 1];
+                    _Zone_Taxi.Add(Taxi.ZoneID,Tax);
+                }
+                 
+                _Zone_Taxi[Taxi.ZoneID][Taxi.RealmID]= Taxi;
+            }
+
+            Log.Success("LoadZone_Info", "Loaded " + Taxis.Count + " Zone_Taxis");
+        }
+
+        static public Zone_Taxi GetZoneTaxi(UInt16 ZoneId, byte Realm)
+        {
+            Zone_Taxi[] Taxis;
+            if (_Zone_Taxi.TryGetValue(ZoneId, out Taxis))
+                return Taxis[Realm];
+
+            return null;
+        }
+
+        static public List<Zone_Taxi> GetTaxis(Player Plr)
+        {
+            List<Zone_Taxi> L = new List<Zone_Taxi>();
+
+            foreach (Zone_Taxi[] Taxis in WorldMgr._Zone_Taxi.Values)
+            {
+                if (Taxis[(byte)Plr.Realm] == null || Taxis[(byte)Plr.Realm].WorldX == 0)
+                    continue;
+
+                if(Taxis[(byte)Plr.Realm].Info == null)
+                    Taxis[(byte)Plr.Realm].Info = WorldMgr.GetZone_Info(Taxis[(byte)Plr.Realm].ZoneID);
+                
+                if (Taxis[(byte)Plr.Realm].Info == null)
+                    continue;
+
+                L.Add(Taxis[(byte)Plr.Realm]);
+            }
+
+            return L;
         }
 
         #endregion

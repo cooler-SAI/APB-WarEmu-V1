@@ -82,12 +82,14 @@ namespace WorldServer
             Y = Zone.CalculPin((uint)(Spawn.WorldY), false);
             Z = (ushort)(Spawn.WorldZ * 2);
 
-            int HeightMap = HeightMapMgr.GetHeight(Zone.ZoneId, X, Y);
+
+            // TODO : Bad Height Formula
+            /*int HeightMap = HeightMapMgr.GetHeight(Zone.ZoneId, X, Y);
             if (Z < HeightMap)
             {
                 Log.Error("Creature", "["+Spawn.Entry+"] Invalid Height : Min=" + HeightMap + ",Z=" + Z);
                 return;
-            }
+            }*/
 
             Heading = (ushort)Spawn.WorldO;
             WorldPosition.X = Spawn.WorldX;
@@ -204,6 +206,34 @@ namespace WorldServer
                                 Plr.SendPacket(Out);
                             }
                         } break;
+
+                    case GameData.InteractType.INTERACTTYPE_FLIGHT_MASTER:
+                        {
+                            byte[] data = new byte[62]
+		                    {
+			                    0x01,0xF4,0x00,0x00,0x00,0x00,0x00,0x00,0x64,0x42,0x39,0x00,0x00,0x00,0xC0,0xE3,
+			                    0x03,0x39,0xA0,0xD1,0x6F,0x00,0xC8,0xA8,0x1D,0x37,0x28,0x94,0x79,0x33,0xB2,0x24,
+			                    0x32,0x44,0xDB,0xD7,0x1C,0x5D,0x18,0x5D,0xDD,0x1C,0xA4,0x0D,0x00,0x00,0xA8,0x6B,
+			                    0x21,0x36,0x11,0x00,0x00,0x00,0xC8,0xD0,0xAF,0x3A,0x78,0xD1,0x6F,0x00
+		                    };
+
+                            UInt16 Counts = 1;
+                            Zone_Info Info;
+
+                            PacketOut Out = new PacketOut((byte)Opcodes.F_INTERACT_RESPONSE);
+                            Out.WriteUInt16(0x0A12);
+                            foreach (Zone_Taxi Taxi in WorldMgr.GetTaxis(Plr))
+                            {
+                                Out.WriteUInt16(Counts);
+                                Out.WriteByte(2);
+                                Out.WriteUInt16(Taxi.Info.Price);
+                                Out.WriteUInt16(Taxi.Info.ZoneId);
+                                Out.WriteByte(1);
+                                ++Counts;
+                            }
+                            Out.Write(data);
+                            Plr.SendPacket(Out);
+                        }break;
 
                     default:
                         QtsInterface.HandleInteract(Plr, Menu);

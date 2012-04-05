@@ -56,7 +56,7 @@ namespace WorldServer
         public List<Object> _Objects = new List<Object>();
         public List<Player> _Players = new List<Player>();
 
-        public Object GetObject(int Id)
+        public Object GetObject(ushort Id)
         {
             lock (_Objects)
                 return _Objects.Find(obj => obj != null && obj.Oid == Id);
@@ -68,7 +68,11 @@ namespace WorldServer
         public void AddObject(Object Obj)
         {
             if (Obj.Zone == this)
+            {
+                Log.Error("ZoneMgr", "Object Already in zone : " + ZoneId);
                 return;
+            }
+
 
             if (Obj.Zone != null && Obj.Zone != this)
                 Obj.Zone.RemoveObject(Obj);
@@ -93,6 +97,7 @@ namespace WorldServer
                 if (Obj.IsPlayer())
                     _Players.Remove(Obj.GetPlayer());
             }
+
             Obj._ZoneMgr = null;
         }
         public bool Run()

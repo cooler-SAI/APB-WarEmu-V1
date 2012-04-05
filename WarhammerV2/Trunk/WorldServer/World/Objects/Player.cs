@@ -859,6 +859,8 @@ namespace WorldServer
 
         public void Teleport(UInt16 ZoneID, UInt32 WorldX, UInt32 WorldY, UInt16 WorldZ, UInt16 WorldO)
         {
+            Log.Info("Player", "Teleport : " + ZoneID + "," + WorldX + "," + WorldY + "," + WorldZ);
+
             Zone_Info Info = WorldMgr.GetZone_Info(ZoneID);
             if(Info == null)
                 return;
@@ -868,12 +870,32 @@ namespace WorldServer
             {
                 RegionMgr NewRegion = WorldMgr.GetRegion(Info.Region, true);
                 if (NewRegion != null)
-                    if (NewRegion.AddObject(this, Info.ZoneId))
-                        SendSwitchRegion(Info.ZoneId);
+                {
+                    ZoneMgr NewZone = NewRegion.GetZoneMgr(Info.ZoneId, true);
+                    Teleport(NewZone, WorldX, WorldY, WorldZ, WorldO);
+                }
             }
             else // Teleport in current Zone
             {
                 SafeWorldTeleport(WorldX, WorldY, WorldZ, WorldO);
+            }
+        }
+
+        public void Teleport(ZoneMgr NewZone, UInt32 WorldX, UInt32 WorldY, UInt16 WorldZ, UInt16 WorldO)
+        {
+            if (Zone == NewZone)
+                SafeWorldTeleport(WorldX, WorldY, WorldZ, WorldO);
+            else
+            {
+                _Value.WorldX = (int)WorldX;
+                _Value.WorldZ = (int)WorldZ;
+                _Value.WorldY = (int)WorldY;
+                _Value.WorldO = WorldO;
+                _Value.ZoneId = NewZone.ZoneId;
+                _Value.RegionId = NewZone.Info.Region;
+
+                if (NewZone.Region.AddObject(this, NewZone.ZoneId))
+                    SendSwitchRegion(NewZone.ZoneId);
             }
         }
 

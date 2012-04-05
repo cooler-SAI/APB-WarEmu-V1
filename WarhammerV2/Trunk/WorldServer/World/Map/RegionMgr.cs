@@ -318,7 +318,10 @@ namespace WorldServer
         {
             Zone_Info Info = GetZone_Info(ZoneId);
             if (Info == null)
+            {
+                Log.Error("RegionMgr", "Invalid Zone Id : " + ZoneId);
                 return false;
+            }
 
             if (Obj.Region == null || (Obj.Region != null && Obj.Region != this))
             {

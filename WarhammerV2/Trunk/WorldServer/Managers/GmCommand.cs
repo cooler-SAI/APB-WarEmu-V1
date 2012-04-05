@@ -89,6 +89,13 @@ namespace WorldServer
             new GmCommandHandler("remove",RespawnRemove, null, 0, 1, "Delete existing point <ID>"),
         };
 
+        static public List<GmCommandHandler> TeleportCommands = new List<GmCommandHandler>()
+        {
+            new GmCommandHandler("map",TeleportMap, null, 0, 4, "Teleport to point <zoneid,Wx,Wy,Wz>"),
+            new GmCommandHandler("appear",TeleportAppear, null, 0, 1, "Appear to player <name>"),
+            new GmCommandHandler("summon",TeleportSummon, null, 0, 1, "Summon player <name>"),
+        };
+
         static public List<GmCommandHandler> BaseCommand = new List<GmCommandHandler>()
         {
             new GmCommandHandler("modify",null, ModifyCommands, 3, 0, "All command for modify player info"),
@@ -102,6 +109,7 @@ namespace WorldServer
             new GmCommandHandler("npc",null, NpcCommands, 3, 0, "All Npc commands"),
             new GmCommandHandler("revive",Revive, null, 3, 0, "Rez target Unit"),
             new GmCommandHandler("respawn",null, RespawnCommands, 3, 0, "Respawn points"),
+            new GmCommandHandler("teleport",null, TeleportCommands, 3, 0, "Teleport commands"),
         };
 
         static public bool HandleCommand(Player Plr, string Text)
@@ -565,6 +573,59 @@ namespace WorldServer
             Respawn.Realm = (byte)Plr.Realm;
             WorldMgr.Database.SaveObject(Respawn);
             WorldMgr.LoadZone_Respawn();
+
+            return true;
+        }
+
+        #endregion
+
+        #region Teleport
+
+        static public bool TeleportMap(Player Plr, ref List<string> Values)
+        {
+            int ZoneID = GetInt(ref Values);
+            int WorldX = GetInt(ref Values);
+            int WorldY = GetInt(ref Values);
+            int WorldZ = GetInt(ref Values);
+
+            Plr.Teleport((UInt16)ZoneID, (uint)WorldX, (uint)WorldY, (UInt16)WorldZ, 0);
+
+            return true;
+        }
+
+        static public bool TeleportAppear(Player Plr, ref List<string> Values)
+        {
+            string PlayerName = GetString(ref Values);
+
+            Player Target = Player.GetPlayer(PlayerName);
+
+            if (Target == null)
+            {
+                Plr.SendMessage(0, "Server", "Player not found :" + PlayerName, SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+                return false;
+            }
+
+            if (Target.Zone == null)
+                return false;
+
+            Plr.Teleport(Target.Zone, (uint)Target.WorldPosition.X, (uint)Target.WorldPosition.Y, (UInt16)Target.WorldPosition.Z, 0);
+
+            return true;
+        }
+
+        static public bool TeleportSummon(Player Plr, ref List<string> Values)
+        {
+            string PlayerName = GetString(ref Values);
+
+            Player Target = Player.GetPlayer(PlayerName);
+
+            if (Target == null)
+            {
+                Plr.SendMessage(0, "Server", "Player not found :" + PlayerName, SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+                return false;
+            }
+
+            Target.Teleport(Plr.Zone, (uint)Plr.WorldPosition.X, (uint)Plr.WorldPosition.Y, (UInt16)Plr.WorldPosition.Z, 0);
 
             return true;
         }

@@ -37,7 +37,7 @@ namespace Common
         private byte _MaxLevel;
         private int _Type;
         private int _Tier;
-        private int _Price;
+        private UInt16 _Price;
         private UInt16 _Region;
         private int _OffX;
         private int _OffY;
@@ -85,7 +85,7 @@ namespace Common
         }
 
         [DataElement(AllowDbNull = false)]
-        public int Price
+        public UInt16 Price
         {
             get { return _Price; }
             set { _Price = value; Dirty = true; }

@@ -268,5 +268,40 @@ namespace WorldServer
         {
             GameClient cclient = client as GameClient;
         }
+
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_FLIGHT, "F_FLIGHT")]
+        static public void F_FLIGHT(BaseClient client, PacketIn packet)
+        {
+            GameClient cclient = client as GameClient;
+
+            UInt16 TargetOID = packet.GetUint16();
+            UInt16 State = packet.GetUint16();
+
+            Log.Info("F_FLIGHT", "TargetOid = " + TargetOID + ",State=" + State);
+
+            if (State == 20) // Flight Master
+            {
+                Object Obj = cclient.Plr.Zone.GetObject(TargetOID);
+                if (Obj == null || !Obj.IsCreature())
+                {
+                    Log.Error("F_FLIGHT", "Invalid Creature OID : " + TargetOID);
+                    return;
+                }
+
+                UInt16 FlyID = packet.GetUint16();
+
+                List<Zone_Taxi> Taxis = WorldMgr.GetTaxis(cclient.Plr);
+                if (Taxis.Count <= FlyID - 1)
+                    return;
+
+                if (!cclient.Plr.RemoveMoney(Taxis[FlyID - 1].Info.Price))
+                {
+                    cclient.Plr.SendLocalizeString("", GameData.Localized_text.TEXT_MERCHANT_INSUFFICIENT_MONEY_TO_BUY);
+                    return;
+                }
+
+                cclient.Plr.Teleport(Taxis[FlyID - 1].ZoneID, Taxis[FlyID - 1].WorldX, Taxis[FlyID - 1].WorldY, Taxis[FlyID - 1].WorldZ, Taxis[FlyID - 1].WorldO);
+            }
+        }
     }
 }
