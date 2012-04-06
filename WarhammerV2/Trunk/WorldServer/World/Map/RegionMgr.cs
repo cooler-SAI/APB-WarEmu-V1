@@ -34,6 +34,7 @@ namespace WorldServer
         public List<Creature_spawn> CreatureSpawns = new List<Creature_spawn>();
         public List<GameObject_spawn> GameObjectSpawns = new List<GameObject_spawn>();
         public List<Chapter_Info> ChapterSpawns = new List<Chapter_Info>();
+        public List<PQuest_Info> PublicQuests = new List<PQuest_Info>();
 
         public CellSpawns(UInt16 RegionId,UInt16 X,UInt16 Y)
         {
@@ -58,6 +59,14 @@ namespace WorldServer
             Chapter.OffY = Y;
 
             ChapterSpawns.Add(Chapter);
+        }
+
+        public void AddPQuest(PQuest_Info PQuest)
+        {
+            PQuest.OffX = X;
+            PQuest.OffY = Y;
+
+            PublicQuests.Add(PQuest);
         }
     };
 
@@ -465,6 +474,13 @@ namespace WorldServer
         {
             ChapterObject Obj = new ChapterObject(Chapter);
             AddObject(Obj, Chapter.ZoneId);
+            return Obj;
+        }
+
+        public PQuestObject CreatePQuest(PQuest_Info Quest)
+        {
+            PQuestObject Obj = new PQuestObject(Quest);
+            AddObject(Obj, Quest.ZoneId);
             return Obj;
         }
 

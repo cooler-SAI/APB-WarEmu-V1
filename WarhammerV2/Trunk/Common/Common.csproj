@@ -104,6 +104,8 @@
     <Compile Include="Database\World\Maps\Zone_Area.cs" />
     <Compile Include="Database\World\Maps\Zone_Respawn.cs" />
     <Compile Include="Database\World\Maps\Zone_Taxi.cs" />
+    <Compile Include="Database\World\PQuests\PQuest_Info.cs" />
+    <Compile Include="Database\World\PQuests\PQuest_Objective.cs" />
     <Compile Include="Database\World\Quests\Quests.cs" />
     <Compile Include="Database\World\Quests\Quests_Creature_Finisher.cs" />
     <Compile Include="Database\World\Quests\Quests_Creature_Starter.cs" />

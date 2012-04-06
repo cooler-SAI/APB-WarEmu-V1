@@ -9,7 +9,7 @@ namespace Common
 {
     [DataTable(PreCache = false, TableName = "Character_influences", DatabaseName = "Characters")]
     [Serializable]
-    class Characters_influence : DataObject
+    public class Characters_influence : DataObject
     {
         [DataElement(AllowDbNull = false)]
         public int CharacterId;

@@ -124,6 +124,7 @@
     <Compile Include="World\Objects\GameObject.cs" />
     <Compile Include="World\Objects\Object.cs" />
     <Compile Include="World\Objects\Player.cs" />
+    <Compile Include="World\Objects\PQuestObject.cs" />
     <Compile Include="World\Objects\Unit.cs" />
     <Compile Include="World\Positions\IPoint2D.cs" />
     <Compile Include="World\Positions\IPoint3D.cs" />

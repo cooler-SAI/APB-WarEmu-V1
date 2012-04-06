@@ -317,6 +317,88 @@ namespace WorldServer
 
         #endregion
 
+        #region Public Quests
+
+        static public Dictionary<uint, PQuest_Info> _PQuests;
+
+        [LoadingFunction(true)]
+        static public void LoadPQuest_Info()
+        {
+            _PQuests = new Dictionary<uint, PQuest_Info>();
+
+            IList<PQuest_Info> PQuests = Database.SelectObjects<PQuest_Info>("PinX != 0 AND PinY != 0");
+
+            foreach (PQuest_Info Info in PQuests)
+            {
+                _PQuests.Add(Info.Entry, Info);
+            }
+
+            Log.Success("WorldMgr", "Loaded " + _PQuests.Count + " Public Quests Info");
+        }
+
+        static public Dictionary<uint, List<PQuest_Objective>> _PQuest_Objectives;
+
+        [LoadingFunction(true)]
+        static public void LoadPQuest_Objective()
+        {
+            _PQuest_Objectives = new Dictionary<uint, List<PQuest_Objective>>();
+
+            IList<PQuest_Objective> PObjectives = Database.SelectObjects<PQuest_Objective>("Type != 0");
+
+            foreach (PQuest_Objective Obj in PObjectives)
+            {
+                List<PQuest_Objective> Objs;
+                if (!_PQuest_Objectives.TryGetValue(Obj.Entry, out Objs))
+                {
+                    Objs = new List<PQuest_Objective>();
+                    _PQuest_Objectives.Add(Obj.Entry, Objs);
+                }
+
+                Objs.Add(Obj);
+            }
+
+            Log.Success("WorldMgr", "Loaded " + PObjectives.Count + " Public Quest Objectives");
+        }
+
+        static public void GeneratePQuestObjective(PQuest_Objective Obj, PQuest_Info Q)
+        {
+            switch ((Objective_Type)Obj.Type)
+            {
+                case Objective_Type.QUEST_KILL_PLAYERS:
+                    {
+                        if (Obj.Description.Length < 1)
+                            Obj.Description = "Enemy Players";
+                    } break;
+
+                case Objective_Type.QUEST_SPEACK_TO:
+                    goto case Objective_Type.QUEST_KILL_MOB;
+
+                case Objective_Type.QUEST_KILL_MOB:
+                    {
+                        uint ObjID = 0;
+                        uint.TryParse(Obj.ObjectId, out ObjID);
+
+                        if (ObjID != 0)
+                            Obj.Creature = GetCreatureProto(ObjID);
+
+                        if (Obj.Description.Length < 1 && Obj.Creature != null)
+                            Obj.Description = Obj.Creature.Name;
+                    } break;
+
+                case Objective_Type.QUEST_GET_ITEM:
+                    {
+                        uint ObjID = 0;
+                        uint.TryParse(Obj.ObjectId, out ObjID);
+
+                        if (ObjID != 0)
+                            Obj.Item = GetItem_Info(ObjID);
+                    }
+                    break;
+            };
+        }
+
+        #endregion
+
         #region Toks
 
         static public Dictionary<uint, Tok_Info> _Toks;
@@ -1066,6 +1148,7 @@ namespace WorldServer
 
             LoadRegionSpawns();
             LoadChapters();
+            LoadPublicQuests();
             LoadQuestsRelation();
         }
 
@@ -1181,6 +1264,30 @@ namespace WorldServer
 
             if (InvalidChapters > 0)
                 Log.Error("LoadChapters", "[" + InvalidChapters + "] Invalid Chapter(s)");
+        }
+        static public void LoadPublicQuests()
+        {
+            Zone_Info Zone = null;
+            foreach (PQuest_Info Info in _PQuests.Values)
+            {
+                Zone = GetZone_Info(Info.ZoneId);
+                if (Zone == null)
+                    continue;
+
+
+                if (!_PQuest_Objectives.TryGetValue(Info.Entry, out Info.Objectives))
+                    Info.Objectives = new List<PQuest_Objective>();
+                else
+                {
+                    foreach (PQuest_Objective Obj in Info.Objectives)
+                    {
+                        Obj.Quest = Info;
+                        GeneratePQuestObjective(Obj, Obj.Quest);
+                    }
+                }
+
+                GetRegionCell(Zone.Region, (ushort)((float)(Info.PinX / 4096) + Zone.OffX), (ushort)((float)(Info.PinY / 4096) + Zone.OffY)).AddPQuest(Info);
+            }
         }
         static public void LoadQuestsRelation()
         {

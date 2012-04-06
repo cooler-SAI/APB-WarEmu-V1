@@ -91,6 +91,9 @@ namespace WorldServer
             foreach (Chapter_Info Spawn in Spawns.ChapterSpawns)
                 Region.CreateChapter(Spawn);
 
+            foreach (PQuest_Info Quest in Spawns.PublicQuests)
+                Region.CreatePQuest(Quest);
+
             _Loaded = true;
         }
 
