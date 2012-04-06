@@ -79,10 +79,12 @@
     <Compile Include="Database\Character\Characters_socials.cs" />
     <Compile Include="Database\Character\Characters_tok.cs" />
     <Compile Include="Database\Character\Characters_ability.cs" />
+    <Compile Include="Database\Character\Characters_influence.cs" />
     <Compile Include="Database\GameData.cs" />
     <Compile Include="Database\SystemData.cs" />
     <Compile Include="Database\World\Ability\AbilityInfo.cs" />
     <Compile Include="Database\World\Chapters\Chapter_Info.cs" />
+    <Compile Include="Database\World\Chapters\Chapter_Reward.cs" />
     <Compile Include="Database\World\Characters\CharacterInfo.cs" />
     <Compile Include="Database\World\Characters\CharacterInfo_item.cs" />
     <Compile Include="Database\World\Characters\CharacterInfo_stats.cs" />

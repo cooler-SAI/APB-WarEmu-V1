@@ -294,6 +294,27 @@ namespace WorldServer
             return Chapters;
         }
 
+        static public Dictionary<uint, List<Chapter_Reward>> _Chapters_Reward;
+
+        [LoadingFunction(true)]
+        static public void LoadChapter_Rewards()
+        {
+            Log.Debug("WorldMgr", "Loading LoadChapter_Rewards...");
+
+            _Chapters_Reward = new Dictionary<uint, List<Chapter_Reward>>();
+            IList<Chapter_Reward> Rewards = Database.SelectAllObjects<Chapter_Reward>();
+
+            foreach (Chapter_Reward Reward in Rewards)
+            {
+                if (!_Chapters_Reward.ContainsKey(Reward.Entry))
+                    _Chapters_Reward.Add(Reward.Entry, new List<Chapter_Reward>());
+
+                _Chapters_Reward[Reward.Entry].Add(Reward);
+            }
+
+            Log.Success("LoadChapter_Infos", "Loaded " + Rewards.Count + " Chapter_Rewards");
+        }
+
         #endregion
 
         #region Toks
@@ -1138,6 +1159,21 @@ namespace WorldServer
                 }
                 else
                 {
+                    List<Chapter_Reward> Rewards;
+                    if (_Chapters_Reward.TryGetValue(Info.Entry, out Rewards))
+                        Info.Rewards = Rewards;
+                    else
+                        Info.Rewards = new List<Chapter_Reward>();
+
+                    foreach (Chapter_Reward Reward in Info.Rewards.ToArray())
+                    {
+                        Reward.Item = GetItem_Info(Reward.ItemId);
+                        Reward.Chapter = Info;
+
+                        if (Reward.Item == null)
+                            Info.Rewards.Remove(Reward);
+                    }
+
                     GetRegionCell(Zone.Region, (ushort)((float)(Info.PinX / 4096) + Zone.OffX), (ushort)((float)(Info.PinY / 4096) + Zone.OffY)).AddChapter(Info);
                 }
 

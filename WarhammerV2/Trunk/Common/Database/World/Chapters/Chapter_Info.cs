@@ -65,5 +65,7 @@ namespace Common
 
         public ushort OffX;
         public ushort OffY;
+        public UInt32 MaxInflu;
+        public List<Chapter_Reward> Rewards;
     }
 }

@@ -162,5 +162,8 @@ namespace Common
 
         [Relation(LocalField = "CharacterId", RemoteField = "CharacterId", AutoLoad = true, AutoDelete = true)]
         public Character_quest[] Quests;
+
+        [Relation(LocalField = "CharacterId", RemoteField = "CharacterId", AutoLoad = true, AutoDelete = true)]
+        public Characters_influence[] Influences;
     }
 }
