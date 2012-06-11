@@ -102,10 +102,14 @@ namespace WorldServer
 
         public override void SendInteract(Player Plr, InteractMenu Menu)
         {
+            Tok_Info Info = WorldMgr.GetTok((UInt32)Spawn.Proto.TokUnlock);
+
             if (!IsDead)
             {
                 Plr.QtsInterface.HandleEvent(Objective_Type.QUEST_USE_GO, Spawn.Entry, 1);
             }
+
+            Plr.TokInterface.AddTok(Info.Entry);
 
             base.SendInteract(Plr, Menu);
         }

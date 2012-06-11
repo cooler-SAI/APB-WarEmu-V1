@@ -516,7 +516,7 @@ namespace WorldServer
 
             return false;
         }
-        static public bool CanUse(Item_Info Info, Player Plr, bool IgnoreLevel, bool IgnoreSkills, bool IgnoreRace,bool IgnoreCareer)
+        static public bool CanUse(Item_Info Info, Player Plr, bool IgnoreLevel, bool IgnoreSkills, bool IgnoreRace, bool IgnoreCareer, bool IgnoreRenown)
         {
             if (!IgnoreSkills)
             {
@@ -553,6 +553,12 @@ namespace WorldServer
                     return false;
             }
 
+            if (!IgnoreRenown)
+            {
+                if (Plr.Renown < Info.MinRenown)
+                    return false;
+            }
+
             return true;
         }
 
@@ -568,7 +574,7 @@ namespace WorldServer
             {
                 Player Plr = Obj.GetPlayer();
 
-                if (!CanUse(Itm.Info, Plr, false, false, false, false))
+                if (!CanUse(Itm.Info, Plr, false, false, false, false, false))
                     return false;
 
                 EquipSlot ESlot = (EquipSlot)Slot;

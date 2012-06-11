@@ -428,7 +428,7 @@ namespace WorldServer
         }
         public void AddXp(uint Xp)
         {
-            if (CurrentXp == null)
+            if (CurrentXp == null || _Value.XpMode == 1)
                 return;
 
             if (Xp + _Value.Xp > CurrentXp.Xp)

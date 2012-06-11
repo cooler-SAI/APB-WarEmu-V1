@@ -442,6 +442,11 @@ namespace WorldServer
             Out.WritePascalString(Q.Name);
             Out.WriteUInt16((UInt16)Q.OnCompletionQuest.Length);
             Out.WriteStringBytes(Q.OnCompletionQuest);
+            if (Particular)
+            {
+                Out.WriteUInt16((UInt16)Q.Particular.Length);
+                Out.WriteStringBytes(Q.Particular);
+            }
             Out.WriteByte(1);
             Out.WriteUInt32(Q.Gold);
             Out.WriteUInt32(Q.Xp);
@@ -658,7 +663,7 @@ namespace WorldServer
             Dictionary<Item_Info,uint> Rewards = new Dictionary<Item_Info,uint>();
 
             foreach (KeyValuePair<Item_Info, uint> Kp in Q.Rewards)
-                if (ItemsInterface.CanUse(Kp.Key, Plr, true, false, false, false))
+                if (ItemsInterface.CanUse(Kp.Key, Plr, true, false, false, false, false))
                     Rewards.Add(Kp.Key, Kp.Value);
 
             return Rewards;

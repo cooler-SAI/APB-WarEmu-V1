@@ -179,10 +179,10 @@ namespace WorldServer
             Out.WriteByte(Info.MinRank);
 
             Out.WriteByte((byte)(Info.MinRank + 1)); // 1.3.5
-            Out.WriteByte(0); // 1.3.5
+            Out.WriteByte(Info.MinRenown); // 1.3.5
 
             Out.WriteByte(Info.MinRenown);
-            Out.WriteByte(0);
+            Out.WriteByte(Info.MinRenown);
             Out.WriteByte(Info.Rarity);
             Out.WriteByte(Info.Bind);
             Out.WriteByte(Info.Race);

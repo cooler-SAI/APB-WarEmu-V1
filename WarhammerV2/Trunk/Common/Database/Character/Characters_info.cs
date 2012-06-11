@@ -34,6 +34,7 @@ namespace Common
         private int _CharacterId;
         private byte _Level;
         private uint _Xp;
+        private int _XpMode;
         private int _RestXp;
         private uint _Renown;
         private byte _RenownRank;
@@ -75,6 +76,13 @@ namespace Common
         {
             get { return _Xp; }
             set { _Xp = value; Dirty = true; }
+        }
+
+        [DataElement(AllowDbNull = false)]
+        public int XpMode
+        {
+            get { return _XpMode; }
+            set { _XpMode = value; Dirty = true; }
         }
 
         [DataElement(AllowDbNull = false)]

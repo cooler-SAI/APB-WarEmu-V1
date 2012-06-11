@@ -110,6 +110,7 @@ namespace WorldServer
             new GmCommandHandler("revive",Revive, null, 3, 0, "Rez target Unit"),
             new GmCommandHandler("respawn",null, RespawnCommands, 3, 0, "Respawn points"),
             new GmCommandHandler("teleport",null, TeleportCommands, 3, 0, "Teleport commands"),
+            new GmCommandHandler("xpmode",XpMode, null, 3, 0, "XpMode System"),
         };
 
         static public bool HandleCommand(Player Plr, string Text)
@@ -631,6 +632,28 @@ namespace WorldServer
         }
 
         #endregion
+
+        static public bool XpMode(Player Plr, ref List<string> Values)
+        {
+            string XpMode = "XpMode Off";
+            string XpMode2 = "XpMode On";
+            int CharacterId = Plr.GetPlayer().CharacterId;
+            Player Target = Player.GetPlayer(CharacterId);
+            Target = Plr;
+
+            if (Target._Value.XpMode == 0)
+            {
+                Target._Value.XpMode = 1;
+                Plr.SendMessage(0, "", XpMode, SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+            }
+            else
+            {
+                Target._Value.XpMode = 0;
+                Plr.SendMessage(0, "", XpMode2, SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+            }
+
+            return true;
+        }
 
         #endregion
     }

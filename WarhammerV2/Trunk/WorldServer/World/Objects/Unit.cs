@@ -515,6 +515,25 @@ namespace WorldServer
             }
         }
 
+        private byte _Renown = 1;
+        public byte Renown
+        {
+            get
+            {
+                if (IsPlayer())
+                    return GetPlayer()._Value.RenownRank;
+                else
+                    return _Renown;
+            }
+            set
+            {
+                if (IsPlayer())
+                    GetPlayer().SetRenownLevel(value);
+                else
+                    _Renown = value;
+            }
+        }
+
         private UInt16 _Model = 0;
         public UInt16 Model
         {

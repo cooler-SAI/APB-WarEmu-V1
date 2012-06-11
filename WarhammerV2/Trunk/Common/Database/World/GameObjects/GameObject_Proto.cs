@@ -62,6 +62,9 @@ namespace Common
         public uint MaxDamage;
 
         [DataElement()]
+        public UInt32 TokUnlock;
+
+        [DataElement()]
         public UInt16[] Unks = new UInt16[6];
 
         public UInt16 GetUnk(int Id)
