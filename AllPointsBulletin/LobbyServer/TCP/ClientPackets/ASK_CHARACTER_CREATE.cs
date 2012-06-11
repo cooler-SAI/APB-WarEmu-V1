@@ -22,17 +22,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 using Common;
 
 namespace LobbyServer
 {
-    [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.ASK_CHARACTER_CREATE, "onAskCharacterCreate")]
     public class ASK_CHARACTER_CREATE : IPacketHandler
     {
-        public int HandlePacket(BaseClient client, PacketIn packet)
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.ASK_CHARACTER_CREATE, "onAskCharacterCreate")]
+        static public void HandlePacket(BaseClient client, PacketIn packet)
         {
             LobbyClient cclient = client as LobbyClient;
 
@@ -45,8 +44,8 @@ namespace LobbyServer
                 cclient.CreateChar.SlotId = freeslot;
                 cclient.CreateChar.Faction = packet.GetUint8();
                 cclient.CreateChar.Gender = packet.GetUint8();
-                cclient.CreateChar.Version = (int)packet.GetUint32Reversed();
-                cclient.CreateChar.Seconds = (int)packet.GetUint32Reversed();
+                cclient.CreateChar.Version = (int)packet.GetUint32R();
+                cclient.CreateChar.Seconds = (int)packet.GetUint32R();
 
                 byte[] Custom = new byte[packet.Length - packet.Position];
                 packet.Read(Custom, 0, Custom.Length);
@@ -56,8 +55,6 @@ namespace LobbyServer
                 Program.CharMgr.CreateCharacter(cclient.CreateChar);
                 ANS_CHARACTER_CREATE.Send(cclient);
             }
-
-            return 0;
         }
     }
 }

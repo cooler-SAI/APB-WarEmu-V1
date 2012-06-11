@@ -23,7 +23,6 @@ using System.Linq;
 using System.Text;
 
 using FrameWork;
-using FrameWork.Logger;
 
 using Common;
 
@@ -37,41 +36,49 @@ namespace LobbyServer
         static public CharacterMgr CharMgr;
         static public FileManager FileMgr;
 
+        static public LobbyServerConfig Config;
+        static public RpcClient FileServerClient;
+        static public RpcClient CharacterServerClient;
+
         [STAThread]
         static void Main(string[] args)
         {
-            Log.Info("LobbyServer", "Démarrage ...");
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ APB-Lobby", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
 
-            // Initialisation des Config de log et Générales
-            if (!EasyServer.InitLog("Lobby", "Configs/LobbyLog.conf")
-                || !EasyServer.InitConfig("Configs/Lobby.xml", "Lobby"))
-                return;
+            Log.Info("LobbyServer", "Starting ...");
 
-            // Initialisation du Client Rpc pour le FileServer
-            if (!EasyServer.InitRpcClient(  "LobbyFile",
-                                            EasyServer.GetConfValue<string>("Lobby", "FileServer", "Key"),
-                                            EasyServer.GetConfValue<string>("Lobby", "FileServer", "Ip"),
-                                            EasyServer.GetConfValue<int>("Lobby", "FileServer", "Port")))
-                return;
+            ConfigMgr.LoadConfigs();
+            Config = ConfigMgr.GetConfig<LobbyServerConfig>();
 
-            // Initialisation du Client Rpc pour le CharacterServer
-            if (!EasyServer.InitRpcClient(  "LobbyCharacter",
-                                            EasyServer.GetConfValue<string>("Lobby", "CharacterServer", "Key"),
-                                            EasyServer.GetConfValue<string>("Lobby", "CharacterServer", "Ip"),
-                                            EasyServer.GetConfValue<int>("Lobby", "CharacterServer", "Port")))
-                return;
+            if (!Log.InitLog(Config.LogLevel, "LobbyServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            // Initialisation du TcpManager pour les Clients
-            if (!EasyServer.Listen<TcpServer>(EasyServer.GetConfValue<int>("Lobby", "ClientServer", "Port"), "ClientServer"))
-                return;
+            FileServerClient = new RpcClient("LobbyServer-File", Config.FileServerRpc.RpcLocalIp, 1);
+            if (!FileServerClient.Start(Config.FileServerRpc.RpcServerIp, Config.FileServerRpc.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
 
-            CharMgr = new CharacterMgr();
-            FileMgr = new FileManager();
+            CharacterServerClient = new RpcClient("LobbyServer-Char", Config.CharacterServerRpc.RpcLocalIp, 0);
+            if (!CharacterServerClient.Start(Config.CharacterServerRpc.RpcServerIp, Config.CharacterServerRpc.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
+
+            if (!TCPManager.Listen<TcpServer>(Config.ClientServerPort, "Lobby"))
+                ConsoleMgr.WaitAndExit(2000);
+
+            CharMgr = CharacterServerClient.GetServerObject<CharacterMgr>();
+            FileMgr = FileServerClient.GetServerObject<FileManager>();
 
             DBAccount Acct = CharMgr.GetAccount(1);
 
-            string[] sVersion = EasyServer.GetConfValue<string>("Lobby", "ClientServer", "Version").Split('.');
-            Build = EasyServer.GetConfValue<int>("Lobby","ClientServer","Build");
+            string[] sVersion = Config.ClientVersion.Split('.');
+            Build = Config.ClientBuild;
 
             Version = new byte[sVersion.Length];
 
@@ -81,9 +88,9 @@ namespace LobbyServer
             Log.Info("LobbyServer", "Version = " + Version[0] + "." + Version[1] + "." + Version[2]+" : Build = "+Build);
 
 
-            Log.Succes("LobbyServer", "Initialisation du serveur terminée.");
+            Log.Success("LobbyServer", "Server loaded.");
 
-            EasyServer.StartConsole();
+            ConsoleMgr.Start();
         }
     }
 }

@@ -22,8 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
 
 using Common;
 
@@ -55,13 +54,14 @@ namespace WorldServer
 
         #region TCP
 
-        protected override void OnReceive(PacketIn packet)
+        protected override void OnReceive(byte[] Packet)
         {
             lock (this)
             {
-                packet.Size = packet.GetUint32Reversed();
+                PacketIn packet = new PacketIn(Packet, 0, Packet.Length);
+                packet.Size = packet.GetUint32R();
                 packet = DeCrypt(packet);
-                packet.Opcode = packet.GetUint32Reversed();
+                packet.Opcode = packet.GetUint32R();
 
                 Server.HandlePacket(this, packet);
             }

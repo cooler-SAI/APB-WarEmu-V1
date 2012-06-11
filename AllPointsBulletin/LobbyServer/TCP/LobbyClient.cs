@@ -22,8 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
+using FrameWork.NetWork.Crypt.Crypto;
 
 using Common;
 
@@ -39,13 +39,13 @@ namespace LobbyServer
         public SecureRandom random = new SecureRandom();
         public Srp6Server serv = new Srp6Server();
 
-        public static FrameWork.NetWork.Crypto.BigInteger FromHex(string hex)
+        public static BigInteger FromHex(string hex)
         {
-            return new FrameWork.NetWork.Crypto.BigInteger(1, Hex.Decode(hex));
+            return new BigInteger(1, Hex.Decode(hex));
         }
 
-        public readonly FrameWork.NetWork.Crypto.BigInteger N = FromHex("D4C7F8A2B32C11B8FBA9581EC4BA4F1B04215642EF7355E37C0FC0443EF756EA2C6B8EEB755A1C723027663CAA265EF785B8FF6A9B35227A52D86633DBDFCA43");
-        public readonly FrameWork.NetWork.Crypto.BigInteger g = FrameWork.NetWork.Crypto.BigInteger.Two;
+        public readonly BigInteger N = FromHex("D4C7F8A2B32C11B8FBA9581EC4BA4F1B04215642EF7355E37C0FC0443EF756EA2C6B8EEB755A1C723027663CAA265EF785B8FF6A9B35227A52D86633DBDFCA43");
+        public readonly BigInteger g = BigInteger.Two;
 
         // BYTES FROM PACKET
         public byte[] A;
@@ -78,13 +78,14 @@ namespace LobbyServer
 
         #region TCP
 
-        protected override void OnReceive(PacketIn packet)
+        protected override void OnReceive(byte[] Packet)
         {
             lock (this)
             {
-                packet.Size = packet.GetUint32Reversed();
+                PacketIn packet = new PacketIn(Packet, 0, Packet.Length);
+                packet.Size = packet.GetUint32R();
                 packet = DeCrypt(packet);
-                packet.Opcode = packet.GetUint32Reversed();
+                packet.Opcode = packet.GetUint32R();
 
                 Server.HandlePacket(this, packet);
             }

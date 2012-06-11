@@ -24,7 +24,6 @@ using System.Text;
 using System.Reflection;
 
 using FrameWork;
-using FrameWork.Logger;
 
 using Common;
 
@@ -32,26 +31,38 @@ namespace FileServer
 {
     class Program
     {
+        static public FileServerConfig Config;
+        static public RpcServer Server;
+
         [STAThread]
         static void Main(string[] args)
         {
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ APB-File", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+
             Assembly.Load("Common");
 
-            Log.Info("FileServer", "Démarrage...");
+            Log.Info("FileServer", "Starting...");
 
-            // Initialisation des Config de log et Générales
-            if (!EasyServer.InitLog("File", "Configs/FileLog.conf")
-                || !EasyServer.InitConfig("Configs/File.xml", "File"))
-                return;
+            ConfigMgr.LoadConfigs();
+            Config = ConfigMgr.GetConfig<FileServerConfig>();
 
-            // Initialisation du Client Rpc pour le FileServer
-            if (!EasyServer.InitRpcServer("FileServer",
-                                            EasyServer.GetConfValue<string>("File", "FileServer", "Key"),
-                                            EasyServer.GetConfValue<int>("File", "FileServer", "Port")))
-                return;
+            if (!Log.InitLog(Config.LogLevel, "FileServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            Log.Succes("FileServer", "Initialisation du serveur terminée.");
-            EasyServer.StartConsole();
+            Server = new RpcServer(Config.RpcInfo.RpcClientStartingPort, 0);
+            if (!Server.Start(Config.RpcInfo.RpcIp, Config.RpcInfo.RpcPort))
+                ConsoleMgr.WaitAndExit(2000);
+
+            Log.Success("FileServer", "Server loaded.");
+            ConsoleMgr.Start();
         }
     }
 }

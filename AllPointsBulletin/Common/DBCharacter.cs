@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Database;
+using FrameWork;
 
 [DataTable(PreCache = true, TableName = "Characters", DatabaseName = "CharDB")]
 [Serializable]

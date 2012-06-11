@@ -23,7 +23,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-using FrameWork.Logger;
+using FrameWork;
 
 namespace Common
 {

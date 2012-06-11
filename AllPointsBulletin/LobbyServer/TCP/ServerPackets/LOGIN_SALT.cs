@@ -22,8 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
+using FrameWork.NetWork.Crypt.Crypto;
 
 namespace LobbyServer
 {
@@ -35,7 +35,7 @@ namespace LobbyServer
             MakeSalt(client);
 
             PacketOut Out = new PacketOut((UInt32)Opcodes.LOGIN_SALT);
-            Out.WriteInt32Reverse(client.Account.Id);
+            Out.WriteInt32R(client.Account.Id);
             Out.Write(client.B, 0, 64);
             Out.WriteByte(0x40);
             Out.WriteByte(0);
@@ -56,11 +56,11 @@ namespace LobbyServer
 
             Srp6VerifierGenerator gen = new Srp6VerifierGenerator();
             gen.Init(client.N, client.g, new Sha1Digest());
-            FrameWork.NetWork.Crypto.BigInteger v = gen.GenerateVerifier(s, I, P);
+            BigInteger v = gen.GenerateVerifier(s, I, P);
 
             client.serv.Init(client.N, client.g, v, new Sha1Digest(), client.random);
 
-            FrameWork.NetWork.Crypto.BigInteger B_s = client.serv.GenerateServerCredentials();
+            BigInteger B_s = client.serv.GenerateServerCredentials();
             client.B = B_s.ToByteArray();
             client.Salt = s;
         }

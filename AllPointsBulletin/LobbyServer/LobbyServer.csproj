@@ -54,10 +54,6 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FrameWork, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Release\FrameWork.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -72,6 +68,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\LobbysServerConfig.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TCP\ClientPackets\ASK_CHARACTER_CREATE.cs" />
@@ -96,6 +93,10 @@
     <Compile Include="TCP\TcpServer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\FrameWork\FrameWork.csproj">
+      <Project>{D5C98F3A-D5D2-4AED-A5A7-06D2DE095095}</Project>
+      <Name>FrameWork</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CharacterServer\CharacterServer.csproj">
       <Project>{F5D27BBB-6B69-41E8-B1B8-C2703EFA6775}</Project>
       <Name>CharacterServer</Name>

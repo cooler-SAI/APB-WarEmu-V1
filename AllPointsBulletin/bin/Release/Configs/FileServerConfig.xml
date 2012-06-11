@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<FileServerConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <IConfiguredTheFile>true</IConfiguredTheFile>
+  <LogLevel>
+    <Info>true</Info>
+    <Successs>true</Successs>
+    <Notice>true</Notice>
+    <Error>true</Error>
+    <Debug>false</Debug>
+    <Tcp>false</Tcp>
+    <Dump>false</Dump>
+  </LogLevel>
+  <RpcInfo>
+    <RpcIp>127.0.0.1</RpcIp>
+    <RpcPort>2100</RpcPort>
+    <RpcClientStartingPort>2201</RpcClientStartingPort>
+  </RpcInfo>
+</FileServerConfig>

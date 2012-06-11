@@ -24,7 +24,6 @@ using System.Text;
 using System.Reflection;
 
 using FrameWork;
-using FrameWork.Logger;
 
 using Common;
 
@@ -35,51 +34,55 @@ namespace WorldServer
         static public CharacterMgr CharMgr;
         static public FileManager FileMgr;
 
-        static public string WorldName;
-        static public int WorldId;
+        static public WorldServerConfig Config;
+
+        static public RpcClient FileServerClient;
+        static public RpcClient CharacterServerClient;
 
         static void Main(string[] args)
         {
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ APB-World", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+
             Assembly.Load("Common");
-            Log.Info("WorldServer", "Démarrage ...");
 
-            // Initialisation des Config de log et Générales
-            if (!EasyServer.InitLog("World", "Configs/WorldLog.conf")
-                || !EasyServer.InitConfig("Configs/World.xml", "World"))
-                return;
+            Log.Info("WorldServer", "Starting ...");
 
-            // Initialisation du Client Rpc pour le FileServer
-            if (!EasyServer.InitRpcClient("WorldFile",
-                                            EasyServer.GetConfValue<string>("World", "FileServer", "Key"),
-                                            EasyServer.GetConfValue<string>("World", "FileServer", "Ip"),
-                                            EasyServer.GetConfValue<int>("World", "FileServer", "Port")))
-                return;
+            ConfigMgr.LoadConfigs();
+            Config = ConfigMgr.GetConfig<WorldServerConfig>();
 
-            // Initialisation du Client Rpc pour le CharacterServer
-            if (!EasyServer.InitRpcClient("WorldChar",
-                                            EasyServer.GetConfValue<string>("World", "CharacterServer", "Key"),
-                                            EasyServer.GetConfValue<string>("World", "CharacterServer", "Ip"),
-                                            EasyServer.GetConfValue<int>("World", "CharacterServer", "Port")))
-                return;
+            if (!Log.InitLog(Config.LogLevel, "WorldServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            // Initialisation du TcpManager pour les Clients
-            if (!EasyServer.Listen<TcpServer>(EasyServer.GetConfValue<int>("World", "ClientServer", "Port"), "ClientServer"))
-                return;
+            FileServerClient = new RpcClient("WorldServer-File-"+Config.WorldID, Config.FileServerRpc.RpcLocalIp, 0);
+            if (!FileServerClient.Start(Config.FileServerRpc.RpcServerIp, Config.FileServerRpc.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
 
-            CharMgr = new CharacterMgr();
-            FileMgr = new FileManager();
+            CharacterServerClient = new RpcClient("WorldServer-Char-" + Config.WorldID, Config.CharacterServerRpc.RpcLocalIp, 0);
+            if (!CharacterServerClient.Start(Config.CharacterServerRpc.RpcServerIp, Config.CharacterServerRpc.RpcServerPort))
+                ConsoleMgr.WaitAndExit(2000);
 
-            WorldName = EasyServer.GetConfValue<string>("World", "ClientServer", "Name");
-            WorldId = EasyServer.GetConfValue<int>("World", "ClientServer", "Id");
+            if (!TCPManager.Listen<TcpServer>(Config.WorldServerPort, "World"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            CharMgr.RegisterWorld(EasyServer.GetRpcClientId("WorldChar"),
-                                    WorldId,
-                                    WorldName,
-                                    EasyServer.GetConfValue<int>("World", "ClientServer", "Port"),
-                                    EasyServer.GetConfValue<string>("World", "ClientServer", "Ip"));
+            CharMgr = CharacterServerClient.GetServerObject<CharacterMgr>();
+            FileMgr = FileServerClient.GetServerObject<FileManager>();
+
+            CharMgr.RegisterWorld(CharacterServerClient.Info.RpcID,
+                                    Config.WorldID,
+                                    Config.WorldName,
+                                    Config.WorldServerPort,
+                                    Config.WorldServerIp);
 
 
-            EasyServer.StartConsole();
+            ConsoleMgr.Start();
         }
     }
 }

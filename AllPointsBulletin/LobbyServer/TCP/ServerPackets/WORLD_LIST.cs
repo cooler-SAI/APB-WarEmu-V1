@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.NetWork;
+using FrameWork;
 
 using Common;
 
@@ -35,15 +35,15 @@ namespace LobbyServer
             List<WorldInfo> _Worlds = Program.CharMgr.GetWorlds();
 
             PacketOut Out = new PacketOut((UInt32)Opcodes.WORLD_LIST);
-            Out.WriteInt32Reverse(0); // Returned Code 
+            Out.WriteInt32R(0); // Returned Code 
 
-            Out.WriteUInt16Reverse((UInt16)_Worlds.Count); // World Count
+            Out.WriteUInt16R((UInt16)_Worlds.Count); // World Count
 
             foreach (WorldInfo Info in _Worlds)
             {
-                Out.WriteUInt32Reverse((UInt32)Info._Info.Id); // WorldUid
+                Out.WriteUInt32R((UInt32)Info._Info.Id); // WorldUid
 
-                Out.WriteParsedString(Info._Info.Name,32); // WorldName
+                Out.WriteUnicodeString(Info._Info.Name, 32); // WorldName
 
                 Out.WriteByte((byte)(Info.RpcID == 0 ? 0 : 1)); // Status
                 Out.WriteByte(Info._Info.Population); // Pop  0:Low 1:Medium 2:High

@@ -23,14 +23,12 @@ using System.Linq;
 using System.Text;
 using System.Net;
 
-using FrameWork.Logger;
-using FrameWork.Database;
-using FrameWork.RpcV3;
+using FrameWork;
 
 namespace Common
 {
-    [V3RpcAttributes(new string[] { "LobbyCharacter", "Character", "WorldChar" })]
-    public class CharacterMgr : ARpc
+    [Rpc(true, System.Runtime.Remoting.WellKnownObjectMode.Singleton,0)]
+    public class CharacterMgr : RpcObject
     {
         static private MySQLObjectDatabase _Database;
         static public MySQLObjectDatabase Database
@@ -412,11 +410,11 @@ namespace Common
 
         #endregion
 
-        public override void Disconnected(int Id)
+        public override void  OnClientDisconnected(RpcClientInfo Rpc)
         {
-            Log.Info("CharMgr", "Déconnection de l'user : " + Id);
+            Log.Info("CharMgr", "Déconnection de l'user : " + Rpc.RpcID);
             foreach (WorldInfo Info in _Worlds)
-                if (Info.RpcID == Id)
+                if (Info.RpcID == Rpc.RpcID)
                 {
                     Log.Debug("CharMgr", "Déconnection du world : " + Info._Info.Name);
                     Info.RpcID = 0;

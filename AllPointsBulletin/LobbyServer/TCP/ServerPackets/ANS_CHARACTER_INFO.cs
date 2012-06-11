@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.NetWork;
+using FrameWork;
 
 using Common;
 
@@ -44,9 +44,9 @@ namespace LobbyServer
                 Out.WriteByte(Char.Character.SlotId);
                 Out.WriteByte(Char.Character.Faction);
                 Out.WriteByte((byte)(Info.RpcID == 0 ? 0 : 1));
-                Out.WriteUInt32Reverse((UInt32)Info._Info.Id);
-                Out.WriteParsedString(Info._Info.Name, 32);
-                Out.WriteParsedString(Char.Character.Name, 32);
+                Out.WriteUInt32R((UInt32)Info._Info.Id);
+                Out.WriteUnicodeString(Info._Info.Name, 32);
+                Out.WriteUnicodeString(Char.Character.Name, 32);
             }
 
             client.SendTCP(Out);

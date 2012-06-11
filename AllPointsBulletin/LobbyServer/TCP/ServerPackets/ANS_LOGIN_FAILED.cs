@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.NetWork;
+using FrameWork;
 
 namespace LobbyServer
 {
@@ -31,7 +31,7 @@ namespace LobbyServer
         static public void Send(LobbyClient client,int code)
         {
             PacketOut packet = new PacketOut((UInt32)Opcodes.ANS_LOGIN_FAILED);
-            packet.WriteInt32Reverse(code);
+            packet.WriteInt32R(code);
             client.SendTCP(packet);
         }
     }

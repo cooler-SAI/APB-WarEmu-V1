@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<WorldServerConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <IConfiguredTheFile>true</IConfiguredTheFile>
+  <LogLevel>
+    <Info>true</Info>
+    <Successs>true</Successs>
+    <Notice>true</Notice>
+    <Error>true</Error>
+    <Debug>false</Debug>
+    <Tcp>false</Tcp>
+    <Dump>false</Dump>
+  </LogLevel>
+  <FileServerRpc>
+    <RpcLocalIp>127.0.0.1</RpcLocalIp>
+    <RpcServerIp>127.0.0.1</RpcServerIp>
+    <RpcServerPort>2100</RpcServerPort>
+  </FileServerRpc>
+  <CharacterServerRpc>
+    <RpcLocalIp>127.0.0.1</RpcLocalIp>
+    <RpcServerIp>127.0.0.1</RpcServerIp>
+    <RpcServerPort>2000</RpcServerPort>
+  </CharacterServerRpc>
+  <WorldName>APS</WorldName>
+  <WorldID>1</WorldID>
+  <WorldServerIp>127.0.0.1</WorldServerIp>
+  <WorldServerPort>2107</WorldServerPort>
+</WorldServerConfig>

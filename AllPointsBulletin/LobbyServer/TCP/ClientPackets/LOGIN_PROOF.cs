@@ -22,17 +22,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using FrameWork.Logger;
-using FrameWork.NetWork;
+using FrameWork;
+using FrameWork.NetWork.Crypt.Crypto;
 
 using Common;
 
 namespace LobbyServer
 {
-    [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.LOGIN_PROOF, "onLoginProof")]
     public class LOGIN_PROOF : IPacketHandler
     {
-        public int HandlePacket(BaseClient client, PacketIn packet)
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.LOGIN_PROOF, "onLoginProof")]
+        static public void HandlePacket(BaseClient client, PacketIn packet)
         {
             LobbyClient cclient = client as LobbyClient;
 
@@ -54,8 +54,6 @@ namespace LobbyServer
                 ANS_LOGIN_SUCCES.Send(cclient);
             else
                 cclient.Disconnect();
-
-            return 0;
         }
 
         static public void Reverse<T>(T[] buffer, int length)
@@ -75,9 +73,9 @@ namespace LobbyServer
 
             return true;
 
-            client.serv.CalculateSecret(new FrameWork.NetWork.Crypto.BigInteger(client.A));
-            FrameWork.NetWork.Crypto.BigInteger Pro = new FrameWork.NetWork.Crypto.BigInteger(client.Proof);
-            FrameWork.NetWork.Crypto.BigInteger check = Srp6Utilities.ValidatePublicValue(client.N, Pro);
+            client.serv.CalculateSecret(new BigInteger(client.A));
+            BigInteger Pro = new BigInteger(client.Proof);
+            BigInteger check = Srp6Utilities.ValidatePublicValue(client.N, Pro);
 
             return check.IntValue > 0;
         }

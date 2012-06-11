@@ -21,15 +21,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.IO;
+        using System.IO;
 
-using FrameWork.Logger;
-using FrameWork.RpcV3;
+using FrameWork;
 
 namespace Common
 {
-    [V3RpcAttributes(new string[] { "LobbyFile", "WorldFile", "FileServer" })]
-    public class FileManager : ARpc
+    [Rpc(true, System.Runtime.Remoting.WellKnownObjectMode.Singleton,1)]
+    public class FileManager : RpcObject
     {
         public Dictionary<int, FileClient> _Clients = new Dictionary<int, FileClient>();
 

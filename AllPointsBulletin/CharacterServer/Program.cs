@@ -24,40 +24,49 @@ using System.Text;
 using System.Reflection;
 
 using FrameWork;
-using FrameWork.Logger;
 
 using Common;
 
 namespace CharacterServer
 {
-    class Program
+    public class Program
     {
+        static public CharacterServerConfig Config;
+        static public RpcServer Server;
+
         [STAThread]
         static void Main(string[] args)
         {
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+            Log.Texte("", "          _____   _____ ", ConsoleColor.Cyan);
+            Log.Texte("", "    /\\   |  __ \\ / ____|", ConsoleColor.Cyan);
+            Log.Texte("", "   /  \\  | |__) | (___  ", ConsoleColor.Cyan);
+            Log.Texte("", "  / /\\ \\ |  ___/ \\___ \\ ", ConsoleColor.Cyan);
+            Log.Texte("", " / ____ \\| |     ____) |", ConsoleColor.Cyan);
+            Log.Texte("", "/_/    \\_\\_|    |_____/ APB-Char", ConsoleColor.Cyan);
+            Log.Texte("", "http://AllPrivateServer.com", ConsoleColor.DarkCyan);
+            Log.Texte("", "-------------------------------", ConsoleColor.DarkBlue);
+
             Assembly.Load("Common");
 
-            Log.Info("CharacterServer", "Démarrage...");
+            Log.Info("CharacterServer", "Starting...");
 
-            // Initialisation des Config de log et Générales
-            if (!EasyServer.InitLog("Char", "Configs/CharLog.conf")
-                || !EasyServer.InitConfig("Configs/Char.xml", "Char"))
-                return;
+            ConfigMgr.LoadConfigs();
+            Config = ConfigMgr.GetConfig<CharacterServerConfig>();
 
-            // Initialisation du Client Rpc pour le FileServer
-            if (!EasyServer.InitRpcServer("Character",
-                                            EasyServer.GetConfValue<string>("Char", "CharacterServer", "Key"),
-                                            EasyServer.GetConfValue<int>("Char", "CharacterServer", "Port")))
-                return;
+            if (!Log.InitLog(Config.LogLevel, "CharacterServer"))
+                ConsoleMgr.WaitAndExit(2000);
 
-            // Initialisation de la Base de donnée
-            if (!EasyServer.InitMysqlDB("Configs/CharDB.xml", "CharDB"))
-                return;
+            CharacterMgr.Database = DBManager.Start(Config.CharacterDatabase.Total(), ConnectionType.DATABASE_MYSQL, "CharDB");
+            if(CharacterMgr.Database == null)
+                ConsoleMgr.WaitAndExit(2000);
 
-            CharacterMgr.Database = EasyServer.GetDatabase("CharDB");
+            Server = new RpcServer(Config.RpcInfo.RpcClientStartingPort, 0);
+            if (!Server.Start(Config.RpcInfo.RpcIp, Config.RpcInfo.RpcPort))
+                ConsoleMgr.WaitAndExit(2000);
 
-            Log.Succes("CharacterServer", "Initialisation du serveur terminée.");
-            EasyServer.StartConsole();
+            Log.Success("CharacterServer", "Server loaded.");
+            ConsoleMgr.Start();
         }
     }
 }
