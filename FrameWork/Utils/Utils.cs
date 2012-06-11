@@ -23,7 +23,9 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 
-namespace FrameWork
+using FrameWork.Utils;
+
+namespace FrameWork.Tools
 {
     static public class Utils
     {
@@ -57,7 +59,7 @@ namespace FrameWork
 
         static public string VectorToString(Vector3 Vec)
         {
-            return PositionToString(Vec.X, Vec.Y, Vec.Z);
+            return PositionToString(Vec.x, Vec.y, Vec.z);
         }
         static public Vector3 StringToVector(string Str)
         {

@@ -41,17 +41,41 @@ namespace CharacterServer
         [Unsigned7Bit(6)]
         public long CharactersCount;
 
+        [BoolBit(10)]
+        public bool RP;
+
         [Unsigned7Bit(11)]
         public long Population;
 
-        [BoolBit(10)]
-        public bool RP;
+        /*[BoolBit(12)]
+        public bool Field12 = true;
+
+        [BoolBit(13)]
+        public bool Field13 = true;
+
+        [BoolBit(14)]
+        public bool Field14 = true;*/
 
         [Unsigned7Bit(15)]
         public long Language;
 
+        [BoolBit(16)]
+        public bool Online = true;
+
         [BoolBit(17)]
         public bool Recommended;
+
+        /*[BoolBit(18)]
+        public bool Field18 = true;
+
+        [BoolBit(19)]
+        public bool Field19 = true;
+
+        [BoolBit(20)]
+        public bool Field20 = true;
+
+        [BoolBit(21)]
+        public bool Field21 = true;*/
 
         public override void OnRead(RiftClient From)
         {

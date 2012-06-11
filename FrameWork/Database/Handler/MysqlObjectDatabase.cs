@@ -25,6 +25,7 @@ using System.Text;
 using System.IO;
 using System.Xml;
 
+using FrameWork.Tools;
 using MySql.Data.MySqlClient;
 using MySql.Data.Types;
 
@@ -140,39 +141,39 @@ namespace FrameWork
                 Obj = Escape((string)val);
 
             else if (val is List<byte>)
-                Obj = Utils.ConvertArrayToString<byte>((val as List<byte>).ToArray());
+                Obj = Tools.Utils.ConvertArrayToString<byte>((val as List<byte>).ToArray());
             else if (val is byte[])
-                Obj = Utils.ConvertArrayToString<byte>((val as byte[]));
+                Obj = Tools.Utils.ConvertArrayToString<byte>((val as byte[]));
 
             else if (val is List<Int16>)
-                Obj = Utils.ConvertArrayToString<Int16>((val as List<Int16>).ToArray());
+                Obj = Tools.Utils.ConvertArrayToString<Int16>((val as List<Int16>).ToArray());
             else if (val is Int16[])
-                Obj = Utils.ConvertArrayToString<Int16>((val as Int16[]));
+                Obj = Tools.Utils.ConvertArrayToString<Int16>((val as Int16[]));
 
             else if (val is List<Int32>)
-                Obj = Utils.ConvertArrayToString<Int32>((val as List<Int32>).ToArray());
+                Obj = Tools.Utils.ConvertArrayToString<Int32>((val as List<Int32>).ToArray());
             else if (val is Int32[])
-                Obj = Utils.ConvertArrayToString<Int32>((val as Int32[]));
+                Obj = Tools.Utils.ConvertArrayToString<Int32>((val as Int32[]));
 
             else if (val is List<UInt32>)
-                Obj = Utils.ConvertArrayToString<UInt32>((val as List<UInt32>).ToArray());
+                Obj = Tools.Utils.ConvertArrayToString<UInt32>((val as List<UInt32>).ToArray());
             else if (val is UInt32[])
-                Obj = Utils.ConvertArrayToString<UInt32>((val as UInt32[]));
+                Obj = Tools.Utils.ConvertArrayToString<UInt32>((val as UInt32[]));
 
             else if (val is List<float>)
-                Obj = Utils.ConvertArrayToString<float>((val as List<float>).ToArray());
+                Obj = Tools.Utils.ConvertArrayToString<float>((val as List<float>).ToArray());
             else if (val is float[])
-                Obj = Utils.ConvertArrayToString<float>((val as float[]));
+                Obj = Tools.Utils.ConvertArrayToString<float>((val as float[]));
 
             else if (val is List<ulong>)
-                Obj = Utils.ConvertArrayToString<ulong>((val as List<ulong>).ToArray());
+                Obj = Tools.Utils.ConvertArrayToString<ulong>((val as List<ulong>).ToArray());
             else if (val is ulong[])
-                Obj = Utils.ConvertArrayToString<ulong>((val as ulong[]));
+                Obj = Tools.Utils.ConvertArrayToString<ulong>((val as ulong[]));
 
             else if (val is List<long>)
-                Obj = Utils.ConvertArrayToString<long>((val as List<long>).ToArray());
+                Obj = Tools.Utils.ConvertArrayToString<long>((val as List<long>).ToArray());
             else if (val is long[])
-                Obj = Utils.ConvertArrayToString<long>((val as long[]));
+                Obj = Tools.Utils.ConvertArrayToString<long>((val as long[]));
 
             else if(val != null)
                 Obj = Escape(val.ToString());
@@ -204,44 +205,44 @@ namespace FrameWork
                         Obj = ((IConvertible)val).ToDateTime(null);
                 }
                 else if (type == typeof(byte[]))
-                    Obj = Utils.ConvertStringToArray<byte>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<byte>(val as string).ToArray();
                 else if (type == typeof(List<byte>))
-                    Obj = Utils.ConvertStringToArray<byte>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<byte>(val as string);
 
                 else if (type == typeof(Int16[]))
-                    Obj = Utils.ConvertStringToArray<Int16>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<Int16>(val as string).ToArray();
                 else if (type == typeof(List<Int16>))
-                    Obj = Utils.ConvertStringToArray<Int16>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<Int16>(val as string);
 
                 else if (type == typeof(UInt16[]))
-                    Obj = Utils.ConvertStringToArray<UInt16>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<UInt16>(val as string).ToArray();
                 else if (type == typeof(List<UInt16>))
-                    Obj = Utils.ConvertStringToArray<UInt16>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<UInt16>(val as string);
 
                 else if (type == typeof(Int32[]))
-                    Obj = Utils.ConvertStringToArray<Int32>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<Int32>(val as string).ToArray();
                 else if (type == typeof(List<Int32>))
-                    Obj = Utils.ConvertStringToArray<Int32>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<Int32>(val as string);
 
                 else if (type == typeof(UInt32[]))
-                    Obj = Utils.ConvertStringToArray<UInt32>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<UInt32>(val as string).ToArray();
                 else if (type == typeof(List<UInt32>))
-                    Obj = Utils.ConvertStringToArray<UInt32>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<UInt32>(val as string);
 
                 else if (type == typeof(Int64[]))
-                    Obj = Utils.ConvertStringToArray<Int64>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<Int64>(val as string).ToArray();
                 else if (type == typeof(List<Int64>))
-                    Obj = Utils.ConvertStringToArray<Int64>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<Int64>(val as string);
 
                 else if (type == typeof(UInt64[]))
-                    Obj = Utils.ConvertStringToArray<UInt64>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<UInt64>(val as string).ToArray();
                 else if (type == typeof(List<UInt64>))
-                    Obj = Utils.ConvertStringToArray<UInt64>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<UInt64>(val as string);
 
                 else if (type == typeof(float[]))
-                    Obj = Utils.ConvertStringToArray<float>(val as string).ToArray();
+                    Obj = Tools.Utils.ConvertStringToArray<float>(val as string).ToArray();
                 else if (type == typeof(List<float>))
-                    Obj = Utils.ConvertStringToArray<float>(val as string);
+                    Obj = Tools.Utils.ConvertStringToArray<float>(val as string);
                 else
                     Obj = val;
 

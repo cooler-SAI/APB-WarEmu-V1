@@ -89,6 +89,7 @@
     <Compile Include="Remoting\RpcObject.cs" />
     <Compile Include="Remoting\RpcServer.cs" />
     <Compile Include="Remoting\ServerMgr.cs" />
+    <Compile Include="Threading\ThreadExecutor.cs" />
     <Compile Include="Utils\Color.cs" />
     <Compile Include="Utils\RandomMgr.cs" />
     <Compile Include="Utils\Utils.cs" />

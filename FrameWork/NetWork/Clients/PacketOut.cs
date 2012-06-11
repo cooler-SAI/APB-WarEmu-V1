@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
+using FrameWork.Utils;
+
 namespace FrameWork
 {
     public enum PackStruct
@@ -145,13 +147,13 @@ namespace FrameWork
                     break;
 
                 case sizeof(UInt32):
-                    if (!SizeReverse) WriteUInt32((UInt16)(size));
-                    else WriteUInt32R((UInt16)size);
+                    if (!SizeReverse) WriteUInt32((UInt32)(size));
+                    else WriteUInt32R((UInt32)size);
                     break;
 
                 case sizeof(UInt64):
-                    if (!SizeReverse) WriteUInt32((UInt16)(size));
-                    else WriteUInt32R((UInt16)size);
+                    if (!SizeReverse) WriteUInt64((UInt64)(size));
+                    else WriteUInt64R((UInt64)size);
                     break;
             }
 
@@ -174,6 +176,11 @@ namespace FrameWork
             WriteByte((byte)(val >> 8));
             WriteByte((byte)(val & 0xff));
         }
+        public virtual void WriteUInt16(params ushort[] vals)
+        {
+            foreach (ushort v in vals)
+                WriteUInt16(v);
+        }
         public virtual void WriteUInt16R(ushort val)
         {
             WriteByte((byte)(val & 0xff));
@@ -194,6 +201,11 @@ namespace FrameWork
             WriteByte((byte)((val >> 16) & 0xff));
             WriteByte((byte)((val & 0xffff) >> 8));
             WriteByte((byte)((val & 0xffff) & 0xff));
+        }
+        public virtual void WriteUInt32(params uint[] vals)
+        {
+            foreach (uint val in vals)
+                WriteUInt32(vals);
         }
         public virtual void WriteUInt32R(uint val)
         {
@@ -362,23 +374,23 @@ namespace FrameWork
 
         public virtual void WriteVector2(Vector2 Vector)
         {
-            WriteFloat(Vector.X);
-            WriteFloat(Vector.Y);
+            WriteFloat(Vector.x);
+            WriteFloat(Vector.y);
         }
 
         public virtual void WriteVector3(Vector3 Vector)
         {
-            WriteFloat(Vector.X);
-            WriteFloat(Vector.Y);
-            WriteFloat(Vector.Z);
+            WriteFloat(Vector.x);
+            WriteFloat(Vector.y);
+            WriteFloat(Vector.z);
         }
 
         public virtual void WriteQuaternion(Quaternion Quat)
         {
-            WriteFloat(Quat.X);
-            WriteFloat(Quat.Y);
-            WriteFloat(Quat.Z);
-            WriteFloat(Quat.W);
+            WriteFloat(Quat.x);
+            WriteFloat(Quat.y);
+            WriteFloat(Quat.z);
+            WriteFloat(Quat.w);
         }
 
         public override string ToString()

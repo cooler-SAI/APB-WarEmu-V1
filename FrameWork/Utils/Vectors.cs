@@ -22,42 +22,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace FrameWork
+namespace FrameWork.Utils
 {
     [Serializable]
     public class Vector2
     {
-        public float X;
-        public float Y;
+        public float x;
+        public float y;
 
-        public Vector2(float X, float Y)
+        public Vector2(float x, float y)
         {
-            this.X = X;
-            this.Y = Y;
+            this.x = x;
+            this.y = y;
         }
     }
 
     [Serializable]
     public class Vector3 : Vector2
     {
-        public float Z;
+        public float z;
 
-        public Vector3(float X, float Y, float Z)
-            : base(X, Y)
+        public Vector3(float x, float y, float z)
+            : base(x, y)
         {
-            this.Z = Z;
+            this.z = z;
         }
     }
 
     [Serializable]
     public class Quaternion : Vector3
     {
-        public float W;
+        public float w;
 
-        public Quaternion(float X, float Y, float Z, float W)
-            : base(X, Y, Z)
+        public Quaternion(float x, float y, float z, float w)
+            : base(x, y, z)
         {
-            this.W = W;
+            this.w = w;
         }
 
     }

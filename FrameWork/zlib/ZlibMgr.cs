@@ -33,22 +33,39 @@ namespace FrameWork
 
         static public byte[] Compress(byte[] Input,int Compression,int Flush)
         {
-            MemoryStream OutPut = new MemoryStream();
-            ZOutputStream ZStream = new ZOutputStream(OutPut,Compression);
-            ZStream.FlushMode = Flush;
+            byte[] Result = null;
 
-            Process(ZStream,Input);
+            using (MemoryStream OutPut = new MemoryStream())
+            {
+                ZOutputStream ZStream = new ZOutputStream(OutPut, Compression);
+                {
+                    ZStream.FlushMode = Flush;
+                    Process(ZStream, Input);
+                    Result = OutPut.ToArray();
+                }
 
-            return OutPut.ToArray();
+                OutPut.Close();
+            }
+
+            return Result;
         }
 
         static public byte[] Decompress(byte[] Input)
         {
-            MemoryStream OutPut = new MemoryStream();
-            ZOutputStream ZStream = new ZOutputStream(OutPut);
-            Process(ZStream,Input);
+            byte[] Result = null;
 
-            return OutPut.ToArray();
+            using (MemoryStream OutPut = new MemoryStream())
+            {
+                ZOutputStream ZStream = new ZOutputStream(OutPut);
+                {
+                    Process(ZStream, Input);
+                    Result = OutPut.ToArray();
+                }
+
+                OutPut.Close();
+            }
+
+            return Result;
         }
 
         static private void Process(ZOutputStream ZStream,byte[] Input)

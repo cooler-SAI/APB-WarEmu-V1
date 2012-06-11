@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 
+using FrameWork.Utils;
+
 namespace FrameWork
 {
     public class PacketIn : MemoryStream

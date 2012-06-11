@@ -13,11 +13,11 @@
   </RpcMapServer>
   <RealmInfo>
     <RealmId>1</RealmId>
-    <PVP>0</PVP>
-    <RP>0</RP>
-    <Language>1</Language>
+    <PVP>1</PVP>
+    <RP>1</RP>
+    <Language>3</Language>
     <Recommended>1</Recommended>
-    <ClientVersion>0</ClientVersion>
+    <ClientVersion>99999</ClientVersion>
   </RealmInfo>
   <CharactersDB>
     <Server>127.0.0.1</Server>

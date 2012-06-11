@@ -191,6 +191,7 @@ namespace FrameWork
 
             Out.Write(Total, 0, Total.Length);
 
+            packet.Dispose();
             return Out;
         }
 
@@ -380,6 +381,8 @@ namespace FrameWork
 			//Get the packet buffer
 			byte[] buf = packet.ToArray(); //packet.WritePacketLength sets the Capacity
 
+            packet.Dispose();
+
 			//Send the buffer
 			SendTCP(buf);
 		}
@@ -410,6 +413,7 @@ namespace FrameWork
                     else
                         Log.Tcp("Crypted", buf, 0, buf.Length);
 
+                    Log.Info("SendTCP", "bug Lenght=" + buf.Length + ",Bufferlenght=" + m_tcpSendBuffer.Length);
 					Buffer.BlockCopy(buf, 0, m_tcpSendBuffer, 0, buf.Length);
 
 					int start = Environment.TickCount;
