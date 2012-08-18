@@ -54,7 +54,7 @@ namespace FrameWork
 
         public static MySQLObjectDatabase Start(string sqlconfig, ConnectionType Type, string DBName)
         {
-            Log.Debug("IObjectDatabase", DBName + "->Start " + sqlconfig + "...");
+            Log.Debug("DBManager", DBName + "->Start " + sqlconfig + "...");
             IObjectDatabase _database = null;
 
             try
@@ -63,7 +63,8 @@ namespace FrameWork
                 if (_database == null)
                     return null;
 
-                LoadTables(_database,DBName);
+                List<Type> Registereds = null;
+                LoadTables(_database, DBName, ref Registereds);
 
                 return (MySQLObjectDatabase)_database;
             }
@@ -73,7 +74,7 @@ namespace FrameWork
             }
         }
 
-        static public void LoadTables(IObjectDatabase Database,string DatabaseName)
+        static public void LoadTables(IObjectDatabase Database,string DatabaseName, ref List<Type> Registereds)
         {
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -89,6 +90,9 @@ namespace FrameWork
                         {
                             Log.Info("DBManager", "Registering table: " + type.FullName);
                             Database.RegisterDataObject(type);
+
+                            if (Registereds != null)
+                                Registereds.Add(type);
                         }
                     }
                     catch(Exception e)
@@ -98,5 +102,20 @@ namespace FrameWork
                 }
             }
         }
+
+        public static XMLObjectDatabase Start(string XmlFolder, string DatabaseName, ref List<Type> Registereds)
+        {
+            Log.Debug("DBManager", "Starting XML Database : " + XmlFolder);
+
+            XMLObjectDatabase database = ObjectDatabase.GetObjectDatabase(ConnectionType.DATABASE_XML, XmlFolder) as XMLObjectDatabase;
+
+            if (database == null)
+                return null;
+
+            LoadTables(database, DatabaseName, ref Registereds);
+            
+            return database;
+        }
+
     }
 }

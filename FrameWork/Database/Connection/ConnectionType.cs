@@ -4,6 +4,8 @@ namespace FrameWork
     // Liste des connexions supportées
     public enum ConnectionType
     {
+        DATABASE_XML,
+
         // Mysql Serveur
         DATABASE_MYSQL,
 

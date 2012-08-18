@@ -112,7 +112,7 @@ namespace FrameWork
                 }
 
                 dataObject.Dirty = false;
-                dataObject.IsValid = true;
+                dataObject.IsPersisted = true;
                 dataObject.IsDeleted = false;
 
                 return true;
@@ -261,7 +261,7 @@ namespace FrameWork
         }
 
         // Persiste l'objet dans la DB
-        protected override void SaveObjectImpl(DataObject dataObject)
+        protected override bool SaveObjectImpl(DataObject dataObject)
         {
             try
             {
@@ -331,7 +331,7 @@ namespace FrameWork
                 if (res == 0)
                 {
                     Log.Error("MysqlObject", "Modify error : " + dataObject.TableName + " ID=" + dataObject.ObjectId + " --- keyvalue changed? " + sql + " " + Environment.StackTrace);
-                    return;
+                    return false;
                 }
 
                 if (hasRelations)
@@ -340,16 +340,19 @@ namespace FrameWork
                 }
 
                 dataObject.Dirty = false;
-                dataObject.IsValid = true;
+                dataObject.IsPersisted = true;
+                return true;
             }
             catch (Exception e)
             {
                 Log.Error("MysqlObject", "Modify error : " + dataObject.TableName + " " + dataObject.ObjectId + e.ToString() );
             }
+
+            return false;
         }
 
         // Supprime un objet de la DB
-        protected override void DeleteObjectImpl(DataObject dataObject)
+        protected override bool DeleteObjectImpl(DataObject dataObject)
         {
             try
             {
@@ -364,12 +367,13 @@ namespace FrameWork
                     Log.Error("MysqlObject", "Delete Object : " + dataObject.TableName + " failed! ID=" + dataObject.ObjectId + " " + Environment.StackTrace);
                 }
 
-                dataObject.IsValid = false;
+                dataObject.IsPersisted = false;
 
                 DeleteFromCache(dataObject.TableName, dataObject);
                 DeleteObjectRelations(dataObject);
 
                 dataObject.IsDeleted = true;
+                return true;
             }
             catch (Exception e)
             {
@@ -558,7 +562,7 @@ namespace FrameWork
                         FillLazyObjectRelations(obj, true);
                     }
 
-                    obj.IsValid = true;
+                    obj.IsPersisted = true;
                 }
             }
             , isolation);
@@ -653,7 +657,7 @@ namespace FrameWork
                         FillLazyObjectRelations(obj, true);
                     }
 
-                    obj.IsValid = true;
+                    obj.IsPersisted = true;
                 }
             }
                 , isolation);

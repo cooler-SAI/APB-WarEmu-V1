@@ -27,9 +27,9 @@ namespace FrameWork
     {
         bool AddObject(DataObject dataObject);
 
-        void SaveObject(DataObject dataObject);
+        bool SaveObject(DataObject dataObject);
 
-        void DeleteObject(DataObject dataObject);
+        bool DeleteObject(DataObject dataObject);
 
         TObject FindObjectByKey<TObject>(object key)
             where TObject : DataObject;

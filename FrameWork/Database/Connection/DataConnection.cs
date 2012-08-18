@@ -42,8 +42,8 @@ namespace FrameWork
         // Liste des connexions Mysql
         private readonly Queue<MySqlConnection> m_connectionPool = new Queue<MySqlConnection>();
 
-        private string connString;
-        private ConnectionType connType;
+        public string connString;
+        public ConnectionType connType;
 
         // Construction d'une connexion , Type(Mysql,ODBC,etc..) + paramètre de la connexion
         public DataConnection(ConnectionType connType, string connString)
@@ -51,13 +51,33 @@ namespace FrameWork
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             this.connType = connType;
 
-            // Options de connexion pour Mysql
-            if (!connString.Contains("Treat Tiny As Boolean"))
+            //if Directory has no trailing \ than append it ;-)
+            if (connType == ConnectionType.DATABASE_XML)
             {
-                connString += ";Treat Tiny As Boolean=False";
-            }
+                if (connString[connString.Length - 1] != Path.DirectorySeparatorChar)
+                    this.connString = connString + Path.DirectorySeparatorChar;
 
-            this.connString = connString;
+                if (!Directory.Exists(connString))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(connString);
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+            else
+            {
+                // Options of MySQL connection string
+                if (!connString.Contains("Treat Tiny As Boolean"))
+                {
+                    connString += ";Treat Tiny As Boolean=False";
+                }
+
+                this.connString = connString;
+            }
         }
 
         // Check si c'est une connexion Mysql
@@ -649,17 +669,45 @@ namespace FrameWork
                         }
                         break;
                     }
+                case ConnectionType.DATABASE_XML:
+                    {
+                        try
+                        {
+                            dataSet.Tables[tableName].ReadXml(connString + tableName + ".xml");
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new DatabaseException("Could not load the Database-Table", ex);
+                        }
+                        break;
+
+                    }
             }
         }
 
         // Sauvegarde tous les changements effectué dans le dataset
         public void SaveDataSet(string tableName, DataSet dataSet)
         {
-            if (dataSet.HasChanges() == false)
+            if (connType != FrameWork.ConnectionType.DATABASE_XML && dataSet.HasChanges() == false)
                 return;
 
             switch (connType)
             {
+                case ConnectionType.DATABASE_XML:
+                    {
+                        try
+                        {
+                            dataSet.WriteXml(connString + tableName + ".xml");
+                            dataSet.AcceptChanges();
+                            dataSet.WriteXmlSchema(connString + tableName + ".xsd");
+                        }
+                        catch (Exception e)
+                        {
+                            throw new DatabaseException("Could not save Databases in XML-Files!", e);
+                        }
+
+                        break;
+                    }
                 case ConnectionType.DATABASE_MSSQL:
                     {
                         try

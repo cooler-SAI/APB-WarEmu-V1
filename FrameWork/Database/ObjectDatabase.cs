@@ -34,7 +34,7 @@ namespace FrameWork
     {
         protected static readonly NumberFormatInfo Nfi = new CultureInfo("en-US", false).NumberFormat;
         private readonly Dictionary<Type, BindingInfo[]> BindingInfos = new Dictionary<Type, BindingInfo[]>();
-        protected readonly DataConnection Connection;
+        public readonly DataConnection Connection;
         private readonly Dictionary<Type, ConstructorInfo> ConstructorByFieldType = new Dictionary<Type, ConstructorInfo>();
         private readonly Dictionary<Type, MemberInfo[]> MemberInfoCache = new Dictionary<Type, MemberInfo[]>();
         private readonly Dictionary<MemberInfo, Relation[]> RelationAttributes = new Dictionary<MemberInfo, Relation[]>();
@@ -49,7 +49,7 @@ namespace FrameWork
 
         #region Data tables
 
-        protected DataSet GetDataSet(string tableName)
+        public DataSet GetDataSet(string tableName)
         {
             if (!TableDatasets.ContainsKey(tableName))
                 return null;
@@ -110,7 +110,7 @@ namespace FrameWork
                 FillLazyObjectRelations(dataObject, true);
             }
 
-            dataObject.IsValid = true;
+            dataObject.IsPersisted = true;
         }
 
         protected void FillRowWithObject(DataObject dataObject, DataRow row)
@@ -201,7 +201,10 @@ namespace FrameWork
 
         #region Public API
 
-        // Ajoute un nouvel objet dans la DB et le sauvegarde
+        /// <summary>
+        /// insert a new object into the db and save it
+        /// </summary>
+        /// <param name="dataObject"></param>
         public bool AddObject(DataObject dataObject)
         {
             if (dataObject.AllowAdd)
@@ -210,27 +213,37 @@ namespace FrameWork
             }
             else
             {
-                Log.Notice("ObjectDatabase","Can not save, AllowSave = False " + dataObject.TableName + " : " + dataObject.ObjectId);
+                Log.Notice("ObjectDatabase", "AddObject called on DataObject when AllowSave is False: " + dataObject.TableName + " : " + dataObject.ObjectId);
                 return false;
             }
         }
 
-        // Sauvegarde l'objet dans la db
-        public void SaveObject(DataObject dataObject)
+        /// <summary>
+        /// Saves an object to db if saving is allowed and object is dirty
+        /// </summary>
+        /// <param name="dataObject"></param>
+        public bool SaveObject(DataObject dataObject)
         {
             if (dataObject.Dirty)
             {
-                SaveObjectImpl(dataObject);
+                return SaveObjectImpl(dataObject);
             }
+
+            return true;
         }
 
-        // Supprime l'objet de la DB
-        public void DeleteObject(DataObject dataObject)
+        /// <summary>
+        /// delete object from db
+        /// </summary>
+        /// <param name="dataObject"></param>
+        public bool DeleteObject(DataObject dataObject)
         {
             if (dataObject.AllowDelete)
             {
-                DeleteObjectImpl(dataObject);
+                return DeleteObjectImpl(dataObject);
             }
+
+            return false;
         }
 
         public int GetObjectCount<TObject>()
@@ -254,14 +267,27 @@ namespace FrameWork
         }
 
 
-        // Sélectionne un objet , si il y en a plusieurs , le premier et retourné
+        /// <summary>
+        /// Selects a single object, if more than
+        /// one exist, the first is returned
+        /// </summary>
+        /// <param name="objectType">the type of the object</param>
+        /// <param name="statement">the select statement</param>
+        /// <returns>the object or null if none found</returns>
         public TObject SelectObject<TObject>(string whereExpression)
             where TObject : DataObject
         {
             return SelectObject<TObject>(whereExpression, IsolationLevel.DEFAULT);
         }
 
-        // Sélectionne un objet , si il y en a plusieurs , le premier et retourné
+        /// <summary>
+        /// Selects a single object, if more than
+        /// one exist, the first is returned
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <param name="whereExpression"></param>
+        /// <param name="isolation"></param>
+        /// <returns></returns>
         public TObject SelectObject<TObject>(string whereExpression, IsolationLevel isolation)
             where TObject : DataObject
         {
@@ -306,31 +332,35 @@ namespace FrameWork
             if (TableDatasets.ContainsKey(GetTableOrViewName(objType)))
                 return;
 
-            bool primary = false;
+            bool primaryKeySpecified = false;
+            bool useAutoIncrementColumn = false;
             bool relations = false;
             MemberInfo primaryIndexMember = null;
 
             string tableName = GetTableOrViewName(objType);
             var ds = new DataSet();
             var table = new System.Data.DataTable(tableName);
-            table.Columns.Add(tableName + "_ID", typeof(string));
 
             MemberInfo[] myMembers = objType.GetMembers();
 
             for (int i = 0; i < myMembers.Length; i++)
             {
+                //object[] myAttributes = myMembers[i].GetCustomAttributes(true);
+                //object[] myAttributes = myMembers[i].GetCustomAttributes(typeof(DOL.Database.Attributes.DataElement), true);
+
                 object[] myAttributes = myMembers[i].GetCustomAttributes(typeof(PrimaryKey), true);
 
                 if (myAttributes.Length > 0)
                 {
-                    primary = true;
+                    primaryKeySpecified = true;
                     if (myMembers[i] is PropertyInfo)
                         table.Columns.Add(myMembers[i].Name, ((PropertyInfo)myMembers[i]).PropertyType);
                     else
                         table.Columns.Add(myMembers[i].Name, ((FieldInfo)myMembers[i]).FieldType);
 
                     table.Columns[myMembers[i].Name].AutoIncrement = ((PrimaryKey)myAttributes[0]).AutoIncrement;
-                    table.Columns[myMembers[i].Name].AutoIncrementSeed = ((PrimaryKey)myAttributes[0]).IncrementValue;
+
+                    useAutoIncrementColumn = table.Columns[myMembers[i].Name].AutoIncrement;
 
                     var index = new DataColumn[1];
                     index[0] = table.Columns[myMembers[i].Name];
@@ -343,6 +373,8 @@ namespace FrameWork
 
                 if (myAttributes.Length > 0)
                 {
+                    //if(myAttributes[0] is Attributes.DataElement)
+                    //{
                     if (myMembers[i] is PropertyInfo)
                     {
                         table.Columns.Add(myMembers[i].Name, ((PropertyInfo)myMembers[i]).PropertyType);
@@ -357,17 +389,26 @@ namespace FrameWork
                     {
                         table.Constraints.Add(new UniqueConstraint("UNIQUE_" + myMembers[i].Name, table.Columns[myMembers[i].Name]));
                     }
-                    if (((DataElement)myAttributes[0]).Index)
+
+                    if (((DataElement)myAttributes[0]).IndexColumns != string.Empty)
+                    {
+                        table.Columns[myMembers[i].Name].ExtendedProperties.Add("INDEX", true);
+                        table.Columns[myMembers[i].Name].ExtendedProperties.Add("INDEXCOLUMNS", ((DataElement)myAttributes[0]).IndexColumns);
+                    }
+                    else if (((DataElement)myAttributes[0]).Index)
                     {
                         table.Columns[myMembers[i].Name].ExtendedProperties.Add("INDEX", true);
                     }
+
                     if (((DataElement)myAttributes[0]).Varchar > 0)
                     {
                         table.Columns[myMembers[i].Name].ExtendedProperties.Add("VARCHAR", ((DataElement)myAttributes[0]).Varchar);
                     }
 
+                    //if(myAttributes[0] is Attributes.PrimaryKey)
                     myAttributes = GetRelationAttributes(myMembers[i]);
 
+                    //if(myAttributes[0] is Attributes.Relation)
                     if (myAttributes.Length > 0)
                     {
                         relations = true;
@@ -375,7 +416,21 @@ namespace FrameWork
                 }
             }
 
-            if (primary == false)
+            if (useAutoIncrementColumn == false)
+            {
+                // We define the Tablename_ID column that will always contain a generated unique ID
+
+                DataColumn idColumn = table.Columns.Add(tableName + "_ID", typeof(string));
+
+                if (primaryKeySpecified)
+                {
+                    // if another primary key is defined on this table but the TableName_ID column is still being used then force
+                    // the creation of a unique index on the the TableName_ID column
+                    table.Constraints.Add(new UniqueConstraint(idColumn.ColumnName, idColumn));
+                }
+            }
+
+            if (primaryKeySpecified == false)
             {
                 var index = new DataColumn[1];
                 index[0] = table.Columns[tableName + "_ID"];
@@ -385,6 +440,11 @@ namespace FrameWork
             if (Connection.IsSQLConnection)
             {
                 Connection.CheckOrCreateTable(table);
+            }
+            else
+            {
+                if (!System.IO.File.Exists(Connection.connString + tableName + ".xml"))
+                    Connection.SaveDataSet(tableName, ds);
             }
 
             ds.DataSetName = tableName;
@@ -397,6 +457,48 @@ namespace FrameWork
             dth.UsesPreCaching = DataObject.GetPreCachedFlag(objType);
 
             TableDatasets.Add(tableName, dth);
+
+            //if (dth.UsesPreCaching && Connection.IsSQLConnection)
+            //{
+            //    // not useful for xml connection
+            //    if (Log.IsDebugEnabled)
+            //        Log.Debug("Precaching of " + table.TableName + "...");
+
+            //    var objects = SQLSelectObjects<TObject>("");
+
+            //    object key;
+            //    for (int i = 0; i < objects.Length; i++)
+            //    {
+            //        key = null;
+            //        if (primaryIndexMember == null)
+            //        {
+            //            key = objects[i].ObjectId;
+            //        }
+            //        else
+            //        {
+            //            if (primaryIndexMember is PropertyInfo)
+            //            {
+            //                key = ((PropertyInfo) primaryIndexMember).GetValue(objects[i], null);
+            //            }
+            //            else if (primaryIndexMember is FieldInfo)
+            //            {
+            //                key = ((FieldInfo) primaryIndexMember).GetValue(objects[i]);
+            //            }
+            //        }
+            //        if (key != null)
+            //        {
+            //            dth.SetPreCachedObject(key, objects[i]);
+            //        }
+            //        else
+            //        {
+            //            if (Log.IsErrorEnabled)
+            //                Log.Error("Primary key is null! " + ((primaryIndexMember != null) ? primaryIndexMember.Name : ""));
+            //        }
+            //    }
+
+            //    if (Log.IsDebugEnabled)
+            //        Log.Debug("Precaching of " + table.TableName + " finished!");
+            //}
         }
 
         public string[] GetTableNameList()
@@ -424,34 +526,77 @@ namespace FrameWork
 
         #region Implementation
 
-        // Ajoute un objet a la database , true = Success
+        /// <summary>
+        /// Adds a new object to the database.
+        /// </summary>
+        /// <param name="dataObject">the object to add to the database</param>
+        /// <returns>true if the object was added successfully; false otherwise</returns>
         protected abstract bool AddObjectImpl(DataObject dataObject);
 
-        // Sauvegarde un Objet dans la Database
-        protected abstract void SaveObjectImpl(DataObject dataObject);
+        /// <summary>
+        /// Persists an object to the database.
+        /// </summary>
+        /// <param name="dataObject">the object to save to the database</param>
+        protected abstract bool SaveObjectImpl(DataObject dataObject);
 
-        // Supprime un objet de la database
-        protected abstract void DeleteObjectImpl(DataObject dataObject);
+        /// <summary>
+        /// Deletes an object from the database.
+        /// </summary>
+        /// <param name="dataObject">the object to delete from the database</param>
+        protected abstract bool DeleteObjectImpl(DataObject dataObject);
 
-        // Trouve un objet a partir de sa primaryKey
+        /// <summary>
+        /// Finds an object in the database by primary key.
+        /// </summary>
+        /// <typeparam name="TObject">the type of objects to retrieve</typeparam>
+        /// <param name="key">the value of the primary key to search for</param>
+        /// <returns>a <see cref="DataObject" /> instance representing a row with the given primary key value; null if the key value does not exist</returns>
         protected abstract TObject FindObjectByKeyImpl<TObject>(object key)
             where TObject : DataObject;
 
-        // Trouve un objet a partir de sa primaryKey
+        /// <summary>
+        /// Finds an object in the database by primary key.
+        /// Uses cache if available
+        /// </summary>
+        /// <param name="objectType"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
         protected abstract DataObject FindObjectByKeyImpl(Type objectType, object key);
 
-        // Sélectionne un objet a partir d'une table et des paramètres
+        /// <summary>
+        /// Selects objects from a given table in the database based on a given set of criteria. (where clause)
+        /// </summary>
+        /// <param name="objectType"></param>
+        /// <param name="whereClause"></param>
+        /// <param name="isolation"></param>
+        /// <returns></returns>
         protected abstract DataObject[] SelectObjectsImpl(Type objectType, string whereClause, IsolationLevel isolation);
 
-        // Sélectionne un objet a partir d'une table et des paramètres
+        /// <summary>
+        /// Selects objects from a given table in the database based on a given set of criteria. (where clause)
+        /// </summary>
+        /// <typeparam name="TObject">the type of objects to retrieve</typeparam>
+        /// <param name="whereClause">the where clause to filter object selection on</param>
+        /// <returns>an array of <see cref="DataObject" /> instances representing the selected objects that matched the given criteria</returns>
+        /// <returns></returns>
         protected abstract IList<TObject> SelectObjectsImpl<TObject>(string whereClause, IsolationLevel isolation)
             where TObject : DataObject;
 
-        // Sélectionne tous les objets de la database
+        /// <summary>
+        /// Selects all objects from a given table in the database.
+        /// </summary>
+        /// <typeparam name="TObject">the type of objects to retrieve</typeparam>
+        /// <returns>an array of <see cref="DataObject" /> instances representing the selected objects</returns>
+        /// <returns></returns>
         protected abstract IList<TObject> SelectAllObjectsImpl<TObject>(IsolationLevel isolation)
             where TObject : DataObject;
 
-        // Retourn le nombre d'objet dans la database
+        /// <summary>
+        /// Gets the number of objects in a given table in the database based on a given set of criteria. (where clause)
+        /// </summary>
+        /// <typeparam name="TObject">the type of objects to retrieve</typeparam>
+        /// <param name="where">the where clause to filter object count on</param>
+        /// <returns>a positive integer representing the number of objects that matched the given criteria; zero if no such objects existed</returns>
         protected abstract int GetObjectCountImpl<TObject>(string where)
             where TObject : DataObject;
 
@@ -481,6 +626,8 @@ namespace FrameWork
                     Relation[] myAttributes = GetRelationAttributes(myMembers[i]);
                     if (myAttributes.Length > 0)
                     {
+                        //if(myAttributes[0] is Attributes.Relation)
+                        //{
                         bool array = false;
 
                         Type type;
@@ -534,11 +681,12 @@ namespace FrameWork
                                 SaveObject(val as DataObject);
                         }
                     }
+                    //}
                 }
             }
             catch (Exception e)
             {
-                throw new DatabaseException("Relation save failed !", e);
+                throw new DatabaseException("Saving Relations failed !", e);
             }
         }
 
@@ -557,6 +705,8 @@ namespace FrameWork
                     Relation[] myAttributes = GetRelationAttributes(myMembers[i]);
                     if (myAttributes.Length > 0)
                     {
+                        //if(myAttributes[0] is Attributes.Relation)
+                        //{
                         if (myAttributes[0].AutoDelete == false)
                             continue;
 
@@ -612,12 +762,13 @@ namespace FrameWork
                             if (val != null && val is DataObject)
                                 DeleteObject(val as DataObject);
                         }
+                        //}
                     }
                 }
             }
             catch (Exception e)
             {
-                throw new DatabaseException("Relations delete failed !", e);
+                throw new DatabaseException("Resolving Relations failed !", e);
             }
         }
 
@@ -740,7 +891,7 @@ namespace FrameWork
             }
             catch (Exception e)
             {
-                throw new DatabaseException("Resolution of relations " + dataObject.TableName + " failed!", e);
+                throw new DatabaseException("Resolving Relations for " + dataObject.TableName + " failed!", e);
             }
         }
 
@@ -754,7 +905,11 @@ namespace FrameWork
             handler.SetCacheObject(obj.ObjectId, null);
         }
 
-        // Met a jour ou ajoute un objet dans la DB
+        /// <summary>
+        /// Selects object from the db and updates or adds entry in the pre-cache
+        /// </summary>
+        /// <param name="objectType"></param>
+        /// <param name="key"></param>
         public bool UpdateInCache<TObject>(object key)
             where TObject : DataObject
         {
@@ -840,9 +995,11 @@ namespace FrameWork
                     object[] attrib = objMembers[i].GetCustomAttributes(typeof(DataElement), true);
                     object[] relAttrib = GetRelationAttributes(objMembers[i]);
 
+                    bool usePrimaryKey = keyAttrib.Length > 0 && (keyAttrib[0] as PrimaryKey).AutoIncrement;
+
                     if (attrib.Length > 0 || keyAttrib.Length > 0 || relAttrib.Length > 0 || readonlyAttrib.Length > 0)
                     {
-                        var info = new BindingInfo(objMembers[i], keyAttrib.Length > 0, relAttrib.Length > 0, readonlyAttrib.Length > 0,
+                        var info = new BindingInfo(objMembers[i], keyAttrib.Length > 0, usePrimaryKey, relAttrib.Length > 0, readonlyAttrib.Length > 0,
                                                    (attrib.Length > 0) ? (DataElement)attrib[0] : null);
                         list.Add(info);
                     }
@@ -855,9 +1012,24 @@ namespace FrameWork
             return bindingInfos;
         }
 
-        // Lecture de la clef primaire
+        /// <summary>
+        /// Primary Key ID of a view
+        /// </summary>
+        /// <param name="objectType"></param>
+        /// <returns></returns>
         public static string GetTableOrViewName(Type objectType)
         {
+            // Graveen: introducing view selection hack (before rewriting the layer :D)
+            // basically, a view must exist and is created with the following:
+            //
+            //	[DataTable(TableName="InventoryItem",ViewName = "MarketItem")]
+            //	public class SomeMarketItems : InventoryItem {};
+            //
+            //  here, we rely on the view called MarketItem,
+            //  based on the InventoryItem table. We have to tell to the code
+            //  only to bypass the id generated with FROM by the above
+            //  code.
+            // 
             string name = DataObject.GetViewName(objectType);
 
             // if not a view, we use tablename, else viewname
@@ -879,18 +1051,18 @@ namespace FrameWork
                 DataRow row = FindRowByKey(ret);
 
                 if (row == null)
-                    throw new DatabaseException("Reload of Databaseobject failed (Keyvalue Changed ?)!");
+                    throw new DatabaseException("Reloading Databaseobject failed (Keyvalue Changed ?)!");
 
                 FillObjectWithRow(ref ret, row, true);
 
                 dataObject.Dirty = false;
-                dataObject.IsValid = true;
+                dataObject.IsPersisted = true;
 
                 return ret;
             }
             catch (Exception e)
             {
-                throw new DatabaseException("Reload of Databaseobject failed !", e);
+                throw new DatabaseException("Reloading Databaseobject failed !", e);
             }
         }
 
@@ -904,6 +1076,8 @@ namespace FrameWork
 
             if (connectionType == ConnectionType.DATABASE_MYSQL)
                 return new MySQLObjectDatabase(connection);
+            else if (connectionType == ConnectionType.DATABASE_XML)
+                return new XMLObjectDatabase(connection);
 
             return null;
         }
@@ -919,11 +1093,13 @@ namespace FrameWork
             public readonly bool ReadOnly;
             public DataElement DataElementAttribute;
             public bool PrimaryKey;
+            public bool UsePrimaryKey;
 
-            public BindingInfo(MemberInfo member, bool primaryKey, bool hasRelation, bool readOnly, DataElement attrib)
+            public BindingInfo(MemberInfo member, bool primaryKey, bool usePrimaryKey, bool hasRelation, bool readOnly, DataElement attrib)
             {
                 Member = member;
                 PrimaryKey = primaryKey;
+                UsePrimaryKey = usePrimaryKey;
                 HasRelation = hasRelation;
                 DataElementAttribute = attrib;
                 ReadOnly = readOnly;

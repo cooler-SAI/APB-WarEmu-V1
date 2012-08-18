@@ -64,6 +64,7 @@
     <Compile Include="Database\DataTableHandler.cs" />
     <Compile Include="Database\DBManager.cs" />
     <Compile Include="Database\Handler\MysqlObjectDatabase.cs" />
+    <Compile Include="Database\Handler\XMLObjectDatabase.cs" />
     <Compile Include="Database\IObjectDatabase.cs" />
     <Compile Include="Database\ObjectDatabase.cs" />
     <Compile Include="Database\Transaction\IsolationLevel.cs" />

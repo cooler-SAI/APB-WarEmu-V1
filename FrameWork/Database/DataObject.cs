@@ -30,17 +30,22 @@ namespace FrameWork
         bool m_allowAdd = true;
         bool m_allowDelete = true;
 
-        // Génération d'un objet unique pour chaque DataObject
+        /// <summary>
+        /// Default-Construktor that generates a new Object-ID and set
+        /// Dirty and Persisted to <c>false</c>
+        /// </summary>
         protected DataObject()
         {
             ObjectId = IDGenerator.GenerateID();
-            IsValid = false;
+            IsPersisted = false;
             AllowAdd = true;
             AllowDelete = true;
             IsDeleted = false;
         }
 
-        // Nom de la table dont l'objet provient
+        /// <summary>
+        /// The table name which own he object 
+        /// </summary>
         [Browsable(false)]
         public virtual string TableName
         {
@@ -51,7 +56,9 @@ namespace FrameWork
             }
         }
 
-        // Chargement en cache ou non de l'objet
+        /// <summary>
+        /// Load object in cache or not?
+        /// </summary>
         [Browsable(false)]
         public virtual bool UsesPreCaching
         {
@@ -62,13 +69,15 @@ namespace FrameWork
             }
         }
 
-        // Objet Valide ?
-        [XmlIgnore()]
+        /// <summary>
+        /// Is this object also in the database?
+        /// </summary>
         [Browsable(false)]
-        public bool IsValid { get; set; }
+        public bool IsPersisted { get; set; }
 
-        // Peut être ou non ajouté a la DB
-        [XmlIgnore()]
+        /// <summary>
+        /// Can this object added to the DB?
+        /// </summary>
         [Browsable(false)]
         public virtual bool AllowAdd
         {
@@ -76,8 +85,9 @@ namespace FrameWork
             set { m_allowAdd = value; }
         }
 
-        // Peut être ou non supprimé de la DB
-        [XmlIgnore()]
+        /// <summary>
+        /// Can this object be deleted from the DB?
+        /// </summary>
         [Browsable(false)]
         public virtual bool AllowDelete
         {
@@ -85,25 +95,31 @@ namespace FrameWork
             set { m_allowDelete = value; }
         }
 
-        // Numéro de l'objet dans la table
-        [XmlIgnore()]
+        /// <summary>
+        /// Index of the object in his table
+        /// </summary>
         [Browsable(false)]
         public string ObjectId { get; set; }
 
-        // Objet différent ke celui de la table ?
-        [XmlIgnore()]
+        /// <summary>
+        /// Is object different than object in the DB?
+        /// </summary>
         [Browsable(false)]
         public virtual bool Dirty { get; set; }
 
-        // Cette objet a été delete de la table ?
-        [XmlIgnore()]
+        /// <summary>
+        /// Has this object been deleted from the database
+        /// </summary>
         [Browsable(false)]
         public virtual bool IsDeleted { get; set; }
 
 
         #region ICloneable Member
 
-        // Créer un clone de l'objet
+        /// <summary>
+        /// Clone the current object and return the copy
+        /// </summary>
+        /// <returns></returns>
         public object Clone()
         {
             var obj = (DataObject)MemberwiseClone();
@@ -113,7 +129,13 @@ namespace FrameWork
 
         #endregion
 
-        // Récupère la table name en lisant les attributs
+        /// <summary>
+        /// Returns the Tablename for an Objecttype. 
+        /// Reads the DataTable-Attribute or if
+        /// not defined returns the Classname
+        /// </summary>
+        /// <param name="myType">get the Tablename for this DataObject</param>
+        /// <returns>The </returns>
         public static string GetTableName(Type myType)
         {
             object[] attri = myType.GetCustomAttributes(typeof(DataTable), true);
@@ -144,7 +166,11 @@ namespace FrameWork
             return null;
         }
 
-        // Précache au démarrage ?
+        /// <summary>
+        /// Is this table pre-cached on startup?
+        /// </summary>
+        /// <param name="myType"></param>
+        /// <returns>bool</returns>
         public static bool GetPreCachedFlag(Type myType)
         {
             object[] attri = myType.GetCustomAttributes(typeof(DataTable), true);
@@ -155,6 +181,15 @@ namespace FrameWork
             }
 
             return false;
+        }
+
+
+        public override string ToString()
+        {
+            string str = "DataObject: " + TableName;
+
+            str += ", ObjectID{" + ObjectId + "}";
+            return str;
         }
     }
 }
