@@ -112,7 +112,10 @@ namespace WorldServer
         public virtual void Say(string Msg, SystemData.ChatLogFilters Filter)
         {
             foreach (Player Plr in _PlayerRanged.ToArray())
-                Plr.SendMessage(this, Msg, Filter);
+            {
+                if (Plr.GmLevel != 0 || GetPlayer().GmLevel != 0 || Program.Config.ChatBetweenRealms || Plr.Realm == GetPlayer().Realm)
+                    Plr.SendMessage(this, Msg, Filter);
+            }
 
             if (IsPlayer())
                 GetPlayer().SendMessage(this, Msg, Filter);
