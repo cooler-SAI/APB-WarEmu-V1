@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,11 +35,10 @@ namespace LauncherServer
             Client cclient = client as Client;
 
             string Username = packet.GetString();
-            UInt32 Len = packet.GetUint32();
-            byte[] Password = packet.Read((int)Len);
+            string Password = packet.GetString();
 
             bool result = Program.AcctMgr.CheckAccount(Username, Password);
-            Log.Debug("CL_START", "Lancement du client : " + Username + " " + result);
+            Log.Info("CL_START", "Lancement du client : " + Username + " " + result  + " " + Password);
 
             PacketOut Out = new PacketOut((byte)Opcodes.LCR_START);
 
@@ -51,44 +50,35 @@ namespace LauncherServer
             else 
                 Out.WriteByte(1);
 
-            cclient.SendTCP(Out);
+            cclient.SendPacket(Out);
         }
 
         [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.CL_CHECK, 0, "OnCheck")]
         static public void CL_CHECK(BaseClient client, PacketIn packet)
         {
             Client cclient = client as Client;
-            uint Version = packet.GetUint32();
 
-            Log.Debug("CL_CHECK", "Launcher Version : " + Version);
+            uint Version = packet.GetUint32();
 
             PacketOut Out = new PacketOut((byte)Opcodes.LCR_CHECK);
 
             if (Version != Program.Version)
             {
+                Log.Error("CL_CHECK", "Incorrect Version :" + CheckResult.LAUNCHER_VERSION);
                 Out.WriteByte((byte)CheckResult.LAUNCHER_VERSION); // Version incorrect + message
                 Out.WriteString(Program.Message);
-                client.SendTCP(Out);
+                client.SendPacket(Out);
 
                 cclient.Disconnect();
                 return;
             }
 
-            byte File = packet.GetUint8();
-            UInt64 Len = 0;
-
-            if (File >= 1)
-                Len = packet.GetUint64();
-
-            if ((long)Len != Program.Info.Length)
-            {
-                Out.WriteByte((byte)CheckResult.LAUNCHER_FILE);
-                Out.WriteString(Program.StrInfo);
-            }
+            Out.WriteByte((byte)CheckResult.LAUNCHER_FILE);
+            if(cclient.GetIp.Contains("192.168"))
+                Out.WriteString(Program.StrInfoExternal);
             else
-                Out.WriteByte((byte)CheckResult.LAUNCHER_OK);
-
-            cclient.SendTCP(Out);
+            Out.WriteString(Program.StrInfo);
+            cclient.SendPacket(Out);
         }
 
         [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.CL_INFO, 0, "OnInfo")]
@@ -113,7 +103,7 @@ namespace LauncherServer
                     Out.WriteUInt32(Rm.DestructionCount);
                 }
 
-                cclient.SendTCP(Out);
+                cclient.SendPacket(Out);
             }
         }
     }

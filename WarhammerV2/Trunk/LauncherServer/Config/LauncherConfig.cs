@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@ namespace LauncherServer
     {
         public int LauncherServerPort = 8000;
         public int Version = 1;
-        public string Message = "Invalid launcher version : Please visit http://AllPrivateServer.com/";
+        public string Message = "Invalid launcher version : Please visit http://war-emu.com/";
 
         public RpcClientConfig RpcInfo = new RpcClientConfig("127.0.0.1", "127.0.0.1", 6800);
         public LogInfo LogLevel = new LogInfo();

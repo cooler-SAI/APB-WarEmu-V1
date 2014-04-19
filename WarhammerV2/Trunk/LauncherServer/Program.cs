@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -52,6 +52,9 @@ namespace LauncherServer
         static public FileInfo Info;
         static public string StrInfo;
 
+        static public FileInfo InfoExternal;
+        static public string StrInfoExternal;
+
         static public AccountMgr AcctMgr
         {
             get
@@ -87,14 +90,19 @@ namespace LauncherServer
             if (!Client.Start(Config.RpcInfo.RpcServerIp, Config.RpcInfo.RpcServerPort))
                 ConsoleMgr.WaitAndExit(2000);
 
-            Info = new FileInfo("Configs/mythloginserviceconfig.xml");
+            Info = new FileInfo("Configs/PortalSettings.xml");
             if (!Info.Exists)
             {
-                Log.Error("Configs/mythloginserviceconfig.xml", "Config file missing !");
+                Log.Error("Configs/PortalSettings.xml", "Config file missing !");
                 ConsoleMgr.WaitAndExit(5000);
             }
-
             StrInfo = Info.OpenText().ReadToEnd();
+
+            InfoExternal = new FileInfo("Configs/PortalSettingsExternal.xml");
+            if (InfoExternal.Exists)
+            {
+                StrInfoExternal = InfoExternal.OpenText().ReadToEnd();
+            }
 
             if (!TCPManager.Listen<TCPServer>(Config.LauncherServerPort, "LauncherServer"))
                 ConsoleMgr.WaitAndExit(2000);
