@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -60,15 +60,29 @@ namespace WorldServer
 
             X = Zone.CalculPin((uint)(Spawn.WorldX), true);
             Y = Zone.CalculPin((uint)(Spawn.WorldY), false);
-            Z = (ushort)(Spawn.WorldZ * 2);
+            Z = (ushort)(Spawn.WorldZ);
 
             Heading = (ushort)Spawn.WorldO;
             SetOffset((ushort)(Spawn.WorldX >> 12), (ushort)(Spawn.WorldY >> 12));
-            Region.UpdateRange(this);
-
+            ScrInterface.AddScript(Spawn.Proto.ScriptName);
             base.OnLoad();
+            IsActive = true;
         }
 
+        /*
+         * |00 3D 71 
+06 90 
+00 00 
+00 00 
+1F E3 
+00 0C E3 29 
+00 0E 59 90 
+FF FF 
+1E 00 00 00 35 F3 00 03 04 00 00
+|00 00 64 8B 76 09 CD 00 00 00 00 0F 45 6D 70 69 |..d.v.......Empi|
+|72 65 20 42 61 72 20 44 6F 6F 72 04 06 AB DD 00 |re Bar Door.....|                                                
+-------------------------------------------------------------------
+         * */
         public override void SendMeTo(Player Plr)
         {
             PacketOut Out = new PacketOut((byte)Opcodes.F_CREATE_STATIC);
@@ -81,16 +95,16 @@ namespace WorldServer
             Out.WriteUInt32((UInt32)Spawn.WorldY);
             Out.WriteUInt16((ushort)Spawn.DisplayID);
 
-            Out.WriteUInt16(Spawn.Proto.GetUnk(0));
-            Out.WriteUInt16(Spawn.Proto.GetUnk(1));
-            Out.WriteUInt16(Spawn.Proto.GetUnk(2));
-            Out.WriteByte(0);
-            Out.WriteUInt16(Spawn.Proto.GetUnk(3));
-            Out.Fill(0, 5);
-            Out.WriteUInt16(Spawn.Proto.GetUnk(4));
-            Out.WriteUInt16(Spawn.Proto.GetUnk(5));
-
-            Out.WriteUInt32(0);
+            Out.WriteUInt16(Spawn.GetUnk(0));
+            Out.WriteUInt16(Spawn.GetUnk(1));
+            Out.WriteUInt16(Spawn.GetUnk(2));
+            Out.WriteByte(Spawn.Unk1);
+            Out.WriteUInt16(Spawn.GetUnk(3));
+            Out.WriteByte(Spawn.Unk2);
+            Out.WriteUInt32(Spawn.Unk3);
+            Out.WriteUInt16(Spawn.GetUnk(4));
+            Out.WriteUInt16(Spawn.GetUnk(5));
+            Out.WriteUInt32(Spawn.Unk4);
 
             Out.WritePascalString(Name);
             Out.WriteByte(0);
@@ -102,14 +116,14 @@ namespace WorldServer
 
         public override void SendInteract(Player Plr, InteractMenu Menu)
         {
-            Tok_Info Info = WorldMgr.GetTok((UInt32)Spawn.Proto.TokUnlock);
+            Tok_Info Info = WorldMgr.GetTok(Spawn.Proto.TokUnlock);
 
             if (!IsDead)
             {
                 Plr.QtsInterface.HandleEvent(Objective_Type.QUEST_USE_GO, Spawn.Entry, 1);
             }
 
-            Plr.TokInterface.AddTok(Info.Entry);
+            Plr.TokInterface.AddTok(Info);
 
             base.SendInteract(Plr, Menu);
         }

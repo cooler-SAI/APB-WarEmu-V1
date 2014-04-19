@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,9 @@ namespace WorldServer
         public int ArtifactLootRate = 1;
         public int GoldRate = 1;
         public int XpRate = 1;
+        public int RenownRate = 1;
         public bool ChatBetweenRealms = true;
+        public bool CleanSpawns = true;
 
         public string ZoneFolder = "zones/";
     }

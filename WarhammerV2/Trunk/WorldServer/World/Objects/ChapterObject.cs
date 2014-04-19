@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -49,7 +49,7 @@ namespace WorldServer
             Y = Info.PinY;
             Z = 16384;
             SetOffset(Info.OffX, Info.OffY);
-            Region.UpdateRange(this);
+            IsActive = true;
 
             base.OnLoad();
         }

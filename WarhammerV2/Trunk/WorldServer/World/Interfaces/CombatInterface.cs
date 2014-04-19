@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,12 +29,14 @@ namespace WorldServer
 {
     public class AggroInfo
     {
-        public AggroInfo(UInt16 Oid)
+        public AggroInfo(UInt16 Oid, bool IsPlayer)
         {
             this.Oid = Oid;
+            this.IsPlayer = IsPlayer;
         }
 
         public UInt16 Oid;
+        public bool IsPlayer;
 
         public UInt64 DamagesDeal;
         public UInt64 DamagesReceive;
@@ -71,18 +73,6 @@ namespace WorldServer
         }
     }
 
-    public class TargetInfo
-    {
-        public TargetInfo(Unit Target, GameData.TargetTypes Type)
-        {
-            this.Target = Target;
-            this.Type = Type;
-        }
-
-        public Unit Target;
-        public GameData.TargetTypes Type;
-    };
-
     public enum AiState
     {
         STANDING = 0,
@@ -93,75 +83,136 @@ namespace WorldServer
 
     public class CombatInterface : BaseInterface
     {
+        public AIInterface AI;
+
         public bool Attacking = false;
         public long NextAttackTime = 0;
+        public long FightingStateTime = 0;
+        public ushort[] Targets = new ushort[7];
 
-        public AiState State = AiState.STANDING;
-
-        public CombatInterface(Object Obj)
-            : base(Obj)
+        public override bool Load()
         {
+            AI = _Owner.GetUnit().AiInterface;
+            ClearTargets();
+            return base.Load();
+        }
 
+        public void ResetFightingState(long Tick)
+        {
+            if (FightingStateTime == 0)
+                _Owner.EvtInterface.Notify(EventName.ON_ENTER_COMBAT, _Owner, null);
+
+            FightingStateTime = Tick + 2000; // 2 Sec
         }
 
         public override void Update(long Tick)
         {
+            if (FightingStateTime != 0 && FightingStateTime < Tick)
+            {
+                FightingStateTime = 0;
+                _Owner.EvtInterface.Notify(EventName.ON_LEAVE_COMBAT, _Owner, null);
+            }
+
             if (!HasUnit())
                 return;
 
             Unit Me = GetUnit();
             Unit Target = GetNextTarget();
 
-            if (Target == null)
-                Attacking = false;
-
             if (HasPlayer())
             {
+                if (Target == null)
+                    return;
+
+                if (!CanAttack(Me, Target))
+                    return;
+
                 if (Attacking)
                 {
                     if (NextAttackTime < Tick)
                     {
-                        if (!Obj.IsWithinRadius(Target, 10))
+                        Player Plr = _Owner.GetPlayer();
+                        if (Plr.AbtInterface.IsCasting())
                         {
-                            NextAttackTime += 200;
-                        }
-                        else if (!Obj.IsObjectInFront(Target, 90))
-                        {
-                            NextAttackTime += 200;
+                            NextAttackTime += 100;
                         }
                         else
                         {
-                            Me.Strike(Target);
-                            NextAttackTime = Tick + Me.ItmInterface.GetAttackTime(EquipSlot.MAIN_DROITE) * 10;
+                            NextAttackTime += 100;
+
+                            if (!Plr.IsObjectInFront(Target, 110))
+                                return;
+
+                            EquipSlot SlotToUse = EquipSlot.NONE;
+
+                            if(Plr.ItmInterface.GetItemInSlot((ushort)EquipSlot.MAIN_DROITE) == null 
+                                && Plr.ItmInterface.GetItemInSlot((ushort)EquipSlot.MAIN_GAUCHE) == null
+                                && Plr.ItmInterface.GetItemInSlot((ushort)EquipSlot.ARME_DISTANCE) == null)
+                            {
+                                if(Plr.GetDistance(Target) < 5)
+                                {
+                                    Me.Strike(Target);
+                                    NextAttackTime = Tick + Me.ItmInterface.GetAttackTime(EquipSlot.MAIN_DROITE) * 10;
+                                    return;
+                                }
+                            }
+
+                            if (Plr.GetDistance(Target) < 5) // Melee
+                            {
+                                if (!Plr.ItmInterface.CanUseItem((ushort)EquipSlot.MAIN_DROITE, Tick))
+                                {
+                                    if (Plr.ItmInterface.CanUseItem((ushort)EquipSlot.MAIN_GAUCHE, Tick))
+                                        SlotToUse = EquipSlot.MAIN_GAUCHE;
+                                    else
+                                        SlotToUse = EquipSlot.NONE;
+                                }
+                                else
+                                    SlotToUse = EquipSlot.MAIN_DROITE;
+                            }
+                            else if(Plr.ItmInterface.CanUseItem((ushort)EquipSlot.ARME_DISTANCE, Tick) && Plr.GetDistance(Target) < 90)// Ranged
+                            {
+                                SlotToUse = EquipSlot.ARME_DISTANCE;
+                            }
+                            
+                            if(SlotToUse != EquipSlot.NONE)
+                            {
+                                ushort Time = Me.ItmInterface.GetAttackTime(SlotToUse);
+                                Me.Strike(Target, SlotToUse);
+                                NextAttackTime = Tick + Time * 5;
+                                Me.ItmInterface.SetCooldown((ushort)SlotToUse, Time * 10);
+                            }
                         }
                     }
                 }
+
+                DisablePvp(Tick, false);
             }
             else
-                AttackAI(Target);
+                AttackAI(Tick, Target);
         }
 
-        public void AttackAI(Unit Target)
+        public void AttackAI(long Tick, Unit Target)
         {
-            if (Target == null)
+            if (Target == null || Target.IsDead || _Owner.GetUnit().IsDead)
             {
-                if (State == AiState.FIGHTING)
+                if (AI.State == AiState.FIGHTING)
                     CombatStop();
 
                 return;
             }
 
-            long Tick = TCPManager.GetTimeStampMS();
-
-            SetTarget(Target);
-            LookAt(Target);
-
-            if (NextAttackTime < Tick)
+            if (AI.State == AiState.FIGHTING)
             {
-                if (Obj.IsWithinRadius(Target, 10))
+                SetTarget(Target.Oid, GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY);
+                LookAt(Target);
+
+                if (NextAttackTime < Tick)
                 {
-                    Obj.GetUnit().Strike(Target);
-                    NextAttackTime = Tick + 2000;
+                    if (_Owner.IsWithinRadius(Target, 5))
+                    {
+                        _Owner.GetUnit().Strike(Target);
+                        NextAttackTime = Tick + 2000;
+                    }
                 }
             }
         }
@@ -171,35 +222,43 @@ namespace WorldServer
             if (HasPlayer())
                 return;
 
-            if (!Obj.IsCreature())
+            if (!_Owner.IsCreature())
                 return;
 
             if (CheckSpawnRange())
                 return;
 
-            Creature Crea = Obj.GetCreature();
-            Crea.MvtInterface.FollowUnit(Target, 7, 10,200, eFormationType.Protect);
+            Creature Crea = _Owner.GetCreature();
+            Crea.MvtInterface.FollowUnit(Target, 7, 3,100, eFormationType.Protect);
         }
 
         #region IASystem
 
         public bool IsFighting()
         {
-            if (State == AiState.FIGHTING)
-                return true;
+            if (_Owner.IsPlayer())
+            {
+                if (FightingStateTime != 0)
+                    return true;
+            }
+            else
+            {
+                if (AI.State == AiState.FIGHTING || FightingStateTime != 0)
+                    return true;
+            }
 
             return false;
         }
 
         public bool IsFightingWithFriend(Unit Me)
         {
-            if (!HasTarget())
+            if (!HasTarget(GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY))
                 return false;
 
             if (!IsFighting())
                 return false;
 
-            if(IsFriend(Me, CurrentTarget.Target))
+            if(IsFriend(Me, GetTarget(GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY)))
                 return true;
             else
                 return false;
@@ -207,35 +266,41 @@ namespace WorldServer
 
         public void CombatStart(Unit Fighter)
         {
-            Log.Success("CombatStart", Obj.Name + " Start combat with " + Fighter.Name);
-            State = AiState.FIGHTING;
-            GetAggro(Fighter.Oid).DamagesReceive+=100;
+            //Log.Success("CombatStart", Obj.Name + " Start combat with " + Fighter.Name);
+            AI.State = AiState.FIGHTING;
+            GetAggro(Fighter.Oid, Fighter.IsPlayer()).DamagesReceive += 100;
         }
 
         public void CombatStop()
         {
             //Log.Success("CombatStop", Obj.Name + " Stop combat ");
-            State = AiState.STANDING;
+            AI.State = AiState.STANDING;
             ClearTargets();
 
-            if (Obj.IsCreature())
-                Obj.GetCreature().MvtInterface.StopFollow();
+            if (_Owner.IsCreature())
+                _Owner.GetCreature().MvtInterface.StopFollow();
 
-            if(Obj.IsCreature() && !Obj.GetCreature().IsDead)
+            if (_Owner.IsCreature() && !_Owner.GetCreature().IsDead)
                 ReturnToSpawn();
 
-            Obj.EvtInterface.Notify("CombatStop", null, null);
+            _Owner.EvtInterface.Notify(EventName.ON_LEAVE_COMBAT, null, null);
         }
 
         public void Evade()
         {
-            foreach (AggroInfo Info in _Aggros.Values.ToArray())
+            if (_Owner == null || _Aggros == null)
+                return;
+
+            Object Target;
+            AggroInfo Info;
+            foreach (KeyValuePair<ushort,AggroInfo> Kp in _Aggros.ToArray())
             {
-                Object Target = Obj.Zone.GetObject(Info.Oid);
+                Info = Kp.Value;
+                Target = _Owner.Zone.GetObject(Info.Oid);
                 if (Target == null || !Target.IsUnit())
                    continue;
 
-                Target.GetUnit().CbtInterface.RemoveAggro(Obj.Oid);
+                Target.GetUnit().CbtInterface.RemoveAggro(_Owner.Oid);
             }
 
             CombatStop();
@@ -243,10 +308,10 @@ namespace WorldServer
 
         public bool CheckSpawnRange()
         {
-            if (!Obj.IsCreature())
+            if (!_Owner.IsCreature())
                 return false;
 
-            Creature Crea = Obj.GetCreature();
+            Creature Crea = _Owner.GetCreature();
 
             if (Crea.GetDistance(Crea.SpawnPoint) > 200)
             {
@@ -259,12 +324,12 @@ namespace WorldServer
         }
         public void ReturnToSpawn()
         {
-            if (!Obj.IsCreature())
+            if (!_Owner.IsCreature())
                 return;
 
-            Creature Crea = Obj.GetCreature();
+            Creature Crea = _Owner.GetCreature();
             Crea.MvtInterface.CancelWalkTo();
-            Crea.SetPosition((UInt16)Crea.SpawnPoint.X, (UInt16)Crea.SpawnPoint.Y, (UInt16)Crea.SpawnPoint.Z, Crea.SpawnHeading);
+            Crea.SetPosition((UInt16)Crea.SpawnPoint.X, (UInt16)Crea.SpawnPoint.Y, (UInt16)Crea.SpawnPoint.Z, Crea.SpawnHeading, true);
         }
 
         #endregion
@@ -273,12 +338,12 @@ namespace WorldServer
 
         public Dictionary<UInt16, AggroInfo> _Aggros = new Dictionary<ushort, AggroInfo>();
 
-        public AggroInfo GetAggro(UInt16 Oid, bool Create=true)
+        public AggroInfo GetAggro(UInt16 Oid,bool IsPlayer, bool Create=true)
         {
             AggroInfo Info = null;
             if (!_Aggros.TryGetValue(Oid, out Info) && Create)
             {
-                Info = new AggroInfo(Oid);
+                Info = new AggroInfo(Oid, IsPlayer);
                 _Aggros.Add(Oid, Info);
             }
 
@@ -292,14 +357,42 @@ namespace WorldServer
         {
             return (UInt32)_Aggros.Count;
         }
-        public AggroInfo GetMaxAggroHate()
+
+        public AggroInfo GetMaxAggroHate(bool Player)
         {
             UInt64 TotalDamages = TotalDamageReceive();
             AggroInfo Aggro = null;
             float MaxHate = -1;
 
-            foreach (AggroInfo Info in _Aggros.Values.ToArray())
+            AggroInfo Info;
+            foreach (KeyValuePair<ushort, AggroInfo> Kp in _Aggros)
             {
+                Info = Kp.Value;
+                float Hate = Info.GetHate(TotalDamages);
+
+                if (Hate > MaxHate && Info.IsPlayer == Player)
+                {
+                    MaxHate = Hate;
+                    Aggro = Info;
+                }
+            }
+
+            return Aggro;
+        }
+
+        public Player GetMaxAggroPlayerHate()
+        {
+            UInt64 TotalDamages = TotalDamageReceive();
+            AggroInfo Aggro = null;
+            float MaxHate = -1;
+
+            AggroInfo Info;
+            foreach (KeyValuePair<ushort, AggroInfo> Kp in _Aggros)
+            {
+                Info = Kp.Value;
+                if (!Info.IsPlayer)
+                    continue;
+
                 float Hate = Info.GetHate(TotalDamages);
 
                 if (Hate > MaxHate)
@@ -309,14 +402,21 @@ namespace WorldServer
                 }
             }
 
-            return Aggro;
+            if (Aggro != null)
+                return _Owner.Region.GetPlayer(Aggro.Oid);
+
+            return null;
         }
         public UInt64 TotalDamageReceive()
         {
             UInt64 Damages = 0;
 
-            foreach (AggroInfo Info in _Aggros.Values.ToArray())
+            AggroInfo Info;
+            foreach (KeyValuePair<ushort, AggroInfo> Kp in _Aggros)
+            {
+                Info = Kp.Value;
                 Damages += Info.DamagesDeal;
+            }
 
             return Damages;
         }
@@ -324,12 +424,23 @@ namespace WorldServer
         public void ClearTargets()
         {
             _Aggros.Clear();
-            SetTarget(null);
+            Targets[0] = 0;
+            Targets[1] = 0;
+            Targets[2] = 0;
+            Targets[3] = 0;
+            Targets[4] = 0;
+            Targets[5] = 0;
+            Targets[6] = 0;
         }
-        public void AddDamageReceive(UInt16 Oid, UInt32 Damages)
+        public void AddDamageReceive(UInt16 Oid, bool IsPlayer, UInt32 Damages)
         {
-            AggroInfo Info = GetAggro(Oid);
+            AggroInfo Info = GetAggro(Oid, IsPlayer);
             Info.DamagesDeal = Damages;
+        }
+        public void AddHealReceive(UInt16 Oid, bool IsPlayer, UInt32 Count)
+        {
+            AggroInfo Info = GetAggro(Oid, IsPlayer);
+            Info.HealsReceive = Count;
         }
 
         public Unit GetNextTarget()
@@ -339,15 +450,17 @@ namespace WorldServer
 
             if (!Me.IsPlayer())
             {
-                AggroInfo Info = GetMaxAggroHate();
+                AggroInfo Info = GetMaxAggroHate(true);
+                if (Info == null)
+                    Info = GetMaxAggroHate(false);
+
                 if(Info != null)
-                    Target = Obj.Region.GetObject(Info.Oid) as Unit;
+                    Target = _Owner.Region.GetObject(Info.Oid) as Unit;
 
             }
             else
             {
-                if (CurrentTarget.Type != GameData.TargetTypes.TARGETTYPES_TARGET_ALLY)
-                    Target = CurrentTarget.Target;
+                Target = GetTarget(GameData.TargetTypes.TARGETTYPES_TARGET_ENEMY);
             }
 
             if (Target == null)
@@ -358,7 +471,7 @@ namespace WorldServer
 
             if (Target.IsDead)
             {
-                if(State == AiState.FIGHTING)
+                if (AI.State == AiState.FIGHTING)
                     OnTargetDie(Target);
 
                 return null;
@@ -369,57 +482,64 @@ namespace WorldServer
 
         #endregion
 
-        #region Follower
-
-        public List<UInt16> _Followers = new List<ushort>();
-
-        public void AddFollower(UInt16 Oid)
-        {
-            if (!_Followers.Contains(Oid))
-                _Followers.Add(Oid);
-        }
-        public void RemoveFollower(UInt16 Oid)
-        {
-            _Followers.Remove(Oid);
-        }
-        public int GetFollowId(UInt16 Oid)
-        {
-            for (int i = 0; i < _Followers.Count; ++i)
-                if (_Followers[i] == Oid)
-                    return 1+i;
-
-            return 0;
-        }
-        public float GetFollowPct(UInt16 Oid)
-        {
-            float Id = GetFollowId(Oid);
-            float Count = _Followers.Count;
-
-            return (Id / Count) * 100;
-        }
-
-        #endregion
-
         #region Targets
 
-        public TargetInfo CurrentTarget = new TargetInfo(null, GameData.TargetTypes.TARGETTYPES_TARGET_NONE);
+        /*public TargetInfo FriendlyTarget = new TargetInfo(null, GameData.TargetTypes.TARGETTYPES_TARGET_NONE);
+        public TargetInfo EnemyTarget = new TargetInfo(null, GameData.TargetTypes.TARGETTYPES_TARGET_NONE);
 
-        public void SetTarget(Unit Target)
+        public void SetTarget(ushort Oid)
         {
-            CurrentTarget.Target = Target;
-            CurrentTarget.Type = GetTargetType(GetUnit(), Target);
+            if (CurrentTarget.Target != Target)
+            {
+                CurrentTarget.Target = Target;
+                CurrentTarget.Type = GetTargetType(GetUnit(), Target);
+                Attacking = false;
+            }
+        }*/
+
+        public void SetTarget(ushort Oid, GameData.TargetTypes Type)
+        {
+            Targets[(int)Type] = Oid;
+            if (Oid != 0 && HasPlayer())
+            {
+                Object Obj = _Owner.Zone.GetObject(Oid);
+                if (Obj != null && Obj.IsUnit())
+                    Obj.GetUnit().AbtInterface.SendAllBuff(_Owner.GetPlayer());
+            }
         }
-        public Unit GetTarget()
+
+        public bool HasTarget(GameData.TargetTypes Type)
         {
-            return CurrentTarget.Target;
+            return Targets[(int)Type] != 0;
         }
-        public bool HasTarget()
+
+        public Unit GetTarget(GameData.TargetTypes Type)
         {
-            return CurrentTarget.Type != GameData.TargetTypes.TARGETTYPES_TARGET_NONE;
+            Unit U = null;
+            ushort Oid = Targets[(int)Type];
+            if (Oid != 0)
+                U = _Owner.Region.GetObject(Oid) as Unit;
+            return U;
         }
-        public GameData.TargetTypes GetTargetType()
+
+        public Unit GetCurrentTarget()
         {
-            return CurrentTarget.Type;
+            Unit U = null;
+            ushort Oid;
+
+            for (int i = 0; i < 7; ++i)
+            {
+                Oid = Targets[(int)i];
+                if (Oid != 0)
+                {
+                    U = _Owner.Region.GetObject(Oid) as Unit;
+
+                    if (U != null)
+                        return U;
+                }
+            }
+
+            return U;
         }
 
         #endregion
@@ -428,26 +548,61 @@ namespace WorldServer
 
         public void OnTakeDamage(Unit Fighter, UInt32 DamageCount)
         {
-            switch (State)
+            switch (AI.State)
             {
                 case AiState.STANDING:
                     CombatStart(Fighter);
                     break;
+                case AiState.MOVING:
+                    CombatStart(Fighter);
+                    break;
             };
 
-            AddDamageReceive(Fighter.Oid, DamageCount);
-            Obj.EvtInterface.Notify("OnTakeDamage", Fighter, null);
+            ResetFightingState(TCPManager.GetTimeStampMS());
+            AddDamageReceive(Fighter.Oid,Fighter.IsPlayer(), DamageCount);
+
+            _Owner.EvtInterface.Notify(EventName.ON_RECEIVE_DAMAGE, Fighter, null);
+
+            if (_Owner.IsPlayer() && Fighter.IsPlayer())
+                ResetPvpTime();
         }
 
         public void OnDealDamage(Unit Victim, UInt32 DamageCount)
         {
-            switch (State)
+            switch (AI.State)
             {
                 case AiState.STANDING:
                     CombatStart(Victim);
                     break;
+                case AiState.MOVING:
+                    CombatStart(Victim);
+                    break;
             };
-            Obj.EvtInterface.Notify("OnDealDamage", Victim, null);
+
+            ResetFightingState(TCPManager.GetTimeStampMS());
+            _Owner.EvtInterface.Notify(EventName.ON_DEAL_DAMAGE, Victim, null);
+
+            if (_Owner.IsPlayer() && Victim.IsPlayer())
+                ResetPvpTime();
+        }
+
+        public void OnDealHeal(Unit Target, UInt32 DamageCount)
+        {
+            ResetFightingState(TCPManager.GetTimeStampMS());
+            _Owner.EvtInterface.Notify(EventName.ON_DEAL_HEAL, Target, null);
+
+            if (_Owner.IsPlayer() && Target.IsPlayer() && Target.GetPlayer().CbtInterface.IsPvp)
+                ResetPvpTime();
+        }
+
+        public void OnTakeHeal(Unit Caster, UInt32 DamageCount)
+        {
+            ResetFightingState(TCPManager.GetTimeStampMS());
+            AddHealReceive(Caster.Oid, Caster.IsPlayer(), DamageCount);
+            _Owner.EvtInterface.Notify(EventName.ON_RECEIVE_HEAL, Caster, null);
+
+            if (_Owner.IsPlayer() && Caster.IsPlayer())
+                ResetPvpTime();
         }
 
         public void OnTargetDie(Unit Victim)
@@ -457,7 +612,63 @@ namespace WorldServer
             if (GetAggroCount() <= 0)
                 CombatStop();
 
-            Obj.EvtInterface.Notify("OnTargetDie", Victim, null);
+            _Owner.EvtInterface.Notify(EventName.ON_TARGET_DIE, Victim, null);
+        }
+
+        #endregion
+
+        #region PVP
+
+        public bool IsPvp = false;
+        public long NextAllowedDisable = 0;
+
+        public void TurnPvp()
+        {
+            if (IsPvp)
+            {
+                if (NextAllowedDisable == 0)
+                    ResetPvpTime();
+
+                _Owner.GetPlayer().SendLocalizeString("", GameData.Localized_text.TEXT_RVR_UNFLAG);
+            }
+            else
+                EnablePvp();
+        }
+
+        public void EnablePvp()
+        {
+            if (IsPvp)
+                return;
+
+            NextAllowedDisable = 0;
+            IsPvp = true;
+            _Owner.GetPlayer().SetPVPFlag(true);
+            _Owner.GetPlayer().SendLocalizeString("", GameData.Localized_text.TEXT_RVR_FLAG);
+            _Owner.GetPlayer().SendLocalizeString("", GameData.Localized_text.TEXT_YOU_ARE_NOW_RVR_FLAGGED);
+        }
+
+        public void DisablePvp(long Tick, bool Force)
+        {
+            if (!IsPvp || NextAllowedDisable == 0)
+                return;
+
+            if (Force || NextAllowedDisable < Tick)
+            {
+                NextAllowedDisable = 0;
+                IsPvp = false;
+                _Owner.GetPlayer().SetPVPFlag(false);
+                _Owner.GetPlayer().SendLocalizeString("", GameData.Localized_text.TEXT_YOU_ARE_NO_LONGER_RVR_FLAGGED);
+            }
+        }
+
+        public void ResetPvpTime()
+        {
+            EnablePvp();
+
+            if (IsPvp)
+            {
+                NextAllowedDisable = TCPManager.GetTimeStampMS() + 60000 * 10;
+            }
         }
 
         #endregion
@@ -479,7 +690,10 @@ namespace WorldServer
             return GameData.TargetTypes.TARGETTYPES_TARGET_NONE;
         }
         static public bool IsEnemy(Unit A, Unit B)
-        {
+        {            
+            if (A == null || B == null)
+                return false;
+
             if (A.Realm == GameData.Realms.REALMS_REALM_NEUTRAL && B.Realm == GameData.Realms.REALMS_REALM_NEUTRAL)
                 return false;
 
@@ -490,19 +704,40 @@ namespace WorldServer
             return A.Realm == B.Realm;
         }
 
-        static public bool CanAttack(Unit A, Unit B)
+        static public bool CanAttack(Unit A, Unit Victim)
         {
-            if (A.IsDead || B.IsDead)
+            /*if (A.IsCreature() && B.IsCreature())
+                return false;*/
+
+            if (A == null || Victim == null)
                 return false;
 
-            if (A == B)
+            if (A.IsDisposed || Victim.IsDisposed)
                 return false;
 
-            if (!IsEnemy(A, B))
+            if (A == Victim)
                 return false;
 
-            if (!A.IsInWorld() || !B.IsInWorld())
+            if (A.IsDead || Victim.IsDead)
                 return false;
+
+            if (!IsEnemy(A, Victim))
+                return false;
+
+            if (!A.IsInWorld() || !Victim.IsInWorld())
+                return false;
+
+            if (!A.IsVisible || A.IsInvinsible)
+                return false;
+
+            if (!Victim.IsVisible || Victim.IsInvinsible)
+                return false;
+
+            if (A.IsPlayer() && Victim.IsPlayer())
+            {
+                if (!Victim.CbtInterface.IsPvp)
+                    return false;
+            }
 
             return true;
         }

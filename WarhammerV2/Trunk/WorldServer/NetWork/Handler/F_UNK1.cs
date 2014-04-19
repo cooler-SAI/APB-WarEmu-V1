@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ namespace WorldServer
 {
     public class Unk1 : IPacketHandler
     {
-        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_UNK1, "onUnk1")]
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_UNK1, (int)eClientState.WorldEnter, "onUnk1")]
         static public void F_UNK1(BaseClient client, PacketIn packet)
         {
 

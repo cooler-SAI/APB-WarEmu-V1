@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -196,14 +196,34 @@ namespace WorldServer
 		/// <returns>Distance to point</returns>
 		public int GetDistance(IPoint2D point)
 		{
-			double dx = (double) X - point.X;
-			double dy = (double) Y - point.Y;
-            double Range = Math.Sqrt(dx * dx + dy * dy) / 13.2F;
-            if (Range < 15)
-                Range /= 2;
-
+            double dx = (double)(X - point.X);
+            double dy = (double)(Y - point.Y);
+            double Range = Math.Sqrt(dx * dx + dy * dy);
+            Range = Range / Lerp(36.0, 13.50, Clamp(Range, 900));
             return (int)(Range);
 		}
+
+        public int GetRealDistance(IPoint2D point)
+        {
+            double dx = (double)(X - point.X);
+            double dy = (double)(Y - point.Y);
+            double Range = Math.Sqrt(dx * dx + dy * dy);
+            Range = Range / Lerp(36.0, 13.50, Clamp(Range, 900));
+            return (int)(Range);
+        }
+
+        static public double Clamp(double value, double max)
+        {
+            if (value > max)
+                value = max;
+
+            return value / max;
+        }
+
+        static public double Lerp(double value1, double value2, double amount)
+        {
+            return value1 + (value2 - value1) * amount;
+        }
 
 		public virtual void Clear()
 		{

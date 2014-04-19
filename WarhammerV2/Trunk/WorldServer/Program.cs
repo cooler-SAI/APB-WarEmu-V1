@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -98,6 +98,7 @@ namespace WorldServer
             Server = TCPManager.GetTcp<TCPServer>("World");
 
             AcctMgr.UpdateRealm(Client.Info, Rm.RealmId);
+            AcctMgr.UpdateRealmCharacters(Rm.RealmId, (uint)CharMgr.Database.GetObjectCount<Character>("Realm=1"), (uint)CharMgr.Database.GetObjectCount<Character>("Realm=2"));
 
             ConsoleMgr.Start();
         }
@@ -107,7 +108,7 @@ namespace WorldServer
             Log.Error("onError", e.ExceptionObject.ToString());
         }
 
-        static public void OnClose(object obj,ConsoleCancelEventArgs Args)
+        static public void OnClose(object obj,object Args)
         {
             Log.Info("Fermeture", "Fermeture du serveur");
 

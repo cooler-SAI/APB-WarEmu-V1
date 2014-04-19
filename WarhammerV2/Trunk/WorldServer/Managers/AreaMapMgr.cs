@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ using FrameWork;
 
 namespace WorldServer
 {
-    public class AreaMapInfo
+    /*public class AreaMapInfo
     {
         public UInt16 ZoneID;
         public List<Zone_Area> Areas;
@@ -55,7 +55,6 @@ namespace WorldServer
         public uint GetTokExplore(TokInterface Interface,ushort PinX, ushort PinY, byte Realm)
         {
             Zone_Area Area = GetArea(PinX, PinY, Realm);
-            Log.Info("GetTokExplore", "Area = " + Area);
 
             if (Area == null)
                 return 0;
@@ -113,7 +112,7 @@ namespace WorldServer
 
             if (PinX >= Area.Information.Width || PinY >= Area.Information.Height || PinX < 0 || PinY < 0)
             {
-                Log.Error("IsOnExplore", "PinX=" + PinX + ",PinY=" + PinY+",ZoneId="+Area.ZoneId+",Piece="+Area.PieceId);
+                //Log.Error("IsOnExplore", "PinX=" + PinX + ",PinY=" + PinY+",ZoneId="+Area.ZoneId+",Piece="+Area.PieceId);
                 return false;
             }
 
@@ -158,5 +157,5 @@ namespace WorldServer
 
             return Info;
         }
-    }
+    }*/
 }

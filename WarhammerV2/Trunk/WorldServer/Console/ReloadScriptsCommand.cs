@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,42 +16,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography;
 
-using FrameWork;
 using Common;
+using FrameWork;
 
-namespace WorldServer
+namespace AccountCacher
 {
-    [AttributeUsage(AttributeTargets.Class)]
-    public class IAbilityTypeAttribute : Attribute
+    [ConsoleHandler("reloadscripts", 0, "Reload Scripts")]
+    public class CreateAccount : IConsoleHandler
     {
-        public UInt16 AbilityType;
-        public string TypeDescription;
-
-        public IAbilityTypeAttribute(UInt16 AbilityType, string TypeDescription)
+        public bool HandleCommand(string command, List<string> args)
         {
-            this.AbilityType = AbilityType;
-            this.TypeDescription = TypeDescription;
+            WorldServer.WorldMgr.LoadScripts(true);
+            return true;
         }
-    }
-
-    public abstract class IAbilityTypeHandler
-    {
-        public abstract void Start(Ability Ab);
-
-        public abstract void Update();
-
-        public abstract GameData.AbilityResult CanCast();
-
-        public abstract void Cast();
-
-        public abstract void Stop();
-
-        public abstract UInt32 GetAbilityDamage();
     }
 }

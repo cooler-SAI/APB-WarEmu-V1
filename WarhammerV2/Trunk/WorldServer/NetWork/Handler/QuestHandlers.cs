@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ namespace WorldServer
 {
     public class QuestHandlers : IPacketHandler
     {
-        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_QUEST, "onQuest")]
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_QUEST, (int)eClientState.WorldEnter, "onQuest")]
         static public void F_QUEST(BaseClient client, PacketIn packet)
         {
             GameClient cclient = client as GameClient;
@@ -43,7 +43,6 @@ namespace WorldServer
             UInt16 CreatureOID = packet.GetUint16();
 
             Creature Crea = cclient.Plr.Region.GetObject(CreatureOID) as Creature;
-
             if (Crea == null)
                 return;
 
@@ -51,8 +50,6 @@ namespace WorldServer
             {
                 case 1: // Show Quest
                     {
-                        Log.Info("F_QUEST", "Show Quest : " + QuestID);
-
                         if (Crea.QtsInterface.HasQuestStarter(QuestID))
                             Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr);
 
@@ -60,8 +57,6 @@ namespace WorldServer
 
                 case 2: // Accept Quest
                     {
-                        Log.Info("F_QUEST", "Accept Quest : " + QuestID);
-
                         if (Crea.QtsInterface.HasQuestStarter(QuestID))
                         {
                             if (cclient.Plr.QtsInterface.AcceptQuest(QuestID))
@@ -80,16 +75,10 @@ namespace WorldServer
                     {
                         if (Crea.QtsInterface.hasQuestFinisher(QuestID))
                         {
-                            Log.Info("F_QUEST", "Done Quest : " + QuestID);
-
                             if (cclient.Plr.QtsInterface.DoneQuest(QuestID))
                             {
                                 Crea.SendRemove(cclient.Plr);
                                 Crea.SendMeTo(cclient.Plr);
-                            }
-                            else
-                            {
-                                Crea.QtsInterface.BuildQuest(QuestID, cclient.Plr);
                             }
                         }
 
@@ -102,7 +91,6 @@ namespace WorldServer
                             Crea.QtsInterface.SendQuestDoneInfo(cclient.Plr, QuestID);
                         else if (Crea.QtsInterface.HasQuestStarter(QuestID))
                         {
-                            Log.Info("F_QUEST", "InProgress Quest : " + QuestID);
                             Crea.QtsInterface.SendQuestInProgressInfo(cclient.Plr, QuestID);
                         }
 
@@ -110,8 +98,6 @@ namespace WorldServer
 
                 case 5: // Select Quest Reward
                     {
-                        Log.Info("F_QUEST", "Select Quest Reward: " + QuestID);
-
                         if (Crea.QtsInterface.hasQuestFinisher(QuestID))
                             cclient.Plr.QtsInterface.SelectRewards(QuestID, Unk3);
 
@@ -120,12 +106,10 @@ namespace WorldServer
             };
         }
 
-        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_REQUEST_QUEST, "onRequestQuest")]
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_REQUEST_QUEST, (int)eClientState.WorldEnter, "onRequestQuest")]
         static public void F_REQUEST_QUEST(BaseClient client, PacketIn packet)
         {
             GameClient cclient = client as GameClient;
-
-            Log.Success("HandlePacket", "Handle F_REQUEST_QUEST");
 
             UInt16 QuestID = packet.GetUint16();
             byte State = packet.GetUint8();
@@ -134,14 +118,13 @@ namespace WorldServer
             {
                 case 0: // Show Quest
                     {
-                        Log.Info("F_REQUEST_QUEST", "Show Quest : " + QuestID);
                         cclient.Plr.QtsInterface.SendQuest(QuestID);
 
                     } break;
 
                 case 1: // Decline Quest
                     {
-
+                        cclient.Plr.QtsInterface.DeclineQuest(QuestID);
                     }
                     break;
 

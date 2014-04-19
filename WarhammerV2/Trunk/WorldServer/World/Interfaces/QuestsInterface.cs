@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,20 +34,14 @@ namespace WorldServer
         {
             get
             {
-                if (Obj == null)
+                if (_Owner == null)
                     return 0;
 
-                if (Obj.IsCreature())
-                    return Obj.GetCreature().Entry;
+                if (_Owner.IsCreature())
+                    return _Owner.GetCreature().Entry;
                
                 return 0;
             }
-        }
-
-        public QuestsInterface(Object Obj)
-            : base(Obj)
-        {
-
         }
 
         #region Npc
@@ -78,6 +72,25 @@ namespace WorldServer
             return  Finisher.Find(q => Plr.QtsInterface.CanEndQuest(q)) != null;
         }
 
+        public bool CreatureHasQuestToAchieve(Player Plr)
+        {
+            if (Entry == 0)
+                return false;
+
+            List<Quest> Finisher = WorldMgr.GetFinishersQuests(Entry);
+            if (Finisher == null)
+                return false;
+
+            foreach (Quest Q in Finisher)
+            {
+                Character_quest CQ = Plr.QtsInterface.GetQuest(Q.Entry);
+                if (CQ != null && !CQ.Done && CQ.IsDone())
+                    return true;
+            }
+
+            return false;
+        }
+
         public bool CreatureHasStartQuest(Player Plr)
         {
             if (Entry == 0)
@@ -90,13 +103,13 @@ namespace WorldServer
             return Starter.Find(q => Plr.QtsInterface.CanStartQuest(q)) != null;
         }
 
-        public void HandleInteract(Player Plr, InteractMenu Menu)
+        public void HandleInteract(Player Plr, Creature Crea, InteractMenu Menu)
         {
             if(Entry == 0)
                 return;
 
-            List<Quest> Starter = WorldMgr.GetStartQuests(Entry);
-            List<Quest> Finisher = WorldMgr.GetFinishersQuests(Entry);
+            List<Quest> Starter = Crea.Spawn.Proto.StartingQuests;
+            List<Quest> Finisher = Crea.Spawn.Proto.FinishingQuests;
             List<Quest> InProgress = Starter != null ? Starter.FindAll(info => Plr.QtsInterface.HasQuest(info.Entry) && !Plr.QtsInterface.HasDoneQuest(info.Entry)) : null;
 
             string Text = WorldMgr.GetCreatureText(Entry);
@@ -106,7 +119,7 @@ namespace WorldServer
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_INTERACT_RESPONSE);
             Out.WriteByte(0);
-            Out.WriteUInt16(Obj.Oid);
+            Out.WriteUInt16(_Owner.Oid);
             Out.Fill(0, 3);
             Out.WriteByte(0x60);
             Out.WriteUInt32(0);
@@ -115,8 +128,6 @@ namespace WorldServer
             if (Starter != null)
             {
                 List<Quest> Starts = Starter.FindAll(q => Plr.QtsInterface.CanStartQuest(q) );
-
-                Log.Success("QuestInterface", "Handle Interact : Starts=" + Starts.Count);
 
                 Out.WriteByte((byte)Starts.Count);
                 foreach (Quest Q in Starts)
@@ -134,8 +145,6 @@ namespace WorldServer
             {
                 List<Quest> Finishs = Finisher.FindAll(q => Plr.QtsInterface.CanEndQuest(q));
 
-                Log.Success("QuestInterface", "Handle Interact : Finishs=" + Finishs.Count);
-
                 Out.WriteByte((byte)Finishs.Count);
                 foreach (Quest Q in Finishs)
                 {
@@ -146,8 +155,6 @@ namespace WorldServer
             }
             else if (InProgress != null)
             {
-                Log.Success("QuestInterface", "Handle Interact : InProgress=" + InProgress.Count);
-
                 Out.WriteByte((byte)InProgress.Count);
                 foreach (Quest Q in InProgress)
                 {
@@ -159,9 +166,7 @@ namespace WorldServer
             else
                 Out.WriteByte(0);
 
-            Log.Info("QTS", "Text=" + Text);
-            Out.WriteUInt16((ushort)Text.Length);
-            Out.WriteStringBytes(Text);
+            Out.WritePascalString(Text);
             Out.WriteByte(0);
 
             Plr.SendPacket(Out);
@@ -171,9 +176,9 @@ namespace WorldServer
 
         #region Players
 
-        public Dictionary<int, Character_quest> _Quests = new Dictionary<int, Character_quest>();
+        public Dictionary<ushort, Character_quest> _Quests = new Dictionary<ushort, Character_quest>();
 
-        public void Load(Character_quest[] Quests)
+        public void Load(List<Character_quest> Quests)
         {
             if (Quests == null)
                 return;
@@ -190,6 +195,12 @@ namespace WorldServer
                 if (!_Quests.ContainsKey(Quest.QuestID))
                     _Quests.Add(Quest.QuestID, Quest);
             }
+        }
+
+        public override void Save()
+        {
+            foreach (KeyValuePair<ushort, Character_quest> Kp in _Quests)
+                CharMgr.Database.SaveObject(Kp.Value);
         }
 
         public bool HasQuest(UInt16 QuestID)
@@ -237,7 +248,8 @@ namespace WorldServer
             if (Quest == null)
                 return false;
 
-            if (HasQuest(Quest.Entry) || Quest.Level > GetPlayer().Level || (Quest.PrevQuest != 0 && !HasDoneQuest(Quest.PrevQuest)))
+            // TODO : Fixe Starting Quests
+            if (HasQuest(Quest.Entry) || Quest.Level > (GetPlayer().Level+1) || (Quest.PrevQuest != 0 && !HasDoneQuest(Quest.PrevQuest)))
                 return false;
 
             return true;
@@ -273,32 +285,39 @@ namespace WorldServer
             Character_quest CQuest = new Character_quest();
             CQuest.QuestID = Quest.Entry;
             CQuest.Done = false;
-            CQuest.CharacterID = GetPlayer().CharacterId;
+            CQuest.CharacterId = GetPlayer().CharacterId;
             CQuest.Quest = Quest;
 
             foreach(Quest_Objectives QObj in Quest.Objectives)
             {
                 Character_Objectives CObj = new Character_Objectives();
-                CObj.Count = 0;
+                CObj.Quest = CQuest;
+                CObj._Count = 0;
                 CObj.Objective = QObj;
                 CObj.ObjectiveID = QObj.Guid;
                 CQuest._Objectives.Add(CObj);
             }
 
-            _Quests.Add(Quest.Entry, CQuest);
             CharMgr.Database.AddObject(CQuest);
+            _Quests.Add(Quest.Entry, CQuest);
 
             SendQuestState(Quest, QuestCompletion.QUESTCOMPLETION_OFFER);
+
+            _Owner.EvtInterface.Notify(EventName.ON_ACCEPT_QUEST, _Owner, CQuest);
             return true;
         }
 
-        public void DeclineQuest(Quest Quest)
+        public void DeclineQuest(UInt16 QuestID)
         {
+            Character_quest Quest = GetQuest(QuestID);
             if (Quest == null)
                 return;
 
-            if (!HasQuest(Quest.Entry))
-                return;
+            _Quests.Remove(Quest.QuestID);
+            SendQuestState(Quest.Quest, QuestCompletion.QUESTCOMPLETION_ABANDONED);
+            CharMgr.Database.DeleteObject(Quest);
+
+            _Owner.EvtInterface.Notify(EventName.ON_ACCEPT_QUEST, _Owner, Quest);
         }
 
         public bool DoneQuest(UInt16 QuestID)
@@ -319,6 +338,17 @@ namespace WorldServer
                 return false;
             }
 
+            foreach (Quest_Objectives Obj in Quest.Quest.Objectives)
+            {
+                if ((Objective_Type)Obj.ObjType == Objective_Type.QUEST_GET_ITEM)
+                {
+                    if (Obj.Item != null)
+                    {
+                        Plr.ItmInterface.RemoveAllItems(Obj.Item.Entry);
+                    }
+                }
+            }
+
             byte num = 0;
             foreach (KeyValuePair<Item_Info, uint> Kp in Choices)
             {
@@ -337,8 +367,9 @@ namespace WorldServer
             Quest.SelectedRewards.Clear();
 
             SendQuestState(Quest.Quest, QuestCompletion.QUESTCOMPLETION_DONE);
-
             CharMgr.Database.SaveObject(Quest);
+
+            _Owner.EvtInterface.Notify(EventName.ON_DONE_QUEST, _Owner, Quest);
             return true;
         }
 
@@ -351,37 +382,74 @@ namespace WorldServer
                 return;
         }
 
-        public void HandleEvent(Objective_Type Type, uint Entry, int Count)
+        public void HandleEvent(Objective_Type Type, uint Entry, int Count, bool Group = false)
         {
-            foreach (Character_quest Quest in _Quests.Values)
+            if (!Group && _Owner.IsPlayer() && _Owner.GetPlayer().GrpInterface.IsInGroup())
             {
-                foreach (Character_Objectives Objective in Quest._Objectives)
+                Group Current = _Owner.GetPlayer().GrpInterface.CurrentGroup;
+
+                lock (Current.Players)
+                {
+                    foreach (Player SubPlayer in Current.Players)
+                        if (SubPlayer != _Owner && SubPlayer.GetDistance(_Owner) < 150)
+                        {
+                            SubPlayer.QtsInterface.HandleEvent(Type, Entry, Count, true);
+                        }
+                }
+            }
+
+            foreach (KeyValuePair<ushort, Character_quest> QuestKp in _Quests)
+            {
+                foreach (Character_Objectives Objective in QuestKp.Value._Objectives)
                 {
                     if (Objective.Objective.ObjType == (uint)Type && !Objective.IsDone())
                     {
                         bool CanAdd = false;
+                        int NewCount = Objective.Count;
 
                         if (Type == Objective_Type.QUEST_SPEACK_TO || Type == Objective_Type.QUEST_KILL_MOB || Type == Objective_Type.QUEST_PROTECT_UNIT)
                         {
                             if (Objective.Objective.Creature != null && Entry == Objective.Objective.Creature.Entry)
+                            {
                                 CanAdd = true;
+                                NewCount += Count;
+                            }
                         }
                         else if (Type == Objective_Type.QUEST_GET_ITEM)
                         {
                             if (Objective.Objective.Item != null && Entry == Objective.Objective.Item.Entry)
+                            {
                                 CanAdd = true;
+                                NewCount = _Owner.GetPlayer().ItmInterface.GetItemCount(Entry);
+                            }
                         }
                         else if (Type == Objective_Type.QUEST_USE_GO)
                         {
                             CanAdd = true;
+                            NewCount += Count;
                         }
 
                         if (CanAdd)
                         {
-                            Objective.Count += Count;
-                            Quest.Dirty = true;
-                            SendQuestUpdate(Quest, Objective);
-                            CharMgr.Database.SaveObject(Quest);
+                            Objective.Count = NewCount;
+                            QuestKp.Value.Dirty = true;
+                            SendQuestUpdate(QuestKp.Value, Objective);
+                            CharMgr.Database.SaveObject(QuestKp.Value);
+
+                            if (Objective.IsDone())
+                            {
+                                Creature Finisher;
+
+                                foreach (Object Obj in _Owner._ObjectRanged)
+                                {
+                                    if (Obj.IsCreature())
+                                    {
+                                        Finisher = Obj.GetCreature();
+                                        if (WorldMgr.HasQuestToFinish(Finisher.Entry, QuestKp.Value.Quest.Entry))
+                                            Finisher.SendMeTo(_Owner.GetPlayer());
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -397,7 +465,7 @@ namespace WorldServer
             if (num > 0)
                 --num;
 
-            Log.Info("SelectRewards", "Selection de la recompence : " + num);
+            //Log.Info("SelectRewards", "Selection de la recompence : " + num);
             Quest.SelectedRewards.Add(num);
         }
 
@@ -432,16 +500,36 @@ namespace WorldServer
         static public void BuildQuestInProgress(PacketOut Out, Quest Q, bool Particular)
         {
             Out.WritePascalString(Q.Name);
-            Out.WriteUInt16((UInt16)Q.ProgressText.Length);
-            Out.WriteStringBytes(Q.ProgressText);
+
+            if (Q.ProgressText.Length > 0)
+            {
+                Out.WriteUInt16((UInt16)Q.ProgressText.Length);
+                Out.WriteStringBytes(Q.ProgressText);
+            }
+            else
+            {
+                Out.WriteUInt16((UInt16)Q.Particular.Length);
+                Out.WriteStringBytes(Q.Particular);
+            }
+
             Out.WriteByte(1);
         }
 
         static public void BuildQuestComplete(PacketOut Out, Quest Q, bool Particular)
         {
             Out.WritePascalString(Q.Name);
-            Out.WriteUInt16((UInt16)Q.OnCompletionQuest.Length);
-            Out.WriteStringBytes(Q.OnCompletionQuest);
+
+            if (Q.OnCompletionQuest.Length > 0)
+            {
+                Out.WriteUInt16((UInt16)Q.OnCompletionQuest.Length);
+                Out.WriteStringBytes(Q.OnCompletionQuest);
+            }
+            else
+            {
+                Out.WriteUInt16((UInt16)Q.Description.Length);
+                Out.WriteStringBytes(Q.Description);
+            }
+
             if (Particular)
             {
                 Out.WriteUInt16((UInt16)Q.Particular.Length);
@@ -483,7 +571,7 @@ namespace WorldServer
             Out.WriteByte(1);
             Out.WriteByte(1);
 
-            BuildQuestInteract(Out, Q.Entry, Obj.Oid, Plr.Oid);
+            BuildQuestInteract(Out, Q.Entry, _Owner.Oid, Plr.Oid);
 
             Out.WriteUInt16(0);
 
@@ -533,15 +621,14 @@ namespace WorldServer
         {
             PacketOut Out = new PacketOut((byte)Opcodes.F_QUEST_LIST);
             Out.WriteByte((byte)_Quests.Count);
-            foreach (Character_quest Quest in _Quests.Values)
+            foreach (KeyValuePair<ushort, Character_quest> Kp in _Quests)
             {
-                Out.WriteUInt16(Quest.QuestID);
+                Out.WriteUInt16(Kp.Value.QuestID);
                 Out.WriteByte(0);
-                Out.WritePascalString(Quest.Quest.Name);
+                Out.WritePascalString(Kp.Value.Quest.Name);
                 Out.WriteByte(0);
             }
 
-            Log.Info("QuestInterface", "Sended Quest : " + _Quests.Count);
             GetPlayer().SendPacket(Out);
         }
 
@@ -599,7 +686,7 @@ namespace WorldServer
             Out.WriteByte(3);
             Out.WriteByte(0);
 
-            BuildQuestInteract(Out, Quest.QuestID, Obj.Oid, Plr.Oid);
+            BuildQuestInteract(Out, Quest.QuestID, _Owner.Oid, Plr.Oid);
 
             BuildQuestComplete(Out, Quest.Quest, false);
 
@@ -619,7 +706,7 @@ namespace WorldServer
             Out.WriteByte(2);
             Out.WriteByte(1);
 
-            BuildQuestInteract(Out, Quest.QuestID, Obj.Oid, Plr.Oid);
+            BuildQuestInteract(Out, Quest.QuestID, _Owner.Oid, Plr.Oid);
 
             BuildQuestInProgress(Out, Quest.Quest, false);
 

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,36 +40,41 @@ namespace WorldServer
             packet.Skip(21);
             string Username = packet.GetString(23);
 
-            Log.Debug("Connect", "Connexion avec : " + Token + ",User=" + Username);
-
+            // TODO
             AuthResult Result = Program.AcctMgr.CheckToken(Username, Token);
             if (Result != AuthResult.AUTH_SUCCESS)
             {
+                Log.Error("F_CONNECT", "Invalid Token =" + Username);
                 cclient.Disconnect();
             }
             else
             {
                 cclient._Account = Program.AcctMgr.GetAccount(Username);
                 if (cclient._Account == null)
+                {
+                    Log.Error("F_CONNECT", "Invalid Account =" + Username);
                     cclient.Disconnect();
+                }
                 else
                 {
-                    Log.Success("F_CONNECT", "MeId=" + cclient.Id);
+                    //Log.Success("F_CONNECT", "MeId=" + cclient.Id);
 
                     GameClient Other = (cclient.Server as TCPServer).GetClientByAccount(cclient, cclient._Account.AccountId);
                     if (Other != null)
                         Other.Disconnect();
 
-                    PacketOut Out = new PacketOut((byte)Opcodes.S_CONNECTED);
-                    Out.WriteUInt32(0);
-                    Out.WriteUInt32(Tag);
-                    Out.WriteByte(Program.Rm.RealmId);
-                    Out.WriteUInt32(1);
-                    Out.WritePascalString(Username);
-                    Out.WritePascalString(Program.Rm.Name);
-                    Out.WriteByte(0);
-                    Out.WriteUInt16(0);
-                    cclient.SendTCP(Out);
+                    {
+                        PacketOut Out = new PacketOut((byte)Opcodes.S_CONNECTED);
+                        Out.WriteUInt32(0);
+                        Out.WriteUInt32(Tag);
+                        Out.WriteByte(Program.Rm.RealmId);
+                        Out.WriteUInt32(1);
+                        Out.WritePascalString(Username);
+                        Out.WritePascalString(Program.Rm.Name);
+                        Out.WriteByte(0);
+                        Out.WriteUInt16(0);
+                        cclient.SendPacket(Out);
+                    }
                 }
             }
         }
@@ -86,7 +91,7 @@ namespace WorldServer
             Out.WriteUInt64((UInt64)TCPManager.GetTimeStamp());
             Out.WriteUInt32((UInt32)(cclient.SequenceID+1));
             Out.WriteUInt32(0);
-            cclient.SendTCP(Out);
+            cclient.SendPacket(Out);
         }
 
         public struct sEncrypt
@@ -109,7 +114,7 @@ namespace WorldServer
             {
                 PacketOut Out = new PacketOut((byte)Opcodes.F_RECEIVE_ENCRYPTKEY);
                 Out.WriteByte(1);
-                cclient.SendTCP(Out);
+                cclient.SendPacket(Out);
             }
             else if (Result.cipher == 1)
             {
@@ -126,8 +131,6 @@ namespace WorldServer
 
             if (cclient._Account == null)
                 return;
-
-            Log.Success("F_DISCONNECT", "MeId=" + cclient.Id);
 
             GameClient OtherClient = (client.Server as TCPServer).GetClientByAccount(cclient, cclient._Account.AccountId);
             if (OtherClient != null)

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -106,10 +106,7 @@ namespace WorldServer
                         PacketLength -= 2;
 
                         if (PacketLength < PacketSize + 10)
-                        {
-                            Log.Error("OnReceive", "Packet Header Incomplet " + PacketLength + "<" + PacketSize);
                             break;
-                        }
 
                         packet.Size = (ulong)PacketSize+10;
                         packet = DeCrypt(packet);

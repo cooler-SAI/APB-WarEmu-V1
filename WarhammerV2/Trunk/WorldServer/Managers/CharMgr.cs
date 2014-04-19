@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -52,16 +52,13 @@ namespace WorldServer
             if (Char != null)
                 _Realm = (GameData.Realms)Char.Realm;
 
-            if (_Chars[Char.SlotId] == null)
-                _Chars[Char.SlotId] = Char;
-            else
-                return false;
+            _Chars[Char.SlotId] = Char;
 
             return true;
         }
-        public int RemoveCharacter(byte Slot)
+        public UInt32 RemoveCharacter(byte Slot)
         {
-            int CharacterId = -1;
+            UInt32 CharacterId = 0;
             if (_Chars[Slot] != null)
                 CharacterId = _Chars[Slot].CharacterId;
 
@@ -79,6 +76,7 @@ namespace WorldServer
         }
         public Character GetCharacterBySlot(byte Slot)
         {
+
             if (Slot < 0 || Slot > _Chars.Length)
                 return null;
 
@@ -105,7 +103,7 @@ namespace WorldServer
                 if (!_Infos.ContainsKey(Info.Career))
                     _Infos.Add(Info.Career, Info);
 
-            _RandomNames = WorldMgr.Database.SelectAllObjects<Random_name>().ToList<Random_name>();
+            _RandomNames = WorldMgr.Database.SelectAllObjects<Random_name>() as List<Random_name>;
 
             Log.Success("CharacterMgr", "Loaded " + Chars.Count + " CharacterInfo");
         }
@@ -133,6 +131,7 @@ namespace WorldServer
         {
             IList<CharacterInfo_stats> Chars = WorldMgr.Database.SelectAllObjects<CharacterInfo_stats>();
             foreach (CharacterInfo_stats Info in Chars)
+            {
                 if (!_InfoStats.ContainsKey(Info.CareerLine))
                 {
                     List<CharacterInfo_stats> Stats = new List<CharacterInfo_stats>(1);
@@ -140,6 +139,36 @@ namespace WorldServer
                     _InfoStats.Add(Info.CareerLine, Stats);
                 }
                 else _InfoStats[Info.CareerLine].Add(Info);
+            }
+
+            int i, StatId;
+            CharacterInfo_stats Previous, Current, PrevPrevious;
+            foreach (KeyValuePair<byte, List<CharacterInfo_stats>> Stats in _InfoStats)
+            {
+                for (StatId = 0; StatId < (int)GameData.Stats.STATS_COUNT; ++StatId)
+                {
+                    for (i = 2; i <= 40; ++i)
+                    {
+                        Previous = Stats.Value.Find(info => info.Level == (byte)(i - 1) && info.StatId == StatId);
+                        if (Previous == null)
+                            continue;
+
+                        Current = Stats.Value.Find(info => info.Level == (byte)(i) && info.StatId == StatId);
+                        if (Current == null)
+                            continue;
+
+                        if (Current.StatValue <= Previous.StatValue || Math.Abs(Current.StatValue - Previous.StatValue) > 40)
+                        {
+                            PrevPrevious = Stats.Value.Find(info => info.Level == (byte)(i - 2) && info.StatId == StatId);
+                            if (PrevPrevious != null)
+                                Current.StatValue = (ushort)((Previous.StatValue - PrevPrevious.StatValue) + Previous.StatValue + 1);
+
+                            if (Current.StatValue <= Previous.StatValue)
+                                Current.StatValue = (ushort)(Previous.StatValue + 3);
+                        }
+                    }
+                }
+            }
 
             Log.Success("CharacterMgr", "Loaded " + Chars.Count + " CharacterInfo_Stats");
         }
@@ -152,25 +181,43 @@ namespace WorldServer
 
             return null;
         }
-        static public CharacterInfo_stats[] GetCharacterInfoStats(byte CareerLine, byte Level)
-        {
-            List<CharacterInfo_stats> _Stats = _InfoStats.ContainsKey(CareerLine) ? _InfoStats[CareerLine] : new List<CharacterInfo_stats>();
 
+        static public Dictionary<ushort, List<CharacterInfo_stats>> _CareerLevelStats = new Dictionary<ushort, List<CharacterInfo_stats>>();
+
+        static public List<CharacterInfo_stats> GetCharacterInfoStats(byte CareerLine, byte Level)
+        {
             List<CharacterInfo_stats> Stats = new List<CharacterInfo_stats>();
-            foreach (CharacterInfo_stats Stat in _Stats)
-                if (Stat.CareerLine == CareerLine && Stat.Level == Level)
-                    Stats.Add(Stat);
+            if (!_CareerLevelStats.TryGetValue((ushort)((int)CareerLine << 8 + (int)Level), out Stats))
+            {
+                Stats = new List<CharacterInfo_stats>();
 
-            return Stats.ToArray();
+                List<CharacterInfo_stats> InfoStats;
+                if (_InfoStats.TryGetValue(CareerLine, out InfoStats))
+                {
+                    foreach(CharacterInfo_stats Stat in InfoStats)
+                        if (Stat.CareerLine == CareerLine && Stat.Level == Level)
+                            Stats.Add(Stat);
+                }
+
+                _CareerLevelStats.Add((ushort)((int)CareerLine << 8 + (int)Level), Stats);
+            }
+
+            return Stats;
         }
-        static public CharacterInfo_item[] GetCharacterInfoItem(byte CareerLine)
+        static public List<CharacterInfo_item> GetCharacterInfoItem(byte CareerLine)
         {
-            return _InfoItems.ContainsKey(CareerLine) ? _InfoItems[CareerLine].ToArray() : new CharacterInfo_item[0];
+            List<CharacterInfo_item> Items;
+            if(!_InfoItems.TryGetValue(CareerLine,out Items))
+            {
+                Items = new List<CharacterInfo_item>();
+                _InfoItems.Add(CareerLine,Items);
+            }
+            return Items;
         }
 
-        static public Random_name[] GetRandomNames()
+        static public List<Random_name> GetRandomNames()
         {
-            return _RandomNames.ToArray();
+            return _RandomNames;
         }
 
 
@@ -178,26 +225,57 @@ namespace WorldServer
 
         #region Characters
 
-        static public byte MAX_SLOT = 10;
+        static public byte MAX_SLOT = 20;
         static public int MAX_CHARACTERS = 1000000;
-        static public int MAX_CHAR_GUID = 1;
+        static public int MAX_CHAR_GUID = 10;
         static public Character[] _Chars = new Character[MAX_CHARACTERS];
         static public Dictionary<int, AccountChars> _AcctChars = new Dictionary<int, AccountChars>();
 
         [LoadingFunction(true)]
         static public void LoadCharacters()
         {
-            Character[] Chars = Database.SelectAllObjects<Character>().ToArray();
+            List<Character> Chars = Database.SelectAllObjects<Character>() as List<Character>;
+            List<Character_value> Values = Database.SelectAllObjects<Character_value>() as List<Character_value>;
+            List<Character_social> Socials = Database.SelectAllObjects<Character_social>() as List<Character_social>;
+            List<Character_tok> Toks = Database.SelectAllObjects<Character_tok>() as List<Character_tok>;
+            List<Character_quest> Quests = Database.SelectAllObjects<Character_quest>() as List<Character_quest>;
+            List<Characters_influence> Influences = Database.SelectAllObjects<Characters_influence>() as List<Characters_influence>;
 
+            int Count = 0;
             foreach (Character Char in Chars)
-                AddChar(Char);
+            {
+                Char.Value = Values.Find(info => info.CharacterId == Char.CharacterId);
+                Char.Socials = Socials.FindAll(info => info.CharacterId == Char.CharacterId);
+                Char.Toks = Toks.FindAll(info => info.CharacterId == Char.CharacterId);
+                Char.Quests = Quests.FindAll(info => info.CharacterId == Char.CharacterId);
+                Char.Influences = Influences.FindAll(info => info.CharacterId == Char.CharacterId);
 
-            Log.Success("LoadCharacters", Chars.Length + "  : Character(s) loaded");
+                AddChar(Char);
+                ++Count;
+            }
+
+            Log.Success("LoadCharacters", Count + "  : Character(s) loaded");
         }
 
-        static public int GenerateMaxCharId()
+        static public Character LoadCharacter(string Name)
         {
-            return System.Threading.Interlocked.Increment(ref MAX_CHAR_GUID);
+            Character Char = Database.SelectObject<Character>("Name='" + Database.Escape(Name) + "'");
+            if (Char != null)
+            {
+                Char.Value = Database.SelectObject<Character_value>("CharacterId=" + Char.CharacterId);
+                Char.Socials = Database.SelectObjects<Character_social>("CharacterId=" + Char.CharacterId) as List<Character_social>;
+                Char.Toks = Database.SelectObjects<Character_tok>("CharacterId=" + Char.CharacterId) as List<Character_tok>;
+                Char.Quests = Database.SelectObjects<Character_quest>("CharacterId=" + Char.CharacterId) as List<Character_quest>;
+                Char.Influences = Database.SelectObjects<Characters_influence>("CharacterId=" + Char.CharacterId) as List<Characters_influence>;
+                AddChar(Char);
+            }
+
+            return Char;
+        }
+
+        static public UInt32 GenerateMaxCharId()
+        {
+            return (UInt32)System.Threading.Interlocked.Increment(ref MAX_CHAR_GUID);
         }
         static public bool CreateChar(Character Char)
         {
@@ -208,7 +286,7 @@ namespace WorldServer
 
             lock (_Chars)
             {
-                int Id = GenerateMaxCharId();
+                UInt32 Id = GenerateMaxCharId();
 
                 while (_Chars[Id] != null)
                     Id = GenerateMaxCharId();
@@ -227,6 +305,30 @@ namespace WorldServer
 
             return true;
         }
+        static public bool DeleteChar(Character Char)
+        {
+            Database.DeleteObject(Char);
+            Database.DeleteObject(Char.Value);
+
+            if(Char.Socials != null)
+                foreach (Character_social Obj in Char.Socials)
+                    Database.DeleteObject(Obj);
+
+            if(Char.Toks != null)
+                foreach (Character_tok Obj in Char.Toks)
+                    Database.DeleteObject(Obj);
+
+            if(Char.Quests != null)
+                foreach (Character_quest Obj in Char.Quests)
+                    Database.DeleteObject(Obj);
+
+            if(Char.Influences != null)
+                foreach (Characters_influence Obj in Char.Influences)
+                    Database.DeleteObject(Obj);
+
+            return true;
+
+        }
         static public void AddChar(Character Char)
         {
             lock (_Chars)
@@ -235,7 +337,7 @@ namespace WorldServer
                 GetAccountChar(Char.AccountId).AddChar(Char);
 
                 if (Char.CharacterId > MAX_CHAR_GUID)
-                    MAX_CHAR_GUID = Char.CharacterId;
+                    MAX_CHAR_GUID = (int)Char.CharacterId;
             }
         }
         static public Character[] GetAccountCharacters(int AccountId)
@@ -265,6 +367,7 @@ namespace WorldServer
 
             return false;
         }
+
         static public byte[] BuildCharacters(int AccountId)
         {
             Log.Debug("BuildCharacters", "AcocuntId = " + AccountId);
@@ -278,7 +381,10 @@ namespace WorldServer
 
             PacketOut Out = new PacketOut(0);
             Out.Position = 0;
-            Out.WriteUInt16(Count);
+
+            Out.WriteByte(10);
+            Out.WriteUInt32(0xFF);
+            Out.WriteByte(0x14);
 
             Character Char = null;
             for (int i = 0; i < MAX_SLOT; ++i)
@@ -286,21 +392,21 @@ namespace WorldServer
                 Char = Chars[i];
 
                 if (Char == null)
-                    Out.Write(new byte[280], 0, 280);
+                    Out.Fill(0, 284); // 284
                 else
                 {
-                    List<Character_items> Items = CharMgr.GetItemChar(Char.CharacterId);
+                    List<Character_item> Items = CharMgr.GetItemChar(Char.CharacterId);
 
                     Out.FillString(Char.Name, 48);
-                    Out.WriteByte(Char.Value[0].Level);
+                    Out.WriteByte(Char.Value.Level);
                     Out.WriteByte(Char.Career);
                     Out.WriteByte(Char.Realm);
                     Out.WriteByte(Char.Sex);
                     Out.WriteByte(Char.ModelId);
-                    Out.WriteUInt16(Char.Value[0].ZoneId);
-                    Out.Write(new byte[5], 0, 5);
+                    Out.WriteUInt16(Char.Value.ZoneId);
+                    Out.Fill(0, 5);
 
-                    Character_items Item = null;
+                    Character_item Item = null;
                     for (UInt16 SlotId = 14; SlotId < 30; ++SlotId)
                     {
                         Item = Items.Find(item => item != null && item.SlotId == SlotId);
@@ -309,14 +415,14 @@ namespace WorldServer
                         else
                             Out.WriteUInt32R(Item.ModelId);
 
-                        Out.Write(new byte[4], 0, 4);
+                        Out.Fill(0, 4);
                     }
 
-                    Out.Write(new byte[6], 0, 6);
+                    Out.Fill(0, 6);
 
                     for (int j = 0; j < 5; ++j)
                     {
-                        Out.Write(new byte[6], 0, 6);
+                        Out.Fill(0, 6);
                         Out.WriteUInt16(0xFF00);
                     }
 
@@ -330,13 +436,14 @@ namespace WorldServer
                             Out.WriteUInt16R((ushort)Item.ModelId);
                     }
 
-                    Out.Write(new byte[10], 0, 10);
+
+                    Out.Fill(0, 10);
                     Out.WriteUInt16(0xFF00);
                     Out.WriteByte(0);
                     Out.WriteByte(Char.Race);
                     Out.WriteUInt16(0);
                     Out.Write(Char.bTraits, 0, Char.bTraits.Length);
-                    Out.Write(new byte[10], 0, 10);
+                    Out.Fill(0, 14);// 272
                 }
             }
             return Out.ToArray();
@@ -347,16 +454,19 @@ namespace WorldServer
         }
         static public void RemoveCharacter(byte Slot, int AccountId)
         {
-            int CharacterId = GetAccountChar(AccountId).RemoveCharacter(Slot);
+            UInt32 CharacterId = GetAccountChar(AccountId).RemoveCharacter(Slot);
 
             lock(_Chars)
-                if (CharacterId >= 0 &&_Chars[CharacterId] != null)
+                if (CharacterId > 0 && _Chars[CharacterId] != null)
                 {
                     Log.Debug("RemoveCharacter", "Slot=" + Slot + ",Acct=" + AccountId + ",CharId=" + CharacterId);
 
-                    RemoveItemsChar(CharacterId);
-                    Database.DeleteObject(_Chars[CharacterId]);
+                    Character Char = _Chars[CharacterId];
                     _Chars[CharacterId] = null;
+                    RemoveItemsChar(CharacterId);
+                    DeleteChar(Char);
+
+                    Program.AcctMgr.UpdateRealmCharacters(Program.Rm.RealmId, (uint)CharMgr.Database.GetObjectCount<Character>(" Realm=1"), (uint)CharMgr.Database.GetObjectCount<Character>(" Realm=2"));
                 }
         }
         static public Character GetCharacter(string Name)
@@ -376,37 +486,37 @@ namespace WorldServer
         #region CharacterItems
 
         static public long MAX_ITEMS = 600000;
-        static public Character_items[] _Items;
-        static public Dictionary<int,List<Character_items>> _CharItems = new Dictionary<int,List<Character_items>>();
+        static public Character_item[] _Items;
+        static public Dictionary<UInt32, List<Character_item>> _CharItems = new Dictionary<UInt32, List<Character_item>>();
 
         [LoadingFunction(true)]
         static public void LoadItems()
         {
-            _Items = new Character_items[MAX_ITEMS];
-            IList<Character_items> Items = Database.SelectAllObjects<Character_items>();
+            _Items = new Character_item[MAX_ITEMS];
+            IList<Character_item> Items = Database.SelectAllObjects<Character_item>();
 
             if(Items != null)
                 lock (_Items)
-                    foreach (Character_items Itm in Items)
+                    foreach (Character_item Itm in Items)
                         LoadItem(Itm);
 
             Log.Success("LoadItems",Items.Count + " : Characters items loaded");
         }
-        static public void LoadItem(Character_items CharItem)
+        static public void LoadItem(Character_item CharItem)
         {
             lock (_Items)
             {
                 _Items[CharItem.Guid] = CharItem;
 
                 if (!_CharItems.ContainsKey(CharItem.CharacterId))
-                    _CharItems.Add(CharItem.CharacterId, new List<Character_items>() { CharItem });
+                    _CharItems.Add(CharItem.CharacterId, new List<Character_item>() { CharItem });
                 else
                     _CharItems[CharItem.CharacterId].Add(CharItem);
             }
         }
-        static public void DeleteItem(Character_items Itm)
+        static public void DeleteItem(Character_item Itm)
         {
-            Log.Info("DeleteItem", "Guid=" + Itm.Guid + ",CharId=" + Itm.CharacterId);
+            //Log.Info("DeleteItem", "Guid=" + Itm.Guid + ",CharId=" + Itm.CharacterId);
 
             lock (_Items)
             {
@@ -419,21 +529,31 @@ namespace WorldServer
             CharMgr.Database.DeleteObject(Itm);
         }
 
-        static public List<Character_items> GetItemChar(int CharacterId)
+        static public Character_item GetItem(UInt32 Guid)
+        {
+            lock (_Items)
+            {
+                return _Items[Guid];
+            }
+        }
+
+        static public List<Character_item> GetItemChar(UInt32 CharacterId)
         {
             lock (_Items)
             {
                 if (_CharItems.ContainsKey(CharacterId))
                     return _CharItems[CharacterId];
                 else
-                    return new List<Character_items>();
+                    return new List<Character_item>();
             }
         }
 
-        static public bool CreateItem(Character_items Item)
+        static public bool CreateItem(Character_item Item)
         {
-            lock(_Items)
-                for(long i=0;i<_Items.Length;++i)
+            lock (_Items)
+            {
+                for (int i = 0; i < _Items.Length; ++i)
+                {
                     if (_Items[i] == null)
                     {
                         Item.Guid = i;
@@ -441,12 +561,14 @@ namespace WorldServer
                         Database.AddObject(Item);
                         return true;
                     }
+                }
+            }
 
 
             Log.Error("CreateItem", "Maximum number of items reaches !");
             return false;
         }
-        static public void RemoveItemsChar(int CharacterId)
+        static public void RemoveItemsChar(UInt32 CharacterId)
         {
             lock (_Items)
             {
@@ -460,10 +582,10 @@ namespace WorldServer
                 _CharItems.Remove(CharacterId);
             }
         }
-        static public void SaveItems(int CharacterId,Item[] CItems)
+        static public void SaveItems(UInt32 CharacterId, List<Item> CItems)
         {
-            List<Character_items> CItem = new List<Character_items>();
-            for (UInt16 i = 0; i < CItems.Length; ++i)
+            List<Character_item> CItem = new List<Character_item>();
+            for (int i = 0; i < CItems.Count; ++i)
                 if(CItems[i] != null)
                     CItem.Add(CItems[i].Save(CharacterId));
 
@@ -472,6 +594,48 @@ namespace WorldServer
                 _CharItems.Remove(CharacterId);
                 _CharItems.Add(CharacterId, CItem);
             }
+        }
+
+        #endregion
+
+        #region Mails
+
+        static public Dictionary<UInt32, MailsInterface> CharMails;
+        static public UInt32 MaxMailGUID = 0;
+
+        [LoadingFunction(true)]
+        static public void LoadMails()
+        {
+            CharMails = new Dictionary<uint, MailsInterface>();
+            List<Character_mail> Mails = Database.SelectAllObjects<Character_mail>() as List<Character_mail>;
+            MailsInterface CM;
+
+            foreach (Character_mail Mail in Mails)
+            {
+                if (Mail.Guid > MaxMailGUID)
+                    MaxMailGUID = Mail.Guid;
+
+                CM = GetMails(Mail.ReceiverID, true);
+                CM.AddMail(Mail);
+            }
+
+            Log.Success("CharMgr", "Loaded " + CharMails.Count + " Mails");
+        }
+
+        static public MailsInterface GetMails(UInt32 CharacterID, bool Create=false)
+        {
+            MailsInterface Mails = null;
+
+            lock (CharMails)
+            {
+                if (!CharMails.TryGetValue(CharacterID, out Mails) && Create)
+                {
+                    Mails = new MailsInterface();
+                    Mails.CharacterID = CharacterID;
+                    CharMails.Add(CharacterID, Mails);
+                }
+            }
+            return Mails;
         }
 
         #endregion

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ namespace WorldServer
 {
     public class SocialHandlers : IPacketHandler
     {
-        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_SOCIAL_NETWORK, "onSocialNetWork")]
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_SOCIAL_NETWORK, (int)eClientState.Playing, "onSocialNetWork")]
         static public void F_SOCIAL_NETWORK(BaseClient client, PacketIn packet)
         {
             GameClient cclient = client as GameClient;
@@ -45,7 +45,7 @@ namespace WorldServer
             {
                 case 11: // Inspection
                     {
-                        Player Target = Plr.CbtInterface.GetTarget() as Player;
+                        Player Target = Plr.CbtInterface.GetTarget( GameData.TargetTypes.TARGETTYPES_TARGET_ALLY ) as Player;
                         if (Target == null)
                             Plr.SendLocalizeString("", GameData.Localized_text.TEXT_SN_LISTS_ERR_PLAYER_NOT_FOUND);
                         else

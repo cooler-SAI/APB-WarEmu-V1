@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@ namespace WorldServer
 {
     public class InventoryHandlers : IPacketHandler
     {
-        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_BAG_INFO, "onBagInfo")]
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_BAG_INFO, (int)eClientState.Playing, "onBagInfo")]
         static public void F_BAG_INFO(BaseClient client, PacketIn packet)
         {
             GameClient cclient = client as GameClient;
@@ -37,23 +37,33 @@ namespace WorldServer
             if (!cclient.IsPlaying())
                 return;
 
-            byte SlotCount = packet.GetUint8();
-            byte Price = packet.GetUint8();
+            byte Type = packet.GetUint8();
 
-            Player Plr = cclient.Plr;
+            if (Type == 3) // Pvp mode
+            {
+                cclient.Plr.CbtInterface.TurnPvp();
+            }
+            else if (Type == 0x10)
+            {
+                byte Price = packet.GetUint8();
 
-            if (!Plr.ItmInterface.HasMaxBag())
-                if (Plr.HaveMoney(Plr.ItmInterface.GetBagPrice()))
+                Player Plr = cclient.Plr;
+
+                if (!Plr.ItmInterface.HasMaxBag())
                 {
-                    if (Plr.RemoveMoney(Plr.ItmInterface.GetBagPrice()))
+                    if (Plr.HaveMoney(Plr.ItmInterface.GetBagPrice()))
                     {
-                        ++Plr.ItmInterface.BagBuy;
-                        Plr.ItmInterface.SendMaxInventory(Plr);
+                        if (Plr.RemoveMoney(Plr.ItmInterface.GetBagPrice()))
+                        {
+                            ++Plr.ItmInterface.BagBuy;
+                            Plr.ItmInterface.SendMaxInventory(Plr);
+                        }
                     }
                 }
+            }
         }
 
-        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_TRANSFER_ITEM, "onTransferItem")]
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_TRANSFER_ITEM, (int)eClientState.Playing, "onTransferItem")]
         static public void F_TRANSFER_ITEM(BaseClient client, PacketIn packet)
         {
             GameClient cclient = client as GameClient;
@@ -69,7 +79,7 @@ namespace WorldServer
             cclient.Plr.ItmInterface.MoveSlot(From, To, Count);
         }
 
-        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_TRADE_STATUS, "onTradeStatus")]
+        [PacketHandlerAttribute(PacketHandlerType.TCP, (int)Opcodes.F_TRADE_STATUS, (int)eClientState.Playing, "onTradeStatus")]
         static public void F_TRADE_STATUS(BaseClient client, PacketIn packet)
         {
             GameClient cclient = client as GameClient;

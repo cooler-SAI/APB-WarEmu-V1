@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,25 +27,22 @@ using FrameWork;
 
 namespace WorldServer
 {
-    public class BaseInterface
+    public abstract class BaseInterface
     {
-        public Object Obj;
+        public Object _Owner;
         public bool Loaded = false;
+        public bool IsLoad { get { return Loaded; } }
 
         public BaseInterface()
         {
 
         }
 
-        public BaseInterface(Object Obj)
+        public virtual void SetOwner(Object Owner)
         {
-            this.Obj = Obj;
+            this._Owner = Owner;
         }
 
-        public virtual void Update(long Tick)
-        {
-
-        }
 
         public virtual bool Load()
         {
@@ -53,49 +50,57 @@ namespace WorldServer
             return true;
         }
 
-        public bool IsLoad { get { return Loaded; } }
-
-        public virtual bool HasObject()
+        public virtual void Update(long Tick)
         {
-            return Obj != null;
-        }
-        public virtual bool HasPlayer()
-        {
-            if (!HasObject())
-                return false;
-
-            return Obj.IsPlayer();
-        }
-        public virtual bool HasUnit()
-        {
-            if (!HasObject())
-                return false;
-
-            return Obj.IsUnit();
 
         }
-        public virtual Unit GetUnit()
-        {
-            if (!HasUnit())
-                return null;
 
-            return Obj.GetUnit();
-        }
-        public virtual Player GetPlayer()
+        public virtual void Stop()
         {
-            if (!HasPlayer())
-                return null;
 
-            return Obj.GetPlayer();
         }
 
         public virtual void Save()
         {
 
         }
-        public virtual void Stop()
+
+        public virtual bool HasObject()
         {
-            Obj = null;
+            return _Owner != null;
+        }
+
+        public virtual bool HasPlayer()
+        {
+            if (!HasObject())
+                return false;
+
+            return _Owner.IsPlayer();
+        }
+
+        public virtual bool HasUnit()
+        {
+            if (!HasObject())
+                return false;
+
+            return _Owner.IsUnit();
+
+        }
+
+        public virtual Unit GetUnit()
+        {
+            if (!HasUnit())
+                return null;
+
+            return _Owner.GetUnit();
+        }
+
+        public virtual Player GetPlayer()
+        {
+            if (!HasPlayer())
+                return null;
+
+            return _Owner.GetPlayer();
         }
     }
 }

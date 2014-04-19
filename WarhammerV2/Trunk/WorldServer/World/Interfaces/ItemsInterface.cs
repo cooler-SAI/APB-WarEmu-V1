@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -53,31 +53,25 @@ namespace WorldServer
 
         #endregion
 
-        public Item[] Items = new Item[DELETE_SLOT];
+        public Item[] Items = new Item[AUTO_EQUIP_SLOT];
 
         public byte _BagBuy=0;
         public byte BagBuy
         {
             get
             {
-                if (Obj.IsPlayer())
-                    return Obj.GetPlayer()._Value.BagBuy;
+                if (_Owner.IsPlayer())
+                    return _Owner.GetPlayer()._Value.BagBuy;
                 else
                     return _BagBuy;
             }
             set
             {
-                if (Obj.IsPlayer())
-                    Obj.GetPlayer()._Value.BagBuy = value;
+                if (_Owner.IsPlayer())
+                    _Owner.GetPlayer()._Value.BagBuy = value;
                 else
                     _BagBuy = value;
             }
-
-        }
-
-        public ItemsInterface(Object Obj)
-            : base(Obj)
-        {
 
         }
 
@@ -111,15 +105,15 @@ namespace WorldServer
 
             base.Load();
         }
-        public void Load(List<Character_items> NItems)
+        public void Load(List<Character_item> NItems)
         {
             if (IsLoad)
                 return;
 
-            foreach(Character_items Item in NItems)
+            foreach(Character_item Item in NItems)
                 if (Item.SlotId < Items.Length && Item.SlotId >= 0)
                 {
-                    Item Itm = new Item(Obj);
+                    Item Itm = new Item(_Owner);
                     if (!Itm.Load(Item))
                         continue;
 
@@ -164,6 +158,46 @@ namespace WorldServer
                 }
             }
         }
+
+        public void AddCreatureItem(Creature_item Item)
+        {
+            if (Item.SlotId < Items.Length && Item.SlotId >= 0)
+            {
+                Item Itm = new Item(Item);
+                AddCreatureItem(Itm);
+            }
+        }
+
+        public void AddCreatureItem(Item Item)
+        {
+            if (Item.SlotId < Items.Length && Item.SlotId >= 0)
+            {
+                if (Item.SlotId == 0)
+                {
+                    BuyBack.Add(Item);
+                    return;
+                }
+
+                Items[Item.SlotId] = Item;
+            }
+
+            if(IsEquipedSlot(Item.SlotId))
+                SendEquiped(null);
+        }
+
+        public Item RemoveCreatureItem(ushort Slot)
+        {
+            Item Itm = RemoveItem(Slot);
+
+            if (Itm != null)
+            {
+                if(IsEquipedSlot(Slot))
+                    SendEquiped(null, Slot);
+            }
+
+            return Itm;
+        }
+
         public override void Update(long Tick)
         {
 
@@ -184,17 +218,37 @@ namespace WorldServer
             List<Item> Itms = Items.ToList();
             Itms.AddRange(BuyBack.ToList());
 
-            if(Obj.IsPlayer())
-                CharMgr.SaveItems(GetPlayer()._Info.CharacterId,Itms.ToArray());
+            if (_Owner.IsPlayer())
+                CharMgr.SaveItems(GetPlayer()._Info.CharacterId,Itms);
         }
 
         #region Stats
+
+        public void SetCooldown(ushort Slot, long Tick)
+        {
+            Item Itm = GetItemInSlot(Slot);
+            if (Itm != null)
+                Itm.Cooldown = TCPManager.GetTimeStampMS() + Tick;
+        }
+
+        public bool CanUseItem(ushort Slot, long Tick)
+        {
+            Item Itm = GetItemInSlot(Slot);
+            if (Itm != null && Itm.Info.Type != (byte)GameData.ItemTypes.ITEMTYPES_SHIELD)
+            {
+                return Itm.Cooldown <= Tick;
+            }
+
+            return false;
+        }
 
         public ushort GetAttackTime(EquipSlot Slot)
         {
             Item Itm = Items[(UInt16)Slot];
             if (Itm == null)
+            {
                 return 200;
+            }
             else
                 return Itm.Info.Speed;
         }
@@ -202,7 +256,7 @@ namespace WorldServer
         {
             Item Itm = Items[(UInt16)Slot];
             if(Itm == null)
-                return 10;
+                return 0;
             else
                 return Itm.Info.Dps;
 
@@ -211,10 +265,12 @@ namespace WorldServer
         {
             Item Gauche = GetItemInSlot((UInt16)EquipSlot.MAIN_GAUCHE);
             Item Droite = GetItemInSlot((UInt16)EquipSlot.MAIN_DROITE);
+            Item Distance = GetItemInSlot((UInt16)EquipSlot.ARME_DISTANCE);
 
             byte Speed = 0;
             if (Gauche != null) Speed += (byte)(Gauche.Info.Speed * 0.1);
             if (Droite != null) Speed += (byte)(Droite.Info.Speed * 0.1);
+            if (Distance != null) Speed += (byte)(Distance.Info.Speed * 0.1);
 
             return Speed;
         }
@@ -222,10 +278,12 @@ namespace WorldServer
         {
             Item Gauche = GetItemInSlot((UInt16)EquipSlot.MAIN_GAUCHE);
             Item Droite = GetItemInSlot((UInt16)EquipSlot.MAIN_DROITE);
+            Item Distance = GetItemInSlot((UInt16)EquipSlot.ARME_DISTANCE);
 
             UInt16 Damage = 0;
             if (Gauche != null) Damage += Gauche.Info.Dps;
             if (Droite != null) Damage += Droite.Info.Dps;
+            if (Distance != null) Damage += Distance.Info.Dps;
 
             return Damage;
         }
@@ -240,11 +298,10 @@ namespace WorldServer
         }
         public void EquipItem(Item Itm)
         {
-            if (Itm == null || !Obj.IsPlayer())
+            if (Itm == null || !_Owner.IsPlayer())
                 return;
-            Log.Success("EquipItem", "Itm=" + Itm.Info.Name);
 
-            Player Plr = Obj.GetPlayer();
+            Player Plr = _Owner.GetPlayer();
 
             foreach (KeyValuePair<byte, UInt16> Stats in Itm.Info._Stats)
                 Plr.StsInterface.AddBonusStat(Stats.Key, Stats.Value);
@@ -253,10 +310,10 @@ namespace WorldServer
         }
         public void UnEquipItem(Item Itm)
         {
-            if (Itm == null || !Obj.IsPlayer())
+            if (Itm == null || !_Owner.IsPlayer())
                 return;
-            Log.Success("UnEquipItem", "Itm=" + Itm.Info.Name);
-            Player Plr = Obj.GetPlayer();
+
+            Player Plr = _Owner.GetPlayer();
 
             foreach (KeyValuePair<byte, UInt16> Stats in Itm.Info._Stats)
                 Plr.StsInterface.RemoveBonusStat(Stats.Key, Stats.Value);
@@ -270,6 +327,9 @@ namespace WorldServer
 
         public Item GetItemInSlot(UInt16 SlotID)
         {
+            if (SlotID >= Items.Length)
+                return null;
+
             return Items[SlotID];
         }
         public UInt16 GetItemCount()
@@ -375,8 +435,8 @@ namespace WorldServer
         {
             Out.WriteByte((byte)GameData.Stats.STATS_COUNT);
             Out.WriteByte(GetAttackSpeed());
-            Out.WriteUInt16(GetDamage());
-            Out.WriteUInt16(GetEquipedArmor());
+            Out.WriteByte(01);
+            Out.WriteByte(0xF4);
         }
         public void SendMaxInventory(Player Plr) // 1.3.5
         {
@@ -385,18 +445,14 @@ namespace WorldServer
             Out.WriteByte(GetTotalSlot()); // Nombre de slots disponibles
             Out.WriteUInt16((UInt16)INVENTORY_SLOT_COUNT);
             Out.WriteByte(0);
-            Out.WriteUInt16R(GetBagPrice());
+            Out.WriteUInt32R(GetBagPrice());
 
-            byte[] Data = new byte[]
-            {
-		        0x00,0x00,
-		        0x50,0x00,0x08,
-		        0x00,0x60,
-		        0xEA,
-		        0x00,0x00
-            };
-
-            Out.Write(Data, 0, Data.Length);
+            Out.WriteUInt16(2);
+            Out.WriteByte(0x50);
+            Out.WriteUInt16(0x08);
+            Out.WriteUInt16(0x60);
+            Out.WriteByte(0xEA);
+            Out.WriteUInt16(0);
             Plr.SendPacket(Out);
         }
         public void SendAllItems(Player Plr)
@@ -409,9 +465,9 @@ namespace WorldServer
             PacketOut Buffer = new PacketOut(0);
             Buffer.Position = 0;
 
-            for (UInt16 i = 0; i < Items.Length; ++i)
+            for (int i = 0; i < Items.Length; ++i)
             {
-                if (Count >= 16)
+                if (Count >= 8)
                     SendBuffer(Plr, ref Buffer,ref Count);
 
                 if (Items[i] != null)
@@ -427,10 +483,13 @@ namespace WorldServer
         private void SendBuffer(Player Plr,ref PacketOut Buffer,ref byte Count)
         {
             // On Envoi le Packet des items
+            byte[] ArrayBuf = Buffer.ToArray();
             PacketOut Packet = new PacketOut((byte)Opcodes.F_GET_ITEM);
             Packet.WriteByte(Count);
             Packet.Fill(0, 3);
-            Packet.Write(Buffer.ToArray(), 0, Buffer.ToArray().Length);
+            Packet.Write(ArrayBuf, 0, ArrayBuf.Length);
+            Packet.WritePacketLength();
+
             Plr.SendPacket(Packet);
 
             // On Remet le compteur a zero
@@ -440,16 +499,41 @@ namespace WorldServer
             Buffer = new PacketOut(0);
             Buffer.Position = 0;
         }
-        private void SendItems(Player Plr,UInt16[] Itms)
+        private void SendItems(Player Plr,List<UInt16> Slots)
         {
-            if (Itms.Length <= 0)
+            if (Slots.Count <= 0)
                 return;
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_GET_ITEM);
-            Out.WriteByte((byte)Itms.Length);
+            Out.WriteByte((byte)Slots.Count);
             Out.Fill(0, 3);
-            for (int i = 0; i < Itms.Length; ++i)
-                Item.BuildItem(ref Out, GetItemInSlot(Itms[i]), null, Itms[i], 0);
+            for (int i = 0; i < Slots.Count; ++i)
+                Item.BuildItem(ref Out, GetItemInSlot(Slots[i]), null, Slots[i], 0);
+            Plr.SendPacket(Out);
+        }
+        private void SendItems(Player Plr, UInt16 Slot)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_GET_ITEM);
+            Out.WriteByte(1);
+            Out.Fill(0, 3);
+            Item.BuildItem(ref Out, GetItemInSlot(Slot), null, Slot, 0);
+            Plr.SendPacket(Out);
+        }
+        private void SendItem(Player Plr, UInt16 Slot, Item_Info Info)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_GET_ITEM);
+            Out.WriteByte(1);
+            Out.Fill(0, 3);
+            Item.BuildItem(ref Out, null, Info, Slot, 1);
+            Plr.SendPacket(Out);
+        }
+        private void SendItems(Player Plr, UInt16 To, UInt16 From)
+        {
+            PacketOut Out = new PacketOut((byte)Opcodes.F_GET_ITEM);
+            Out.WriteByte(2);
+            Out.Fill(0, 3);
+            Item.BuildItem(ref Out, GetItemInSlot(To), null, To, 0);
+            Item.BuildItem(ref Out, GetItemInSlot(From), null, From, 0);
             Plr.SendPacket(Out);
         }
         public void SendEquiped(Player Plr)
@@ -459,23 +543,72 @@ namespace WorldServer
                 if (Items[i] != null)
                     Itms.Add(i);
 
-            SendEquiped(Plr, Itms.ToArray());
+            SendEquiped(Plr, Itms);
         }
-        public void SendEquiped(Player Plr, UInt16[] Itms)
+
+        public void SendEquiped(Player Plr, UInt16 Slot)
         {
-            int Invalide = Itms.ToList().Count(slot => !IsEquipedSlot(slot));
-            if (Invalide >= Itms.Length)
+            if (!IsEquipedSlot(Slot))
                 return;
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_INVENTORY);
-            Out.WriteUInt16(Obj.Oid);
-            Out.WriteUInt16((UInt16)(Itms.Length - Invalide)); // Count
+            Out.WriteUInt16(_Owner.Oid);
+            Out.WriteUInt16(1); // Count
+            Out.WriteUInt16(Slot);
+            Out.WriteUInt16((UInt16)(Items[Slot] != null ? Items[Slot].ModelId : 0));
+            Out.WriteByte(0);
+
+            if (Plr != null)
+                Plr.SendPacket(Out);
+            else
+                _Owner.DispatchPacket(Out, false);
+        }
+
+        public void SendEquiped(Player Plr, UInt16 To, UInt16 From)
+        {
+            int Invalide = !IsEquipedSlot(To) ? 1 : 0;
+            Invalide += !IsEquipedSlot(From) ? 1 : 0;
+
+            if (Invalide == 2)
+                return;
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_INVENTORY);
+            Out.WriteUInt16(_Owner.Oid);
+            Out.WriteUInt16((UInt16)(2 - Invalide)); // Count
+
+            if (IsEquipedSlot(To))
+            {
+                Out.WriteUInt16(To);
+                Out.WriteUInt16((UInt16)(Items[To] != null ? Items[To].ModelId : 0));
+
+            }
+            if (!IsEquipedSlot(From))
+            {
+                Out.WriteUInt16(From);
+                Out.WriteUInt16((UInt16)(Items[To] != null ? Items[To].ModelId : 0));
+            }
+
+            Out.WriteByte(0);
+
+            if (Plr != null)
+                Plr.SendPacket(Out);
+            else
+                _Owner.DispatchPacket(Out, false);
+        }
+        public void SendEquiped(Player Plr, List<UInt16> Itms)
+        {
+            int Invalide = Itms.Count(slot => !IsEquipedSlot(slot));
+            if (Invalide >= Itms.Count)
+                return;
+
+            PacketOut Out = new PacketOut((byte)Opcodes.F_PLAYER_INVENTORY);
+            Out.WriteUInt16(_Owner.Oid);
+            Out.WriteUInt16((UInt16)(Itms.Count - Invalide)); // Count
             foreach (UInt16 Slot in Itms)
             {
                 if (!IsEquipedSlot(Slot))
                     continue;
 
-                Out.WriteByte(0); // Effect
                 Out.WriteUInt16(Slot);
                 Out.WriteUInt16((UInt16)(Items[Slot] != null ? Items[Slot].ModelId : 0));
             }
@@ -483,8 +616,8 @@ namespace WorldServer
 
             if (Plr != null)
                 Plr.SendPacket(Out);
-            else 
-                Obj.DispatchPacket(Out, false);
+            else
+                _Owner.DispatchPacket(Out, false);
         }
         public void SendInspect(Player Plr)
         {
@@ -494,7 +627,7 @@ namespace WorldServer
                     ++Count;
 
             PacketOut Out = new PacketOut((byte)Opcodes.F_SOCIAL_NETWORK);
-            Out.WriteUInt16(Obj.Oid);
+            Out.WriteUInt16(_Owner.Oid);
             Out.WriteByte(7); // Inspect Code
             Out.WriteByte(Count);
 
@@ -567,12 +700,12 @@ namespace WorldServer
             if (Itm == null)
                 return true;
 
-            if (!Obj.IsPlayer())
+            if (!_Owner.IsPlayer())
                 return true;
 
             if (IsEquipedSlot(Slot)) // Si le slot est équipé alors on check qu'on ai les skills et autre
             {
-                Player Plr = Obj.GetPlayer();
+                Player Plr = _Owner.GetPlayer();
 
                 if (!CanUse(Itm.Info, Plr, false, false, false, false, false))
                     return false;
@@ -605,7 +738,6 @@ namespace WorldServer
             }
             else
             {
-                Log.Error("MaxInventory", "=" + GetMaxInventorySlot());
                 if (Slot > GetMaxInventorySlot())
                     return false;
             }
@@ -616,8 +748,6 @@ namespace WorldServer
         {
             Item IFrom = GetItemInSlot(From);
             Item ITo = GetItemInSlot(To);
-
-            Log.Success("MoveSlot", "From=" + From + ",To=" + To);
 
             if (CanMove(ITo, From) && CanMove(IFrom, To))
             {
@@ -641,26 +771,26 @@ namespace WorldServer
                     EquipItem(IFrom);
                 }
 
-                SendEquiped(null, new UInt16[] { To , From });
+                SendEquiped(null, To , From );
 
-                if (Obj.IsPlayer())
-                    SendItems(Obj.GetPlayer(), new UInt16[] { To, From });
+                if (_Owner.IsPlayer())
+                    SendItems(_Owner.GetPlayer(), To, From);
                 return true;
             }
 
-            Log.Error("MoveSlot", "From=" + From + ",To=" + To);
-            if (Obj.IsPlayer() && IFrom != null && IFrom.Info != null)
+            //Log.Error("MoveSlot", "From=" + From + ",To=" + To);
+            if (_Owner.IsPlayer() && IFrom != null && IFrom.Info != null)
                 if (IsEquipedSlot(To))
-                    Obj.GetPlayer().SendLocalizeString(IFrom.Info.Name, GameData.Localized_text.TEXT_ITEM_ERR_CANT_EQUIP_X);
-                else 
-                    Obj.GetPlayer().SendLocalizeString(IFrom.Info.Name, GameData.Localized_text.TEXT_ITEM_ERR_CANT_MOVE_X);
+                    _Owner.GetPlayer().SendLocalizeString(IFrom.Info.Name, GameData.Localized_text.TEXT_ITEM_ERR_CANT_EQUIP_X);
+                else
+                    _Owner.GetPlayer().SendLocalizeString(IFrom.Info.Name, GameData.Localized_text.TEXT_ITEM_ERR_CANT_MOVE_X);
 
 
             return false;
         }
         public bool MoveSlot(UInt16 From,UInt16 To,UInt16 Count)
         {
-            if (To >= Items.Length)
+            if (To == DELETE_SLOT)
             {
                 DeleteItem(From, Count, true);
                 return true;
@@ -669,7 +799,7 @@ namespace WorldServer
             if (To == AUTO_EQUIP_SLOT)
                 To = GenerateAutoSlot(From);
 
-            Log.Success("MoveSlot", "From=" + From + ",To=" + To +",Count="+Count);
+            //Log.Success("MoveSlot", "From=" + From + ",To=" + To +",Count="+Count);
 
             if (To == 0)
                 return false;
@@ -693,8 +823,8 @@ namespace WorldServer
                         DeleteItem(From, Count, true);
                         ITo.Count += Count;
 
-                        if (Obj.IsPlayer())
-                            SendItems(Obj.GetPlayer(), new ushort[] { From, To });
+                        if (_Owner.IsPlayer())
+                            SendItems(_Owner.GetPlayer(), From, To);
 
                         return true;
                     }
@@ -707,12 +837,12 @@ namespace WorldServer
                     {
                         DeleteItem(From, Count, true);
 
-                        Item New = new Item(Obj);
+                        Item New = new Item(_Owner);
                         New.Load(IFrom.Info, To, Count);
                         Items[To] = New;
 
-                        if (Obj.IsPlayer())
-                            SendItems(Obj.GetPlayer(), new ushort[] { From, To });
+                        if (_Owner.IsPlayer())
+                            SendItems(_Owner.GetPlayer(), From, To);
 
                         return true;
                     }
@@ -729,15 +859,24 @@ namespace WorldServer
         public bool RemoveItem(uint Entry, UInt16 Count)
         {
             List<UInt16> Removed = new List<ushort>();
-            bool Result = RemoveItem(Entry, Count, ref Removed);
-            SendItems(GetPlayer(), Removed.ToArray());
+            int Result = RemoveItem(Entry, Count, ref Removed);
+            SendItems(GetPlayer(), Removed);
+            return Result != 0;
+        }
+        public int RemoveAllItems(uint Entry)
+        {
+            ushort Count = GetItemCount(Entry);
+            List<UInt16> Removed = new List<ushort>();
+            int Result = RemoveItem(Entry, Count, ref Removed, false);
+            SendItems(GetPlayer(), Removed);
             return Result;
         }
-        public bool RemoveItem(uint Entry, UInt16 Count,ref List<UInt16> Removed)
+        public int RemoveItem(uint Entry, UInt16 Count,ref List<UInt16> Removed, bool CheckCount=true)
         {
-            if (GetItemCount(Entry) < Count)
-                return false;
+            if (CheckCount && GetItemCount(Entry) < Count)
+                return 0;
 
+            UInt16 OriginalCount = Count;
             for (UInt16 Slot = MAX_EQUIPED_SLOT; Slot < GetMaxInventorySlot() && Count > 0; ++Slot)
             {
                 if (Items[Slot] != null && Items[Slot].Info.Entry == Entry)
@@ -745,23 +884,21 @@ namespace WorldServer
                     if (Items[Slot].Count > Count)
                     {
                         Removed.Add(Slot);
-
+                        DeleteItem(Slot, Count, true);
                         Items[Slot].Count -= Count;
                         Count = 0;
+                        return Count;
                     }
                     else
                     {
                         Removed.Add(Slot);
-
                         Count -= Items[Slot].Count;
-                        Items[Slot].Count = 0;
-                        Items[Slot].Delete();
-                        Items[Slot] = null;
+                        DeleteItem(Slot, Count, true);
                     }
                 }
             }
 
-            return true;
+            return OriginalCount - Count;
         }
         public UInt16 GenerateAutoSlot(UInt16 From)
         {
@@ -827,12 +964,12 @@ namespace WorldServer
                     SlotId = IFrom.Info.SlotId;
             }
 
-            Log.Success("Generate", "ItemSlot=" + IFrom.Info.SlotId + ",generated=" + SlotId);
+            //Log.Success("Generate", "ItemSlot=" + IFrom.Info.SlotId + ",generated=" + SlotId);
             return SlotId;
         }
         public void DeleteItem(UInt16 SlotId,UInt16 Count,bool Delete)
         {
-            Log.Success("DeleteItem", "SlotId=" + SlotId);
+            //Log.Success("DeleteItem", "SlotId=" + SlotId);
             Item IFrom = GetItemInSlot(SlotId);
             if (IFrom != null)
             {
@@ -845,11 +982,14 @@ namespace WorldServer
                         IFrom.Delete();
                 }
 
-                if (IsEquipedSlot(SlotId))
-                    SendEquiped(null, new UInt16[] { SlotId });
+                if (_Owner.IsPlayer())
+                {
+                    SendItems(_Owner.GetPlayer(), SlotId);
+                    _Owner.GetPlayer().QtsInterface.HandleEvent(Objective_Type.QUEST_GET_ITEM, IFrom.Info.Entry, Count, false);
+                }
 
-                if (Obj.IsPlayer())
-                    SendItems(Obj.GetPlayer(), new ushort[] { SlotId });
+                if (IsEquipedSlot(SlotId))
+                    SendEquiped(null,  SlotId);
             }
         }
         public ItemError CreateItem(UInt32 ItemId, UInt16 Count)
@@ -858,81 +998,93 @@ namespace WorldServer
 
             return CreateItem(Info, Count);
         }
+
+        List<UInt16> Stacked = new List<ushort>(); // List des Objets stackable
+        List<UInt16> ToSend = new List<ushort>(); // List des Objets mis a jours
         public ItemError CreateItem(Item_Info Info, UInt16 Count)
         {
             if(Info == null)
                 return ItemError.RESULT_ITEMID_INVALID;
 
-            List<UInt16> Stacked = new List<ushort>(); // List des Objets stackable
-            List<UInt16> ToSend = new List<ushort>(); // List des Objets mis a jours
-            UInt16 CanStack = 0; // Nombre d'objet qui peuvent être stacker
-            UInt16 ToCreate =  (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack)+1); // Nombre d'objet qui doit être créé Count/MaxStack
-
-            if (Info.MaxStack > 1) // Si l'objet a créer est stackable on recherche les objets déja dans l'inventaire
+            lock (ToSend)
             {
-                Stacked = GetStackItem(Info.Entry);
-                CanStack = GetStackableCount(Stacked);
+                Stacked.Clear();
+                ToSend.Clear();
 
-                if (CanStack >= Count) // Si on a + de place pour le stack que pour le créer alors on n'en créer aucun
+                UInt16 CanStack = 0; // Nombre d'objet qui peuvent être stacker
+                UInt16 ToCreate = (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack) + 1); // Nombre d'objet qui doit être créé Count/MaxStack
+
+                if (Info.MaxStack > 1) // Si l'objet a créer est stackable on recherche les objets déja dans l'inventaire
                 {
-                    ToCreate = 0; // Nombre de slots a créé
-                    CanStack = Count; 
+                    Stacked = GetStackItem(Info.Entry);
+                    CanStack = GetStackableCount(Stacked);
+
+                    if (CanStack >= Count) // Si on a + de place pour le stack que pour le créer alors on n'en créer aucun
+                    {
+                        ToCreate = 0; // Nombre de slots a créé
+                        CanStack = Count;
+                    }
+                    else
+                    {
+                        Count -= CanStack;
+                        ToCreate = (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack) + 1); // On supprime le nombre stackable et on recalcul le nombre de slot necessaire
+                    }
                 }
-                else
-                {
-                    Count -= CanStack;
-                    ToCreate = (UInt16)Math.Ceiling((decimal)(Count / Info.MaxStack)+1); // On supprime le nombre stackable et on recalcul le nombre de slot necessaire
-                }
-            }
 
-            UInt16 TotalFreeSlot = GetTotalFreeInventorySlot(); // Nombre de slots total dont je dispose
+                UInt16 TotalFreeSlot = GetTotalFreeInventorySlot(); // Nombre de slots total dont je dispose
 
-            Log.Info("ItemsInterface", "Count=" + Count + ",FreeSlot=" + TotalFreeSlot + ",ToCreate=" + ToCreate+",CanStack="+CanStack);
+                //Log.Info("ItemsInterface", "Count=" + Count + ",FreeSlot=" + TotalFreeSlot + ",ToCreate=" + ToCreate+",CanStack="+CanStack);
 
 
-            if(TotalFreeSlot < ToCreate) // Je n'ai pas assez de slots disponible pour créer ces objets
-                return ItemError.RESULT_MAX_BAG;
-
-            foreach (UInt16 StackableSlot in Stacked)
-            {
-                Item Itm = Items[StackableSlot];
-
-                if (Itm == null || Itm.Count >= Itm.Info.MaxStack) 
-                    continue;
-
-                UInt16 ToAdd = (UInt16)Math.Min(Itm.Info.MaxStack-Itm.Count,CanStack);
-
-                Log.Info("ItemsInterface", "StackableSlot Add : " + ToAdd);
-
-                Itm.Count += ToAdd;
-                CanStack -= ToAdd;
-                Count -= ToAdd;
-
-                ToSend.Add(StackableSlot);
-
-                if (CanStack <= 0)
-                    break;
-            }
-
-            for (int i = 0; i < ToCreate && Count > 0; ++i)
-            {
-                UInt16 FreeSlot = GetFreeInventorySlot();
-                if (FreeSlot == 0)
+                if (TotalFreeSlot < ToCreate) // Je n'ai pas assez de slots disponible pour créer ces objets
                     return ItemError.RESULT_MAX_BAG;
 
-                UInt16 ToAdd = Math.Min(Count, Info.MaxStack);
-                Count -= ToAdd;
+                foreach (UInt16 StackableSlot in Stacked)
+                {
+                    Item Itm = Items[StackableSlot];
 
-                Item Itm = new Item(Obj);
-                if (!Itm.Load(Info, FreeSlot, ToAdd))
-                    return ItemError.RESULT_ITEMID_INVALID;
+                    if (Itm == null || Itm.Count >= Itm.Info.MaxStack)
+                        continue;
 
-                Log.Info("ItemsInterface", "New Item ToAdd : " + ToAdd + ",Count="+Count);
-                Items[FreeSlot] = Itm;
-                ToSend.Add(FreeSlot);
+                    UInt16 ToAdd = (UInt16)Math.Min(Itm.Info.MaxStack - Itm.Count, CanStack);
+
+                    //Log.Info("ItemsInterface", "StackableSlot Add : " + ToAdd);
+
+                    Itm.Count += ToAdd;
+                    CanStack -= ToAdd;
+                    Count -= ToAdd;
+
+                    ToSend.Add(StackableSlot);
+
+                    if (CanStack <= 0)
+                        break;
+                }
+
+                for (int i = 0; i < ToCreate && Count > 0; ++i)
+                {
+                    UInt16 FreeSlot = GetFreeInventorySlot();
+                    if (FreeSlot == 0)
+                        return ItemError.RESULT_MAX_BAG;
+
+                    UInt16 ToAdd = Math.Min(Count, Info.MaxStack);
+                    Count -= ToAdd;
+
+                    Item Itm = new Item(_Owner);
+                    if (!Itm.Load(Info, FreeSlot, ToAdd))
+                        return ItemError.RESULT_ITEMID_INVALID;
+
+                    //Log.Info("ItemsInterface", "New Item ToAdd : " + ToAdd + ",Count=" + Count);
+                    Items[FreeSlot] = Itm;
+                    ToSend.Add(FreeSlot);
+                }
+
+
+                if (_Owner.IsPlayer())
+                    _Owner.GetPlayer().QtsInterface.HandleEvent(Objective_Type.QUEST_GET_ITEM, Info.Entry, Count, false);
+
+                SendItems(GetPlayer(), ToSend);
             }
 
-            SendItems(GetPlayer(), ToSend.ToArray());
             return ItemError.RESULT_OK;
         }
 
@@ -954,13 +1106,13 @@ namespace WorldServer
             byte Unk = packet.GetUint8();
             UInt16 Oid = packet.GetUint16();
 
-            if (!Obj.IsInWorld())
+            if (!_Owner.IsInWorld())
                 return;
 
-            if (!Obj.IsPlayer())
+            if (!_Owner.IsPlayer())
                 return;
 
-            Player Plr = Obj.GetPlayer();
+            Player Plr = _Owner.GetPlayer();
 
             if (Oid <= 0)
             {
@@ -969,7 +1121,7 @@ namespace WorldServer
                 return;
             }
 
-            if (Oid == Obj.Oid)
+            if (Oid == _Owner.Oid)
             {
                 Plr.SendLocalizeString("", GameData.Localized_text.TEXT_TRADE_ERR_CANT_TRADE_WITH_YOURSELF);
                 SendTradeClose(Oid);
@@ -1005,6 +1157,8 @@ namespace WorldServer
                 byte Update = packet.GetUint8();
                 byte ItemCounts = packet.GetUint8();
 
+                //Log.Info("Trade", "Money=" + Money + ",Update=" + Update + ",Items=" + ItemCounts);
+
                 Trading.ItmInterface.TradingAccepted = 1;
                 TradingAccepted = 1;
 
@@ -1032,7 +1186,7 @@ namespace WorldServer
             }
             else if (Status == 3 && IsTrading()) // Je Ferme le Trade
             {
-                Trading.ItmInterface.SendTradeClose(Obj.Oid);
+                Trading.ItmInterface.SendTradeClose(_Owner.Oid);
                 SendTradeClose(Oid);
             }
         }
@@ -1040,8 +1194,8 @@ namespace WorldServer
         {
             Log.Success("Trade", "TRADE !");
 
-            Player Me = Obj.GetPlayer();
-            Player Other = DistInter.Obj.GetPlayer();
+            Player Me = GetPlayer();
+            Player Other = DistInter.GetPlayer();
 
             bool AllOk = true;
 
@@ -1074,7 +1228,7 @@ namespace WorldServer
             PacketOut Out = new PacketOut((byte)Opcodes.F_TRADE_STATUS);
             Out.WriteByte(DistInterface.TradingAccepted);
             Out.WriteByte(0);
-            Out.WriteUInt16(DistInterface != this ? DistInterface.Obj.Oid : (ushort)0);
+            Out.WriteUInt16(DistInterface != this ? DistInterface._Owner.Oid : (ushort)0);
 
             if (DistInterface.TradingAccepted == 2)
                 Out.Fill(0, 24);
@@ -1085,7 +1239,7 @@ namespace WorldServer
                 Out.Fill(0, 2 * MAX_TRADE_SLOT);
             }
 
-            Obj.GetPlayer().SendPacket(Out);
+            _Owner.GetPlayer().SendPacket(Out);
         }
         public bool IsTrading()
         {
@@ -1093,7 +1247,7 @@ namespace WorldServer
         }
         public bool CanTrading(Player Plr)
         {
-            return Plr.ItmInterface.Trading == null || Plr.ItmInterface.Trading == Obj.GetPlayer();
+            return Plr.ItmInterface.Trading == null || Plr.ItmInterface.Trading == _Owner.GetPlayer();
         }
         public void CloseTrade()
         {
@@ -1109,7 +1263,7 @@ namespace WorldServer
             Out.WriteByte(0);
             Out.WriteUInt16(Oid);
             Out.Fill(0, 24);
-            Obj.GetPlayer().SendPacket(Out);
+            _Owner.GetPlayer().SendPacket(Out);
 
             CloseTrade();
         }
@@ -1141,8 +1295,6 @@ namespace WorldServer
             UInt16 SlotId = (UInt16)(Menu.Num + (Menu.Page * 256));
             UInt16 Count = Menu.Count;
 
-            Log.Success("SellItem", "Count=" + Count + ",SlotId=" + SlotId);
-
             List<UInt16> ToSend = new List<ushort>();
             Item Itm = GetItemInSlot(SlotId);
             if (Itm == null || Itm.Info.SellPrice <= 0)
@@ -1162,7 +1314,7 @@ namespace WorldServer
             {
                 Itm.Count -= Count;
 
-                Item New = new Item(Obj);
+                Item New = new Item(_Owner);
                 if (!New.Load(Itm.Info, 0, Count))
                     return;
                 AddBuyBack(New);
@@ -1170,14 +1322,12 @@ namespace WorldServer
 
             GetPlayer().AddMoney((uint)Itm.Info.SellPrice * Count);
 
-            SendItems(GetPlayer(), ToSend.ToArray());
+            SendItems(GetPlayer(), ToSend);
             SendBuyBack();
         }
         public void BuyBackItem(InteractMenu Menu)
         {
             UInt16 SlotId = (ushort)(BuyBack.Count - 1 - (Menu.Num + (Menu.Page * 256)));
-
-            Log.Success("BuyBackItem", "SlotId=" + SlotId);
 
             UInt16 FreeSlot = GetFreeInventorySlot();
             if (FreeSlot <= 0)
@@ -1196,7 +1346,7 @@ namespace WorldServer
             Items[FreeSlot] = Itm;
             Itm.SlotId = FreeSlot;
 
-            SendItems(GetPlayer(), new ushort[] { FreeSlot });
+            SendItems(GetPlayer(), FreeSlot);
             SendBuyBack();
         }
         public void AddBuyBack(Item Itm)
@@ -1228,7 +1378,7 @@ namespace WorldServer
             else
             {
                 Itm.Count -= Count;
-                Item New = new Item(Obj);
+                Item New = new Item(_Owner);
                 New.Load(Itm.Info, 0, Count);
                 return New;
             }
