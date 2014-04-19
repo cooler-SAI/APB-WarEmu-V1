@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,12 +21,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography;
 
 using FrameWork;
 
 namespace Common
 {
-    [DataTable(PreCache = false, TableName = "Accounts", DatabaseName = "Accounts")]
+    [DataTable(PreCache = false, TableName = "accounts", DatabaseName = "Accounts")]
     [Serializable]
     public class Account : DataObject
     {
@@ -36,6 +37,7 @@ namespace Common
         private string _Ip;
         private string _Token;
         private byte _GmLevel;
+        public long LastCheck;
 
         public Account()
         {
@@ -71,6 +73,9 @@ namespace Common
         }
 
         [DataElement(Varchar = 255)]
+        public string CryptPassword;
+
+        [DataElement(Varchar = 255)]
         public string Ip
         {
             get { return _Ip; }
@@ -101,6 +106,22 @@ namespace Common
                 _GmLevel = value;
                 Dirty = true;
             }
+        }
+
+        [DataElement(AllowDbNull = false)]
+        public uint InvalidPasswordCount = 0;
+
+
+        static public string ConvertSHA256(string value)
+        {
+            SHA256 sha = SHA256.Create();
+            byte[] data = sha.ComputeHash(Encoding.Default.GetBytes(value));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < data.Length; i++)
+            {
+                sb.Append(data[i].ToString("x2"));
+            }
+            return sb.ToString();
         }
     }
 }

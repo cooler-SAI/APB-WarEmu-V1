@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,8 +26,40 @@ using FrameWork;
 
 namespace Common
 {
+    public enum CreatureTypes
+    {
+        NONE = 0,
+        ANIMALS = 1,
+        DEAMONS = 2,
+        HUMANOIDS = 3,
+        MONSTERS = 4,
+        PLANTS = 5,
+        UNDEAD = 6,
+    };
+
+    public enum CreatureSubTypes
+    {
+        NONE = 0,
+        BEASTS = 1,
+        BIRDS = 2,
+        INSECTS_ARACHNIDS = 3,
+        REPTILES = 5,
+        UNMARKED_DEAMONS = 7,
+        DEAMONDS_OF_KHORNE = 8,
+        DEAMONS_OF_TZEENTCH = 9,
+        DEAMONS_OF_NURGLE = 10,
+        DEAMONS_OF_SLAANESH = 11,
+        BEASMEN = 12,
+        DWARFS =14,
+        GREENSKINS = 15,
+        HUMANS = 16,
+        OGRES = 17,
+        SKAVEN = 18,
+        CHAOS_BREEDS = 19,
+    };
+
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "Creature_protos", DatabaseName = "World")]
+    [DataTable(PreCache = false, TableName = "creature_protos", DatabaseName = "World")]
     [Serializable]
     public class Creature_proto : DataObject
     {
@@ -111,6 +143,12 @@ namespace Common
             get { return _Faction; }
             set { _Faction = value; Dirty = true; }
         }
+
+        [DataElement(AllowDbNull = false)]
+        public byte CreatureType;
+
+        [DataElement(AllowDbNull = false)]
+        public byte CreatureSubType;
 
         [DataElement(AllowDbNull = false)]
         public byte Ranged
@@ -227,5 +265,8 @@ namespace Common
                 return Btes.ToArray();
             }
         }
+
+        public List<Quest> StartingQuests;
+        public List<Quest> FinishingQuests;
     }
 }

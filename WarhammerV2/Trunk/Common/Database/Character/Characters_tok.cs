@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,15 +27,15 @@ using FrameWork;
 namespace Common
 {
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "Characters_Toks", DatabaseName = "Characters")]
+    [DataTable(PreCache = false, TableName = "characters_toks", DatabaseName = "Characters")]
     [Serializable]
     public class Character_tok : DataObject
     {
         [DataElement()]
-        public int CharacterId;
+        public UInt32 CharacterId;
 
         [DataElement()]
-        public uint TokEntry;
+        public ushort TokEntry;
 
         [DataElement()]
         public uint Count;

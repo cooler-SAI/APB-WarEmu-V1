@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,11 +27,11 @@ using FrameWork;
 namespace Common
 {
     // Valeur Changante d'un character
-    [DataTable(PreCache = false, TableName = "Characters_value", DatabaseName = "Characters")]
+    [DataTable(PreCache = false, TableName = "characters_value", DatabaseName = "Characters")]
     [Serializable]
     public class Character_value : DataObject
     {
-        private int _CharacterId;
+        private UInt32 _CharacterId;
         private byte _Level;
         private uint _Xp;
         private int _XpMode;
@@ -58,7 +58,7 @@ namespace Common
         }
 
         [DataElement(Unique = true)]
-        public int CharacterId
+        public UInt32 CharacterId
         {
             get { return _CharacterId; }
             set { _CharacterId = value; Dirty = true; }

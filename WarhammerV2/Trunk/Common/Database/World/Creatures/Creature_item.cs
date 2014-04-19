@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ using FrameWork;
 namespace Common
 {
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "Creature_items", DatabaseName = "World")]
+    [DataTable(PreCache = false, TableName = "creature_items", DatabaseName = "World")]
     [Serializable]
     public class Creature_item : DataObject
     {

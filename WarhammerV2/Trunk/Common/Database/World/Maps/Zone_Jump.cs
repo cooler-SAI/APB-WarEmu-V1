@@ -16,53 +16,39 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Drawing;
 
 using FrameWork;
 
 namespace Common
 {
-    public enum Objective_Type
-    {
-        QUEST_UNKNOWN = 0,
-        QUEST_SPEACK_TO = 1,
-        QUEST_KILL_MOB = 2,
-        QUEST_USE_GO = 3,
-        QUEST_GET_ITEM = 4,
-        QUEST_KILL_PLAYERS = 5,
-        QUEST_PROTECT_UNIT = 6,
-    };
-
-    // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "quests_objectives", DatabaseName = "World")]
+    [DataTable(PreCache = false, TableName = "zone_jumps", DatabaseName = "World")]
     [Serializable]
-    public class Quest_Objectives : DataObject
+    public class Zone_jump : DataObject
     {
-        [PrimaryKey(AutoIncrement=true)]
-        public int Guid;
+        [DataElement(Unique = true)]
+        public uint Entry;
 
         [DataElement()]
-        public UInt16 Entry;
+        public UInt16 ZoneId;
 
         [DataElement()]
-        public uint ObjType;
+        public uint WorldX;
 
         [DataElement()]
-        public uint ObjCount;
+        public uint WorldY;
 
         [DataElement()]
-        public string Description;
+        public ushort WorldZ;
 
         [DataElement()]
-        public string ObjID;
+        public ushort WorldO;
 
-        public byte num;
-        public Quest Quest;
-        public Item_Info Item = null;
-        public Creature_proto Creature = null;
+        public Zone_Info ZoneInfo;
     }
 }

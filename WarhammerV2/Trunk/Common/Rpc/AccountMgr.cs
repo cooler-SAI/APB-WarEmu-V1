@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
+using Google.ProtocolBuffers;
+using WarProtocol;
 
 using FrameWork;
 
@@ -50,13 +52,9 @@ namespace Common
         public bool LoadAccount(string Username)
         {
             Username = Username.ToLower();
-            Log.Info("LoadAccount", Username);
+
             try
             {
-                lock (_Accounts)
-                    if (_Accounts.ContainsKey(Username))
-                        return true;
-
                 Account Acct = Database.SelectObject<Account>("Username='" + Database.Escape(Username) + "'");
 
                 if (Acct == null)
@@ -65,8 +63,15 @@ namespace Common
                     return false;
                 }
 
+                if (Acct.Password != null && Acct.Password.Length > 0)
+                {
+                    Acct.CryptPassword = Account.ConvertSHA256(Acct.Username + ":" + Acct.Password);
+                    Acct.Password = "";
+                    Database.SaveObject(Acct);
+                }
+
                 lock (_Accounts)
-                    _Accounts.Add(Username, Acct);
+                    _Accounts[Username] = Acct;
             }
             catch (Exception e)
             {
@@ -80,7 +85,7 @@ namespace Common
         {
             Username = Username.ToLower();
 
-            Log.Info("GetAccount", Username);
+            //Log.Info("GetAccount", Username);
 
             if (!LoadAccount(Username))
             {
@@ -91,11 +96,11 @@ namespace Common
             lock (_Accounts)
                 return _Accounts[Username];
         }
-        public bool CheckAccount(string Username, byte[] Password)
+        public bool CheckAccount(string Username, string Password)
         {
             Username = Username.ToLower();
 
-            Log.Info("CheckAccount", Username + " : " + Password);
+            //Log.Info("CheckAccount", Username + " : " + Password);
 
             try
             {
@@ -107,23 +112,12 @@ namespace Common
                     return false;
                 }
 
-                SHA256Managed Sha = new SHA256Managed();
-                string CP = Acct.Username + ":" + Acct.Password;
-                Log.Error("Cp", "."+CP+".");
-
-                byte[] Result = Sha.ComputeHash(UTF8Encoding.UTF8.GetBytes(CP));
-                Log.Dump("Result", Result, 0, Result.Length);
-                Log.Dump("Pass", Password, 0, Password.Length);
-
-                if (Result.Length != Password.Length)
+                if (Acct.CryptPassword != Password)
                 {
-                    Log.Error("CheckAccount", "Taille du pass invalide : " + Password.Length);
+                    ++Acct.InvalidPasswordCount;
+                    Database.ExecuteNonQuery("UPDATE Accounts SET InvalidPasswordCount = InvalidPasswordCount+1 WHERE Username = '" + Database.Escape(Username) + "'");
                     return false;
                 }
-
-                for (int i = 0; i < Result.Length; ++i)
-                    if (Result[i] != Password[i])
-                        return false;
 
             }
             catch (Exception e)
@@ -137,40 +131,28 @@ namespace Common
         public string GenerateToken(string Username)
         {
             Username = Username.ToLower();
-            Log.Info("GenerateToken", Username);
             Account Acct = GetAccount(Username);
 
             if (Acct == null)
             {
-                Log.Error("GenerateToken", "Compte introuvable : " + Username);
+                //Log.Error("GenerateToken", "Compte introuvable : " + Username);
                 return "ERREUR";
             }
 
-            string Token = Guid.NewGuid().ToString();
-            if (Token.Length <= 34)
-            {
-                for (int i = Token.Length; i < 34; ++i)
-                    Token += "X";
-            }
-            else Token = Token.Substring(0, 34);
-
-            Acct.Token = Token;
-            
-            Log.Debug("GenerateToken",Acct.Token);
+            string GUID = Guid.NewGuid().ToString();
+            //Log.Info("GenerateToken", Username + "," + GUID);
+            Acct.Token = Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(GUID));
             
             Database.SaveObject(Acct);
-
             return Acct.Token;
         }
         public AuthResult CheckToken(string Username, string Token)
         {
-            Username = Username.ToLower();
-
             Account Acct = GetAccount(Username);
             if (Acct == null)
                 return AuthResult.AUTH_ACCT_BAD_USERNAME_PASSWORD;
 
-            if (Acct.Token != Token)
+            if (Acct.Token != Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(Token)))
                 return AuthResult.AUTH_ACCT_BAD_USERNAME_PASSWORD;
 
             return AuthResult.AUTH_SUCCESS;
@@ -184,8 +166,7 @@ namespace Common
         
         public void LoadRealms()
         {
-            Realm[] Rms = Database.SelectAllObjects<Realm>().ToArray();
-            foreach (Realm Rm in Rms)
+            foreach (Realm Rm in Database.SelectAllObjects<Realm>())
                 AddRealm(Rm);
         }
         public bool AddRealm(Realm Rm)
@@ -195,7 +176,7 @@ namespace Common
                 if (_Realms.ContainsKey(Rm.RealmId))
                     return false;
 
-                Log.Info("AddRealm", "New Realm : " + Rm.Name);
+                //Log.Info("AddRealm", "New Realm : " + Rm.Name);
 
                 _Realms.Add(Rm.RealmId, Rm);
             }
@@ -204,7 +185,7 @@ namespace Common
         }
         public Realm GetRealm(byte RealmId)
         {
-            Log.Info("GetRealm", "RealmId = " + RealmId);
+            //Log.Info("GetRealm", "RealmId = " + RealmId);
             lock (_Realms)
                 if (_Realms.ContainsKey(RealmId))
                     return _Realms[RealmId];
@@ -230,6 +211,12 @@ namespace Common
             {
                 Log.Success("Realm", "Realm (" + Rm.Name + ") online at " + Info.Ip+":"+Info.Port);
                 Rm.Info = Info;
+                Rm.Online = 1;
+                Rm.OrderCount = 0;
+                Rm.DestructionCount = 0;
+                Rm.OnlineDate = DateTime.Now;
+                Rm.Dirty = true;
+                Database.SaveObject(Rm);
             }
             else
             {
@@ -246,81 +233,86 @@ namespace Common
             if (Rm == null)
                 return;
 
+            Log.Info("Realm", RealmId + "- Online : " + OnlinePlayers + ", Order=" + OrderCount + ", Destru=" + DestructionCount);
+
             Rm.OnlinePlayers = OnlinePlayers;
             Rm.OrderCount = OrderCount;
             Rm.DestructionCount = DestructionCount;
+            Rm.Dirty = true;
+            Database.SaveObject(Rm);
         }
-        public byte[] BuildRealms(uint sequence)
+
+        public void UpdateRealmCharacters(byte RealmId, uint OrderCharacters, uint DestruCharacters)
         {
-            try
-            {
-                PacketOut Out = new PacketOut((byte)0);
-                Out.Position = 0;
+            Realm Rm = GetRealm(RealmId);
 
-                Out.WriteUInt32(sequence);
-                Out.WriteUInt16(0);
-                lock (_Realms)
+            if (Rm == null)
+                return;
+
+            Rm.OrderCharacters = OrderCharacters;
+            Rm.DestruCharacters = DestruCharacters;
+            Rm.Dirty = true;
+            Database.ExecuteNonQuery("UPDATE realms SET OrderCharacters =" + OrderCharacters + ", DestruCharacters=" + DestruCharacters + " WHERE RealmId = " + RealmId);
+        }
+
+        public static ClusterProp setProp(string name, string value)
+        {
+            return ClusterProp.CreateBuilder().SetPropName(name)
+                                              .SetPropValue(value)
+                                              .Build();
+        }
+        public byte[] BuildRealms(string OverrideIp)
+        {
+            GetClusterListReply.Builder ClusterListReplay = GetClusterListReply.CreateBuilder();
+            ClusterListReplay.ResultCode = ResultCode.RES_SUCCESS;
+
+            lock (_Realms)
+            {
+                //Log.Debug("BuildRealm", "Sending " + _Realms.Count + " realm(s)");
+
+                foreach (Realm Rm in _Realms.Values)
                 {
-                    Log.Info("BuildRealm", "Sending " + _Realms.Count + " realm(s)");
-                    Out.WriteUInt32((uint)_Realms.Count);
+                    ClusterInfo.Builder cluster = ClusterInfo.CreateBuilder();
+                    cluster.SetClusterId(Rm.RealmId).SetClusterName(Rm.Name)
+                        .SetLobbyHost(OverrideIp != null ? OverrideIp : Rm.Adresse)
+                           .SetLobbyPort((uint)Rm.Port)
+                           .SetLanguageId(0)
+                           .SetMaxClusterPop(500)
+                           .SetClusterPopStatus(ClusterPopStatus.POP_HIGH)
+                           .SetLanguageId(0)
+                           .SetClusterStatus(Rm.Info != null ? ClusterStatus.STATUS_ONLINE : ClusterStatus.STATUS_OFFLINE);
 
-                    foreach (Realm Rm in _Realms.Values)
-                    {
-                        Out.WriteByte(Rm.RealmId);
-                        Out.WriteByte((byte)(Rm.Info != null ? 1 : 0));
-                        Out.WriteUInt32(1);
-                        Out.WriteByte(Rm.RealmId);
-                        Out.WriteByte(Rm.RealmId);
-                        Out.WriteString("[" + Rm.Language + "] " + Rm.Name);
-                        Out.WriteUInt32(19);
-                        Out.WriteString("setting.allow_trials");
-                        Out.WriteString(Rm.AllowTrials);
-                        Out.WriteString("setting.charxferavailable");
-                        Out.WriteString(Rm.CharfxerAvailable);
-                        Out.WriteString("setting.language");
-                        Out.WriteString(Rm.Language);
-                        Out.WriteString("setting.legacy");
-                        Out.WriteString(Rm.Legacy);
-                        Out.WriteString("setting.manualbonus.realm.destruction");
-                        Out.WriteString(Rm.BonusDestruction);
-                        Out.WriteString("setting.manualbonus.realm.order");
-                        Out.WriteString(Rm.BonusOrder);
-                        Out.WriteString("setting.name");
-                        Out.WriteString(Rm.Name);
-                        Out.WriteString("setting.net.address");
-                        Out.WriteString(Rm.Adresse);
-                        Out.WriteString("setting.net.port");
-                        Out.WriteString(Rm.Port.ToString());
-                        Out.WriteString("setting.redirect");
-                        Out.WriteString(Rm.Redirect);
-                        Out.WriteString("setting.region");
-                        Out.WriteString(Rm.Region);
-                        Out.WriteString("setting.retired");
-                        Out.WriteString(Rm.Retired);
-                        Out.WriteString("status.queue.Destruction.waiting");
-                        Out.WriteString(Rm.WaitingDestruction);
-                        Out.WriteString("status.queue.Order.waiting");
-                        Out.WriteString(Rm.WaitingOrder);
-                        Out.WriteString("status.realm.destruction.density");
-                        Out.WriteString(Rm.DensityDestruction);
-                        Out.WriteString("status.realm.order.density");
-                        Out.WriteString(Rm.DensityOrder);
-                        Out.WriteString("status.servertype.openrvr");
-                        Out.WriteString(Rm.OpenRvr);
-                        Out.WriteString("status.servertype.rp");
-                        Out.WriteString(Rm.Rp);
-                        Out.WriteString("status.status");
-                        Out.WriteString(Rm.Status);
-                    }
+                    cluster.AddServerList(
+                        ServerInfo.CreateBuilder().SetServerId(Rm.RealmId)
+                                                  .SetServerName(Rm.Name)
+                                                  .Build());
+
+                    cluster.AddPropertyList(setProp("setting.allow_trials", Rm.AllowTrials));
+                    cluster.AddPropertyList(setProp("setting.charxferavailable", Rm.CharfxerAvailable));
+                    cluster.AddPropertyList(setProp("setting.language", Rm.Language));
+                    cluster.AddPropertyList(setProp("setting.legacy", Rm.Legacy));
+                    cluster.AddPropertyList(setProp("setting.manualbonus.realm.destruction", Rm.BonusDestruction));
+                    cluster.AddPropertyList(setProp("setting.manualbonus.realm.order", Rm.BonusOrder));
+                    cluster.AddPropertyList(setProp("setting.min_cross_realm_account_level", "0"));
+                    cluster.AddPropertyList(setProp("setting.name", Rm.Name));
+                    cluster.AddPropertyList(setProp("setting.net.address", OverrideIp != null ? OverrideIp : Rm.Adresse));
+                    cluster.AddPropertyList(setProp("setting.net.port", Rm.Port.ToString()));
+                    cluster.AddPropertyList(setProp("setting.redirect", Rm.Redirect));
+                    cluster.AddPropertyList(setProp("setting.region", Rm.Region));
+                    cluster.AddPropertyList(setProp("setting.retired", Rm.Retired));
+                    cluster.AddPropertyList(setProp("status.queue.Destruction.waiting", Rm.WaitingDestruction));
+                    cluster.AddPropertyList(setProp("status.queue.Order.waiting", Rm.WaitingOrder));
+                    cluster.AddPropertyList(setProp("status.realm.destruction.density", Rm.DensityDestruction));
+                    cluster.AddPropertyList(setProp("status.realm.order.density",Rm.DensityOrder));
+                    cluster.AddPropertyList(setProp("status.servertype.openrvr", Rm.OpenRvr));
+                    cluster.AddPropertyList(setProp("status.servertype.rp", Rm.Rp));
+                    cluster.AddPropertyList(setProp("status.status", Rm.Status));
+                    cluster.Build();
+                    ClusterListReplay.AddClusterList(cluster);
                 }
-                Out.WriteUInt32(0);
+            }
 
-                return Out.ToArray();
-            }
-            catch
-            {
-                return new byte[0];
-            }
+            return ClusterListReplay.Build().ToByteArray();
         }
         public override void  OnClientDisconnected(RpcClientInfo Info)
         {
@@ -329,6 +321,9 @@ namespace Common
             {
                 Log.Error("Realm", "Realm offline : " + Rm.Name);
                 Rm.Info = null;
+                Rm.Online = 0;
+                Rm.Dirty = true;
+                Database.SaveObject(Rm);
             }
         }
 

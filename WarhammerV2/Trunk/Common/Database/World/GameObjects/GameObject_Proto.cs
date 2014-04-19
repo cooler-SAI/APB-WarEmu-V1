@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ using FrameWork;
 namespace Common
 {
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "GameObject_protos", DatabaseName = "World")]
+    [DataTable(PreCache = false, TableName = "gameobject_protos", DatabaseName = "World")]
     [Serializable]
     public class GameObject_proto : DataObject
     {
@@ -37,34 +37,25 @@ namespace Common
         [DataElement(Varchar=255)]
         public string Name;
 
-        [DataElement()]
+        [DataElement(AllowDbNull=true)]
         public UInt16 DisplayID;
 
-        [DataElement()]
+        [DataElement(AllowDbNull = true)]
         public UInt16 Scale;
 
-        [DataElement()]
+        [DataElement(AllowDbNull = true)]
         public byte Level;
 
-        [DataElement()]
+        [DataElement(AllowDbNull = true)]
         public byte Faction;
 
-        [DataElement()]
+        [DataElement(AllowDbNull = true)]
         public uint HealthPoints;
 
-        [DataElement()]
-        public uint AttackTime;
+        [DataElement(AllowDbNull = true)]
+        public ushort TokUnlock;
 
-        [DataElement()]
-        public uint MinDamage;
-
-        [DataElement()]
-        public uint MaxDamage;
-
-        [DataElement()]
-        public UInt32 TokUnlock;
-
-        [DataElement()]
+        [DataElement(AllowDbNull = true)]
         public UInt16[] Unks = new UInt16[6];
 
         public UInt16 GetUnk(int Id)
@@ -75,7 +66,19 @@ namespace Common
             return Unks[Id];
         }
 
-        [DataElement(Varchar = 255)]
+        [DataElement()]
+        public byte Unk1;
+
+        [DataElement()]
+        public byte Unk2;
+
+        [DataElement()]
+        public UInt32 Unk3;
+
+        [DataElement()]
+        public UInt32 Unk4;
+
+        [DataElement(Varchar = 255, AllowDbNull = true)]
         public string ScriptName;
     }
 }

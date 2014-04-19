@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ using FrameWork;
 namespace Common
 {
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "GameObject_spawns", DatabaseName = "World")]
+    [DataTable(PreCache = false, TableName = "gameobject_spawns", DatabaseName = "World")]
     [Serializable]
     public class GameObject_spawn : DataObject
     {
@@ -56,5 +56,35 @@ namespace Common
 
         [DataElement()]
         public uint DisplayID;
+
+        [DataElement(AllowDbNull = true)]
+        public UInt16[] Unks = new UInt16[6];
+
+        public UInt16 GetUnk(int Id)
+        {
+            if (Id >= Unks.Length)
+                return 0;
+
+            return Unks[Id];
+        }
+
+        [DataElement()]
+        public byte Unk1;
+
+        [DataElement()]
+        public byte Unk2;
+
+        [DataElement()]
+        public UInt32 Unk3;
+
+        [DataElement()]
+        public UInt32 Unk4;
+
+        public void BuildFromProto(GameObject_proto Proto)
+        {
+            this.Proto = Proto;
+            Unks = Proto.Unks;
+            DisplayID = Proto.DisplayID;
+        }
     }
 }

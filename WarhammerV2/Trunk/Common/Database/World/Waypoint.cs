@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,43 +26,63 @@ using FrameWork;
 
 namespace Common
 {
-    public enum Objective_Type
-    {
-        QUEST_UNKNOWN = 0,
-        QUEST_SPEACK_TO = 1,
-        QUEST_KILL_MOB = 2,
-        QUEST_USE_GO = 3,
-        QUEST_GET_ITEM = 4,
-        QUEST_KILL_PLAYERS = 5,
-        QUEST_PROTECT_UNIT = 6,
-    };
-
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "quests_objectives", DatabaseName = "World")]
+    [DataTable(PreCache = false, TableName = "waypoints", DatabaseName = "World")]
     [Serializable]
-    public class Quest_Objectives : DataObject
+    public class Waypoint : DataObject
     {
-        [PrimaryKey(AutoIncrement=true)]
-        public int Guid;
+        static public byte Loop = 0;
+        static public byte StartToEnd = 1;
+        static public byte Random = 2;
 
         [DataElement()]
-        public UInt16 Entry;
+        public uint GUID;
 
         [DataElement()]
-        public uint ObjType;
+        public uint CreatureSpawnGUID;
 
         [DataElement()]
-        public uint ObjCount;
+        public uint GameObjectSpawnGUID;
 
         [DataElement()]
-        public string Description;
+        public ushort X;
 
         [DataElement()]
-        public string ObjID;
+        public ushort Y;
 
-        public byte num;
-        public Quest Quest;
-        public Item_Info Item = null;
-        public Creature_proto Creature = null;
+        [DataElement()]
+        public ushort Z;
+
+        [DataElement()]
+        public ushort O;
+
+        [DataElement()]
+        public ushort Speed = 100;
+
+        [DataElement()]
+        public byte EmoteOnStart;
+
+        [DataElement()]
+        public byte EmoteOnEnd;
+
+        [DataElement()]
+        public uint WaitAtEndMS;
+
+        [DataElement()]
+        public ushort EquipOnStart;
+
+        [DataElement()]
+        public ushort EquipOnEnd;
+
+        [DataElement()]
+        public string TextOnStart;
+
+        [DataElement()]
+        public string TextOnEnd;
+
+        [DataElement()]
+        public UInt32 NextWaypointGUID;
+
+        public Waypoint NextWaypoint;
     }
 }

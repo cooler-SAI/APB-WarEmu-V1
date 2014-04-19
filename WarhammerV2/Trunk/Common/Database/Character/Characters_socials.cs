@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,26 +27,26 @@ using FrameWork;
 namespace Common
 {
     // Valeur Fixe d'un character
-    [DataTable(PreCache = false, TableName = "Characters_socials", DatabaseName = "Characters")]
+    [DataTable(PreCache = false, TableName = "characters_socials", DatabaseName = "Characters")]
     [Serializable]
     public class Character_social : DataObject
     {
-        private int _CharacterId;
+        private UInt32 _CharacterId;
 
-        private int _DistCharacterId;
+        private UInt32 _DistCharacterId;
         private string _DistName;
         private byte _Friend;
         private byte _Ignore;
 
         [DataElement(AllowDbNull = false)]
-        public int CharacterId
+        public UInt32 CharacterId
         {
             get { return _CharacterId; }
             set { _CharacterId = value; Dirty = true; }
         }
 
         [DataElement(AllowDbNull = false)]
-        public int DistCharacterId
+        public UInt32 DistCharacterId
         {
             get { return _DistCharacterId; }
             set { _DistCharacterId = value; Dirty = true; }

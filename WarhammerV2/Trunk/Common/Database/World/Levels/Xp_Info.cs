@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@ using FrameWork;
 
 namespace Common
 {
-    [DataTable(PreCache = false, TableName = "Xp_Infos", DatabaseName = "World")]
+    [DataTable(PreCache = false, TableName = "xp_infos", DatabaseName = "World")]
     [Serializable]
     public class Xp_Info : DataObject
     {
