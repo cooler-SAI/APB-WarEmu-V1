@@ -1,0 +1,12 @@
+C:\Users\Hotboss\Desktop\APS\WarhammerV2\Trunk\bin\Release\LobbyServer.exe.config
+C:\Users\Hotboss\Desktop\APS\WarhammerV2\Trunk\bin\Release\LobbyServer.exe
+C:\Users\Hotboss\Desktop\APS\WarhammerV2\Trunk\bin\Release\LobbyServer.pdb
+C:\Users\Hotboss\Desktop\APS\WarhammerV2\Trunk\LobbyServer\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Hotboss\Desktop\APS\WarhammerV2\Trunk\LobbyServer\obj\Release\LobbyServer.exe
+C:\Users\Hotboss\Desktop\APS\WarhammerV2\Trunk\LobbyServer\obj\Release\LobbyServer.pdb
+C:\Users\ThomasC\Desktop\Partage\SVN\WarhammerV2\Trunk\bin\Release\LobbyServer.exe.config
+C:\Users\ThomasC\Desktop\Partage\SVN\WarhammerV2\Trunk\bin\Release\LobbyServer.exe
+C:\Users\ThomasC\Desktop\Partage\SVN\WarhammerV2\Trunk\bin\Release\LobbyServer.pdb
+C:\Users\ThomasC\Desktop\Partage\SVN\WarhammerV2\Trunk\LobbyServer\obj\Release\ResolveAssemblyReference.cache
+C:\Users\ThomasC\Desktop\Partage\SVN\WarhammerV2\Trunk\LobbyServer\obj\Release\LobbyServer.exe
+C:\Users\ThomasC\Desktop\Partage\SVN\WarhammerV2\Trunk\LobbyServer\obj\Release\LobbyServer.pdb

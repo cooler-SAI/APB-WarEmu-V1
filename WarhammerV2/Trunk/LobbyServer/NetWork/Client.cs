@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,13 +16,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Security.Cryptography;
-
+using System.Net;
+using System.Net.Sockets;
+using Google.ProtocolBuffers;
+using WarProtocol;
 using FrameWork;
 
 namespace LobbyServer
@@ -35,7 +37,7 @@ namespace LobbyServer
         public Client(TCPManager srv)
             : base(srv)
         {
-            RSACryptoServiceProvider Prov = new RSACryptoServiceProvider();
+
         }
 
         public override void OnConnect()
@@ -56,21 +58,29 @@ namespace LobbyServer
         {
             lock (this)
             {
+                Log.Tcp("Received", Packet, 0, Packet.Length);
                 PacketIn packet = new PacketIn(Packet, 0, Packet.Length);
                 long byteLeft = packet.Length;
+                long StartPos, EndPos, Pos, Diff;
 
                 while (byteLeft > 0)
                 {
                     if (!m_expectData)
                     {
-                        long StartPos = packet.Position;
+                        StartPos = packet.Position;
                         m_expectSize = packet.DecodeMythicSize();
-                        long EndPos = packet.Position;
+                        EndPos = packet.Position;
 
-                        long Diff = EndPos - StartPos;
+                        Diff = EndPos - StartPos;
                         byteLeft -= Diff;
                         if (m_expectSize <= 0)
+                        {
+                            packet.Opcode = packet.GetUint8();
+                            packet.Size = (ulong)m_expectSize;
+                            //HandlePacket(packet);
+                            _srvr.HandlePacket(this, packet);
                             return;
+                        }
 
                         if (byteLeft <= 0)
                             return;
@@ -85,11 +95,12 @@ namespace LobbyServer
                         m_expectData = false;
                         if (byteLeft >= m_expectSize)
                         {
-                            long Pos = packet.Position;
+                            Pos = packet.Position;
 
                             packet.Opcode = Opcode;
                             packet.Size = (ulong)m_expectSize;
 
+                            //HandlePacket(packet);
                             _srvr.HandlePacket(this, packet);
 
                             byteLeft -= m_expectSize;
@@ -137,6 +148,56 @@ namespace LobbyServer
             SendTCP(Packet);
 
             Out.Dispose();
+        }
+
+
+        public static ClusterProp setProp(string name, string value)
+        {
+            return ClusterProp.CreateBuilder().SetPropName(name)
+                                              .SetPropValue(value)
+                                              .Build();
+        }
+        public static ClusterInfo.Builder BuildCluster()
+        {
+            ClusterInfo.Builder cluster = ClusterInfo.CreateBuilder();
+            cluster.SetClusterId(122)
+                   .SetClusterName("Cluster 1")
+                   .SetLobbyHost("127.0.0.1")
+                   .SetLobbyPort(10622)
+                   .SetLanguageId(0)
+                   .SetMaxClusterPop(500)
+                   .SetClusterPopStatus(ClusterPopStatus.POP_HIGH)
+                   .SetLanguageId(0)
+                   .SetClusterStatus(ClusterStatus.STATUS_ONLINE);
+
+            cluster.AddServerList(
+                ServerInfo.CreateBuilder().SetServerId(122)
+                                          .SetServerName("Emulator")
+                                          .Build());
+
+            cluster.AddPropertyList(setProp("setting.allow_trials", "1"));
+            cluster.AddPropertyList(setProp("setting.charxferavailable", "0"));
+            cluster.AddPropertyList(setProp("setting.language", "EN"));
+            cluster.AddPropertyList(setProp("setting.legacy", "0"));
+            cluster.AddPropertyList(setProp("setting.manualbonus.realm.destruction", "100"));
+            cluster.AddPropertyList(setProp("setting.manualbonus.realm.order", "100"));
+            cluster.AddPropertyList(setProp("setting.min_cross_realm_account_level", "0"));
+            cluster.AddPropertyList(setProp("setting.name", "Emulator"));
+            cluster.AddPropertyList(setProp("setting.net.address", "127.0.0.1"));
+            cluster.AddPropertyList(setProp("setting.net.port", "10622"));
+            cluster.AddPropertyList(setProp("setting.redirect", "0"));
+            cluster.AddPropertyList(setProp("setting.region", "STR_REGION_NORTHAMERICA"));
+            cluster.AddPropertyList(setProp("setting.retired", "0"));
+            cluster.AddPropertyList(setProp("status.queue.Destruction.waiting", "0"));
+            cluster.AddPropertyList(setProp("status.queue.Order.waiting", "0"));
+            cluster.AddPropertyList(setProp("status.realm.destruction.density", "1"));
+            cluster.AddPropertyList(setProp("status.realm.order.density", "1"));
+            cluster.AddPropertyList(setProp("status.servertype.openrvr", "0"));
+            cluster.AddPropertyList(setProp("status.servertype.rp", "0"));
+            cluster.AddPropertyList(setProp("status.status", "0"));
+
+            cluster.Build();
+            return cluster;
         }
     }
 }

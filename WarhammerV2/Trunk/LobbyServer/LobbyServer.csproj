@@ -55,6 +55,10 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Google.ProtocolBuffers, Version=2.4.1.521, Culture=neutral, PublicKeyToken=17b3b1f090c3ea48, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Google.ProtocolBuffers.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -73,6 +77,13 @@
     <Compile Include="NetWork\Client.cs" />
     <Compile Include="NetWork\Handler\AuthentificationHandlers.cs" />
     <Compile Include="NetWork\Opcodes.cs" />
+    <Compile Include="NetWork\Protocol\AuthSessionTokenReplyProto.cs" />
+    <Compile Include="NetWork\Protocol\AuthSessionTokenReqProto.cs" />
+    <Compile Include="NetWork\Protocol\GetAcctPropListReplyProto.cs" />
+    <Compile Include="NetWork\Protocol\GetCharSummaryListReplyProto.cs" />
+    <Compile Include="NetWork\Protocol\MetricEventNotifyProto.cs" />
+    <Compile Include="NetWork\Protocol\VerifyProtocolReplyProto.cs" />
+    <Compile Include="NetWork\Protocol\VerifyProtocolReqProto.cs" />
     <Compile Include="NetWork\TCPServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -107,7 +118,9 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Google.ProtocolBuffers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

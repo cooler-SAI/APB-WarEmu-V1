@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,22 @@ using System;
 
 enum Opcodes : ushort
 {
-    CMSG_CONNECT = 0x01,
+    CMSG_VerifyProtocolReq = 0x01,
+    SMSG_VerifyProtocolReply = 0x02,
+    CMSG_AuthInitialTokenReq = 0x03,
+    SMSG_AuthInitialTokenReply = 0x04,
+    CMSG_AuthSessionTokenReq = 0x05,
+    SMSG_AuthSessionTokenReply = 0x06,
+    CMSG_GetCharSummaryListReq = 0x07,
+    SMSG_GetCharSummaryListReply = 0x08,
+    CMSG_GetClusterListReq = 0x09,
+    SMSG_GetClusterListReply = 0x0a,
+    CMSG_GetAcctPropListReq = 0x0d,
+    SMSG_GetAcctPropListReply = 0x0c,
+    CMSG_MetricEventNotify = 0x0b,
+    MAX_OPCODE = 0x0b,
+
+    /*CMSG_CONNECT = 0x01,
     SMSG_CONNECT_RESPONSE = 0x02,
     CMSG_USER_LOGIN = 0x03,
     SMSG_USER_LOGIN_RESPONSE = 0x04,
@@ -38,5 +53,5 @@ enum Opcodes : ushort
     SMSG_LOGIN_CLEARANCE_RESPONSE = 0x10,
     CMSG_GET_PRODUCT_ACCOUNT_PROPERTY_LIST = 0x11,
     SMSG_GET_PRODUCT_ACCOUNT_PROPERTY_LIST_RESPONSE = 0x12,
-    MAX_OPCODE = 0x12
+    MAX_OPCODE = 0x12*/
 };
