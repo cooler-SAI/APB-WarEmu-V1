@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -383,7 +383,7 @@ namespace FrameWork
         public int BUF_SIZE = 65536;
 
         // Taille minimal du buffer pool
-        public int POOL_SIZE = 300;
+        public int POOL_SIZE = 1000;
 
         // Liste des packets
         private Queue<byte[]> m_packetBufPool;
@@ -544,9 +544,6 @@ namespace FrameWork
                     if (type.IsClass != true)
                         continue;
 
-                    if(type.IsSubclassOf(typeof(IPacketHandler)))
-                        continue;
-
                     foreach (MethodInfo m in type.GetMethods())
                         foreach (object at in m.GetCustomAttributes(typeof(PacketHandlerAttribute), false))
                         {
@@ -599,6 +596,7 @@ namespace FrameWork
             m_packetHandlers[packetCode] = handler;
         }
 
+        public HashSet<ulong> Errors = new HashSet<ulong>();
         public void HandlePacket(BaseClient client, PacketIn Packet)
         {
             if (client == null || Packet == null)
@@ -611,8 +609,11 @@ namespace FrameWork
 
             if (Packet.Opcode < (ulong)m_packetHandlers.Length)
                 packetHandler = m_packetHandlers[Packet.Opcode];
-            else 
+            else if (!Errors.Contains(Packet.Opcode))
+            {
+                Errors.Add(Packet.Opcode);
                 Log.Error("TCPManager", "Can not handle :" + Packet.Opcode + "(" + Packet.Opcode.ToString("X8") + ")");
+            }
 
             if (packetHandler != null)
             {
@@ -633,8 +634,11 @@ namespace FrameWork
                     Log.Error("TCPManager","Packet handler error :"+ Packet.Opcode + " " + e.ToString() );
                 }
             }
-            else 
+            else if (!Errors.Contains(Packet.Opcode))
+            {
+                Errors.Add(Packet.Opcode);
                 Log.Error("TCPManager", "Can not Handle opcode :" + Packet.Opcode + "(" + Packet.Opcode.ToString("X8") + ")");
+            }
         }
     }
 }

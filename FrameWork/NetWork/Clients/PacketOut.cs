@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -195,6 +195,14 @@ namespace FrameWork
                 WriteByte(b[i-1]);
         }
 
+        public virtual void WriteInt16R(Int16 val)
+        {
+            byte[] b = BitConverter.GetBytes(val);
+
+            for (int i = 0; i < b.Length; ++i)
+                WriteByte(b[i]);
+        }
+
         public virtual void WriteUInt32(uint val)
         {
             WriteByte((byte)(val >> 24));
@@ -304,6 +312,21 @@ namespace FrameWork
             Write(bytes, 0, bytes.Length);
         }
 
+        public virtual void WriteStringToZero(string str)
+        {
+            if (str == null || str.Length <= 0)
+            {
+                WriteByte(1);
+            }
+            else
+            {
+                byte[] bytes = Encoding.GetEncoding("iso-8859-1").GetBytes(str);
+                WriteByte((byte)(bytes.Length + 1));
+                Write(bytes, 0, bytes.Length);
+            }
+            WriteByte(0);
+        }
+
         public virtual void WriteString(string str)
         {
             WriteUInt32((UInt32)str.Length);
@@ -393,6 +416,35 @@ namespace FrameWork
             WriteFloat(Quat.w);
         }
 
+        public virtual void WriteHexStringBytes(string hexString)
+        {
+            int length = hexString.Length / 2;
+
+            if ((hexString.Length % 2) == 0)
+            {
+                for (int i = 0; i < length; i++)
+                    WriteByte(Convert.ToByte(hexString.Substring(i * 2, 2), 16));
+            }
+            else
+            {
+                WriteByte(0);
+            }
+        }
+
+        public virtual void WritePacketString(string packet)
+        {
+            packet = packet.Replace(" ", string.Empty);
+
+            using (StringReader Reader = new StringReader(packet))
+            {
+                string Line;
+                while ((Line = Reader.ReadLine()) != null)
+                {
+                    WriteHexStringBytes(Line.Substring(1, Line.IndexOf("|", 2)-1));
+                }
+            }
+        }
+
         public override string ToString()
         {
             return GetType().Name;
@@ -421,10 +473,10 @@ namespace FrameWork
                     Key[x] = Key[y];
                     Key[y] = tmp;
 
-                    tmp = (byte)((Key[x] + Key[y]) & 255); 
+                    tmp = (byte)((Key[x] + Key[y]) & 255);
                     y = (y + Packet[pos]) & 255;
                     Packet[pos] ^= Key[tmp];
-                   
+
                 }
 
                 for (pos = 0; pos < midpoint; ++pos)

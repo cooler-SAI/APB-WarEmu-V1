@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2011 APS
+ * Copyright (C) 2013 APS
  *	http://AllPrivateServer.com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -153,11 +153,12 @@ namespace FrameWork
 
             byte[] Header = new byte[Hpos];
             byte[] ToCrypt = new byte[(packet.Length-Hpos)];
+            int i;
 
-            for (int i = 0; i < Hpos; ++i)
+            for (i = 0; i < Hpos; ++i)
                 Header[i] = Packet[i];
 
-            for (int i = Hpos; i < Packet.Length; ++i)
+            for (i = Hpos; i < Packet.Length; ++i)
                 ToCrypt[i-Hpos] = Packet[i];
             
             try
@@ -181,7 +182,7 @@ namespace FrameWork
 
             byte[] Total = new byte[Header.Length + ToCrypt.Length];
 
-            for (int i = 0; i < Total.Length; ++i)
+            for (i = 0; i < Total.Length; ++i)
             {
                 if (i < Header.Length)
                     Total[i] = Header[i];
@@ -281,10 +282,10 @@ namespace FrameWork
 
                     byte[] buffer = baseClient.ReceiveBuffer;
                     int bufferSize = baseClient.ReceiveBufferOffset + numBytes;
-                    baseClient.ReceiveBufferOffset = 0;
 
                     byte[] Packet = new byte[bufferSize];
                     Buffer.BlockCopy(buffer, 0, Packet, 0, bufferSize);
+                    baseClient.ReceiveBufferOffset = 0;
                     baseClient.OnReceive(Packet);
 
                     baseClient.BeginReceive();
@@ -372,7 +373,7 @@ namespace FrameWork
 		protected bool m_sendingTcp;
 
         // Envoi un packet
-		public void SendTCP(PacketOut packet)
+		public void SendPacket(PacketOut packet)
 		{
 			//Fix the packet size
 			packet.WritePacketLength();
@@ -381,10 +382,10 @@ namespace FrameWork
 			//Get the packet buffer
 			byte[] buf = packet.ToArray(); //packet.WritePacketLength sets the Capacity
 
-            packet.Dispose();
-
 			//Send the buffer
 			SendTCP(buf);
+
+            packet.Dispose();
 		}
 
 		public void SendTCP(byte[] buf)
@@ -397,32 +398,32 @@ namespace FrameWork
 			{
 				try
 				{
-					lock (m_tcpQueue)
-					{
-						if (m_sendingTcp)
-						{
-							m_tcpQueue.Enqueue(buf);
-							return;
-						}
-						
-						m_sendingTcp = true;
-					}
+                        lock (m_tcpQueue)
+                        {
+                            if (m_sendingTcp)
+                            {
+                                m_tcpQueue.Enqueue(buf);
+                                return;
+                            }
 
-                    if (m_crypts.Count <= 0)
-                        Log.Tcp("SendTCP", buf, 0, buf.Length);
-                    else
-                        Log.Tcp("Crypted", buf, 0, buf.Length);
+                            m_sendingTcp = true;
+                        }
 
-                    Log.Info("SendTCP", "bug Lenght=" + buf.Length + ",Bufferlenght=" + m_tcpSendBuffer.Length);
-					Buffer.BlockCopy(buf, 0, m_tcpSendBuffer, 0, buf.Length);
+                        if (m_crypts.Count <= 0)
+                            Log.Tcp("SendTCP", buf, 0, buf.Length);
+                        else
+                            Log.Tcp("Crypted", buf, 0, buf.Length);
 
-					int start = Environment.TickCount;
+                        //Log.Info("SendTCP", "bug Lenght=" + buf.Length + ",Bufferlenght=" + m_tcpSendBuffer.Length);
+                        Buffer.BlockCopy(buf, 0, m_tcpSendBuffer, 0, buf.Length);
 
-					Socket.BeginSend(m_tcpSendBuffer, 0, buf.Length, SocketFlags.None, m_asyncTcpCallback, this);
+                        int start = Environment.TickCount;
 
-					int took = Environment.TickCount - start;
-					if (took > 100)
-						Log.Notice("BaseClient","SendTCP.BeginSend took "+ took);
+                        Socket.BeginSend(m_tcpSendBuffer, 0, buf.Length, SocketFlags.None, m_asyncTcpCallback, this);
+
+                        int took = Environment.TickCount - start;
+                        if (took > 100)
+                            Log.Notice("BaseClient", "SendTCP.BeginSend took " + took);
 				}
 				catch (Exception e)
 				{
