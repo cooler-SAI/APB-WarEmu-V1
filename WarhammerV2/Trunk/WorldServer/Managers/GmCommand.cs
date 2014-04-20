@@ -109,6 +109,12 @@ namespace WorldServer
             new GmCommandHandler("modify",NpcModify, null, 0, 2, "Modify a column value <columnname,value,0 target- 1 all>"),
         };
 
+        static public List<GmCommandHandler> GoCommands = new List<GmCommandHandler>()
+        {
+            new GmCommandHandler("spawn",GoSpawn, null, 0, 1, "Spawn an gameObject"),
+            new GmCommandHandler("remove",GoRemove, null, 0, 1, "Delete the target <(0=World,1=Database)>"),
+        };
+
         static public List<GmCommandHandler> RespawnCommands = new List<GmCommandHandler>()
         {
             new GmCommandHandler("add",RespawnAdd, null, 0, 0, "Add respawn point to your position <1=Order or 2=Destruction>"),
@@ -167,6 +173,8 @@ namespace WorldServer
             new GmCommandHandler("states",null, StatesCommand, 3, 0, "States Commands"),
             new GmCommandHandler("equip", null, EquipCommands, 3, 0, "Creature Equip Commands"),
             new GmCommandHandler("waypoints",null, WaypointCommands, 3, 0, "Waypoint Commands"),
+
+            new GmCommandHandler("go",null, GoCommands, 2, 0, "All GameObject Commands"),
 
             new GmCommandHandler("chapter",null, ChapterCommands, 3, 0, "All Chapter commands"),
             // Players
@@ -1208,6 +1216,78 @@ namespace WorldServer
             }
 
             Plr.SendMessage(0, "Server", "Npc Removed : " + Obj.GetCreature().Spawn.Guid, SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+            return true;
+        }
+
+        #endregion
+
+        #region GameObject
+
+        static public bool GoSpawn(Player Plr, ref List<string> Values)
+        {
+            int Entry = GetInt(ref Values);
+
+            GameObject_proto Proto = WorldMgr.GetGameObjectProto((uint)Entry);
+            if (Proto == null)
+            {
+                Proto = WorldMgr.Database.SelectObject<GameObject_proto>("Entry=" + Entry);
+
+                if (Proto != null)
+                    Plr.SendMessage(0, "Server", "GO Entry is valid but npc stats are empty. No sniff data about this npc", SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+                else
+                    Plr.SendMessage(0, "Server", "Invalid GO entry(" + Entry + ")", SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
+                return false;
+            }
+
+            Plr.CalcWorldPositions();
+
+            GameObject_spawn Spawn = new GameObject_spawn();
+            Spawn.Guid = (uint)WorldMgr.GenerateGameObjectSpawnGUID();
+            Spawn.BuildFromProto(Proto);
+            Spawn.WorldO = Plr._Value.WorldO;
+            Spawn.WorldY = Plr._Value.WorldY;
+            Spawn.WorldZ = Plr._Value.WorldZ;
+            Spawn.WorldX = Plr._Value.WorldX;
+            Spawn.ZoneId = Plr.Zone.ZoneId;
+
+            WorldMgr.Database.AddObject(Spawn);
+
+            Plr.Region.CreateGameObject(Spawn);
+
+            GMCommandLog Log = new GMCommandLog();
+            Log.PlayerName = Plr.Name;
+            Log.AccountId = (uint)Plr.Client._Account.AccountId;
+            Log.Command = "SPAWN GAMEOBJECT " + Spawn.Entry + " " + Spawn.Guid + " AT " + Spawn.ZoneId + " " + Plr._Value.WorldX + " " + Plr._Value.WorldY;
+            Log.Date = DateTime.Now;
+            WorldMgr.Database.AddObject(Log);
+
+            return true;
+        }
+
+        static public bool GoRemove(Player Plr, ref List<string> Values)
+        {
+            Object Obj = GetObjectTarget(Plr);
+            if (!Obj.IsGameObject())
+                return false;
+
+            int Database = GetInt(ref Values);
+
+            Obj.Dispose();
+
+            if (Database > 0)
+            {
+                GameObject_spawn Spawn = Obj.GetGameObject().Spawn;
+                WorldMgr.Database.DeleteObject(Spawn);
+
+                GMCommandLog Log = new GMCommandLog();
+                Log.PlayerName = Plr.Name;
+                Log.AccountId = (uint)Plr.Client._Account.AccountId;
+                Log.Command = "REMOVE GAMEOBJECT " + Spawn.Entry + " " + Spawn.Guid + " AT " + Spawn.ZoneId + " " + Spawn.WorldX + " " + Spawn.WorldY;
+                Log.Date = DateTime.Now;
+                WorldMgr.Database.AddObject(Log);
+            }
+
+            Plr.SendMessage(0, "Server", "GO Removed : " + Obj.GetCreature().Spawn.Guid, SystemData.ChatLogFilters.CHATLOGFILTERS_SHOUT);
             return true;
         }
 
